@@ -1,5 +1,6 @@
 // Rezeptfotos von Openverse (freie Lizenzen: CC BY, CC BY-SA, CC0, Public Domain).
 //   node scripts/photos.js search <queries.json> <cache>   – eine Suche je Rezept ohne Foto (anonym: 20/min, 200/Tag)
+//   node scripts/photos.js commons <queries.json> <cache>  – dasselbe direkt auf Wikimedia Commons (gut für österreichische Namen)
 //   node scripts/photos.js sheet  <cache> <id> [...]       – Kontaktbogen der Kandidaten → <cache>/sheets/<id>.jpg
 //   node scripts/photos.js take   <cache> <picks.json>     – gewählte Bilder laden, auf 800×600 zuschneiden, Nachweis eintragen
 // picks.json: { "rezeptId": Kandidatennummer, ... }  (Nummern wie auf dem Kontaktbogen)
@@ -37,13 +38,52 @@ const wmThumb = (u, px) => /upload\.wikimedia\.org\/wikipedia\/commons\/(?!thumb
 // Kleine Vorschau statt Originalgröße: Flickr _m (240 px), Wikimedia 330 px.
 const preview = u => /staticflickr\.com/.test(u) ? u.replace(/(_[a-z])?\.jpg$/, '_m.jpg') : wmThumb(u, 330);
 
-async function download(url, file) {
+async function get(url) {
   for (let k = 0; ; k++) { // Wikimedia drosselt die geteilte IP zeitweise mit 429
     const r = await fetch(url, { headers: { 'user-agent': UA } });
-    if (r.ok) return fs.writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+    if (r.ok) return r;
     if (r.status !== 429 || k === 4) throw new Error('HTTP ' + r.status);
     await sleep(3000 * 2 ** k);
   }
+}
+const download = async (url, file) => fs.writeFileSync(file, Buffer.from(await (await get(url)).arrayBuffer()));
+
+// JSON-Objekt/-Array, das in s bei Index i ('{' oder '[') beginnt – MediaSearch bettet die Treffer so in die Seite ein.
+function jsonAt(s, i) {
+  for (let j = i, d = 0, str = false; j < s.length; j++) {
+    const c = s[j];
+    if (str) { if (c === '\\') j++; else if (c === '"') str = false; }
+    else if (c === '"') str = true;
+    else if (c === '{' || c === '[') d++;
+    else if ((c === '}' || c === ']') && --d === 0) return JSON.parse(s.slice(i, j + 1));
+  }
+}
+
+// Wikimedia Commons direkt (die API sperrt die geteilte IP, die Suchseite nicht). Lizenz erst bei „take“.
+async function commons(queriesFile, cache) {
+  const queries = JSON.parse(fs.readFileSync(queriesFile)), credits = JSON.parse(fs.readFileSync(path.join(IMG, 'credits.json')));
+  fs.mkdirSync(cache, { recursive: true });
+  for (const [id, q] of Object.entries(queries)) {
+    const file = path.join(cache, id + '.json');
+    if (credits[id] || fs.existsSync(file)) continue;
+    const html = await (await get(`https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(q)}&title=Special:MediaSearch&type=image`)).text();
+    const at = html.indexOf('"results":'); // Objekt oder (bei wenigen Treffern) Array
+    const res = (at < 0 ? [] : Object.values(jsonAt(html, at + 10))).sort((a, b) => a.index - b.index)
+      .map(x => ({ title: x.title, ii: x.imageinfo?.[0] })).filter(x => /jpeg|png/.test(x.ii?.mime) && x.ii.width >= 500).slice(0, 12)
+      .map(({ title, ii }) => ({ title: title.replace(/^File:|\.\w+$/g, ''), source: ii.descriptionurl, url: ii.url.split('?')[0], commons: true }));
+    fs.writeFileSync(file, JSON.stringify({ q, res }, null, 1));
+    console.error(id, q, res.length, 'Treffer');
+    await sleep(1500);
+  }
+}
+
+const unhtml = s => s.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, ' ').trim();
+async function commonsLicense(page) {
+  const h = await (await get(page)).text(), tpl = k => h.match(new RegExp(`licensetpl&#95;${k}"[^>]*>([^<]*)`))?.[1].trim();
+  const short = tpl('short') || '', license = /^public domain/i.test(short) ? 'Public Domain' : short;
+  if (!/^(CC0|CC BY(-SA)? \d|Public Domain)/.test(license)) throw new Error('keine passende freie Lizenz: ' + (short || '?'));
+  const aut = h.match(/fileinfotpl&#95;aut"[^>]*>[^<]*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>/)?.[1];
+  return { creator: unhtml(tpl('attr') || aut || '') || null, license, licenseUrl: tpl('link') || null };
 }
 
 async function sheet(cache, ids) {
@@ -66,9 +106,11 @@ async function take(cache, picksFile) {
   for (const [id, n] of Object.entries(picks)) {
     const x = JSON.parse(fs.readFileSync(path.join(cache, id + '.json'))).res[n], tmp = path.join(cache, id + '.orig');
     try {
+      const lic = x.commons ? await commonsLicense(x.source)
+        : { creator: x.creator, license: `${LIC[x.license] || x.license.toUpperCase()} ${x.version}`.trim(), licenseUrl: x.licenseUrl };
       await download(wmThumb(x.url, 1280), tmp).catch(() => download(x.url, tmp)); // Thumb > Original gibt es nicht
       execFileSync('convert', [tmp, '-auto-orient', '-resize', '800x600^', '-gravity', 'center', '-extent', '800x600', '-strip', '-quality', '78', path.join(IMG, id + '.jpg')]);
-      credits[id] = { title: x.title, creator: x.creator, license: `${LIC[x.license] || x.license.toUpperCase()} ${x.version}`.trim(), licenseUrl: x.licenseUrl, source: x.source };
+      credits[id] = { title: x.title, ...lic, source: x.source };
       console.log('ok', id);
     } catch (e) { console.error('FEHLER', id, e.message); }
     await sleep(300);
@@ -77,5 +119,5 @@ async function take(cache, picksFile) {
 }
 
 const [cmd, a, ...rest] = process.argv.slice(2);
-({ search: () => search(a, rest[0]), sheet: () => sheet(a, rest), take: () => take(a, rest[0]) })[cmd]?.().catch(e => { console.error(e); process.exit(1); })
-  ?? console.error('Aufruf: search | sheet | take (siehe Kopfkommentar)');
+({ search: () => search(a, rest[0]), commons: () => commons(a, rest[0]), sheet: () => sheet(a, rest), take: () => take(a, rest[0]) })[cmd]?.().catch(e => { console.error(e); process.exit(1); })
+  ?? console.error('Aufruf: search | commons | sheet | take (siehe Kopfkommentar)');
