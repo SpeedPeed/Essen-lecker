@@ -413,11 +413,261 @@
      "price": 3.99,
      "qty": 225,
      "date": "2026-11-22"
+    },
+    "kohlrabi": {
+     "name": "Da komm ich her! Kohlrabi",
+     "price": 0.79,
+     "qty": 1,
+     "date": "2026-09-24"
+    },
+    "roteRueben": {
+     "name": "BILLA immer gut Rote Rüben gekocht",
+     "price": 1.69,
+     "qty": 500,
+     "date": "2026-10-14"
+    },
+    "avocado": {
+     "name": "Clever Avocado",
+     "price": 1.19,
+     "qty": 1,
+     "date": "2026-10-20"
+    },
+    "rucola": {
+     "name": "Simply Good Rucola Salat",
+     "price": 1.7,
+     "qty": 125,
+     "date": "2026-07-01"
+    },
+    "aepfel": {
+     "name": "Wunderlinge Äpfel",
+     "price": 2.66,
+     "qty": 2000,
+     "date": "2026-10-28"
+    },
+    "bananen": {
+     "name": "Clever Bananen",
+     "price": 1.69,
+     "qty": 1000,
+     "date": "2026-10-20"
+    },
+    "spinatFrisch": {
+     "name": "Simply Good Jungspinat",
+     "price": 1.89,
+     "qty": 125,
+     "date": "2026-07-01"
+    },
+    "rotezwiebel": {
+     "name": "Da komm ich her! Zwiebel Rot",
+     "price": 1.69,
+     "qty": 1000,
+     "date": "2026-09-29"
+    },
+    "frischkaese": {
+     "name": "Clever Frischkäse Natur",
+     "price": 1.13,
+     "qty": 200,
+     "date": "2026-07-25"
+    },
+    "gouda": {
+     "name": "BILLA Sandwich Gouda",
+     "price": 1.45,
+     "qty": 170,
+     "date": "2026-09-24"
+    },
+    "halloumi": {
+     "name": "Gazi Grillkäse Natur",
+     "price": 3.19,
+     "qty": 200,
+     "date": "2026-07-16"
+    },
+    "ricotta": {
+     "name": "Galbani Ricotta",
+     "price": 2.79,
+     "qty": 250,
+     "date": "2025-05-22"
+    },
+    "hafermilch": {
+     "name": "Joya Pur Haferdrink",
+     "price": 1.99,
+     "qty": 1000,
+     "was": 2.99,
+     "offer": {
+      "adv": "BILLA",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "div. Sorten 1 Liter"
+     }
+    },
+    "pizzateig": {
+     "name": "BILLA Pizzateig XXL",
+     "price": 2.59,
+     "qty": 550,
+     "date": "2026-06-29"
+    },
+    "strudelteig": {
+     "name": "Tante Fanny Gezogener Strudelteig",
+     "price": 1.99,
+     "qty": 120,
+     "date": "2026-11-05"
+    },
+    "tortellini": {
+     "name": "BILLA Tortelloni Käse",
+     "price": 3.99,
+     "qty": 500,
+     "date": "2026-10-14"
+    },
+    "schupfnudeln": {
+     "name": "Omis Schmankerl Schupfnudeln",
+     "price": 3.19,
+     "qty": 500,
+     "date": "2026-07-26"
+    },
+    "schnitzelfleisch": {
+     "name": "Clever Schweinsschnitzel",
+     "price": 6.99,
+     "qty": 700,
+     "date": "2026-04-12"
+    },
+    "putenbrust": {
+     "name": "Clever Putenschnitzel",
+     "price": 8.24,
+     "qty": 550,
+     "date": "2026-11-18"
+    },
+    "leberkaese": {
+     "name": "Clever Backofen-Leberkäse",
+     "price": 2.49,
+     "qty": 400,
+     "date": "2026-10-27"
+    },
+    "bratwurst": {
+     "name": "Die Grillerei Bratwürstel Frisch",
+     "price": 2.84,
+     "qty": 300,
+     "date": "2026-09-24"
+    },
+    "haferflocken": {
+     "name": "Clever Haferflocken Kernig",
+     "price": 0.79,
+     "qty": 500,
+     "date": "2026-09-22"
+    },
+    "polenta": {
+     "name": "BILLA Polenta",
+     "price": 0.99,
+     "qty": 500,
+     "date": "2025-10-22"
+    },
+    "griess": {
+     "name": "Clever Weizengrieß",
+     "price": 0.94,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "reisnudeln": {
+     "name": "BILLA Reisnudeln",
+     "price": 1.42,
+     "qty": 250,
+     "date": "2026-07-26"
+    },
+    "mienudeln": {
+     "name": "Shan Shi Mie Nudeln",
+     "price": 1.89,
+     "qty": 250,
+     "date": "2026-11-19",
+     "was": 2.37
+    },
+    "weisseBohnen": {
+     "name": "BILLA Dampfgegarte Weiße Bohnen",
+     "price": 1.49,
+     "qty": 326,
+     "date": "2026-09-10"
+    },
+    "cashews": {
+     "name": "Karanga Cashew Sauce",
+     "price": 4.99,
+     "qty": 218,
+     "date": "2026-10-31"
+    },
+    "walnuesse": {
+     "name": "BILLA Walnüsse Gerieben",
+     "price": 1.79,
+     "qty": 200,
+     "date": "2026-11-19",
+     "was": 1.99
+    },
+    "erdnuesse": {
+     "name": "Billa Erdnüsse ohne Fett geröstet",
+     "price": 1.99,
+     "qty": 300,
+     "date": "2026-08-30"
+    },
+    "rosinen": {
+     "name": "BILLA Rosinen",
+     "price": 2.49,
+     "qty": 500,
+     "date": "2026-09-24"
+    },
+    "broesel": {
+     "name": "Clever Semmelbrösel",
+     "price": 1.32,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "tahini": {
+     "name": "Koska Sesampaste Tahin",
+     "price": 3.99,
+     "qty": 300,
+     "date": "2025-11-10"
+    },
+    "getrTomaten": {
+     "name": "Clever Getrocknete Tomaten",
+     "price": 2.55,
+     "qty": 280,
+     "date": "2026-10-08"
+    },
+    "kapern": {
+     "name": "Clever Kapern",
+     "price": 0.85,
+     "qty": 105,
+     "date": "2026-04-12"
+    },
+    "pommes": {
+     "name": "Clever Wellenpommes",
+     "price": 1.69,
+     "qty": 1000,
+     "date": "2026-11-22"
+    },
+    "beeren": {
+     "name": "BILLA Beerenmischung",
+     "price": 4.79,
+     "qty": 300,
+     "date": "2026-11-22"
+    },
+    "kaisergemuese": {
+     "name": "Clever Kaisergemüse",
+     "price": 2.37,
+     "qty": 1000,
+     "date": "2026-11-22"
+    },
+    "limette": {
+     "name": "SanLucar Limetten",
+     "price": 1.49,
+     "qty": 4,
+     "was": 1.77,
+     "offer": {
+      "adv": "BILLA PLUS",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "unbehandelt Kl. I, 4 Stück Tasse"
+     }
     }
    }
   },
   "spar": {
-   "asOf": "2026-09-10",
+   "asOf": "2026-09-20",
    "items": {
     "erdaepfel": {
      "name": "SPAR Kartoffel Heurige 1,5kg Netz",
@@ -847,6 +1097,266 @@
      "price": 3.99,
      "qty": 225,
      "date": "2026-02-12"
+    },
+    "roteRueben": {
+     "name": "SPAR PREMIUM Rote Rüben",
+     "price": 1.79,
+     "qty": 300,
+     "date": "2023-04-28"
+    },
+    "sellerie": {
+     "name": "Sellerie per kg Sellerie per kg                 KG  1",
+     "price": 1.51,
+     "qty": 1000,
+     "date": "2026-07-20"
+    },
+    "suesskartoffel": {
+     "name": "Süßkartoffel weiß lose Suesskartoffel weiss us Kl1 kg  KG  1",
+     "price": 3.8,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "avocado": {
+     "name": "S-BUDGET Avocado genussreif",
+     "price": 0.99,
+     "qty": 1,
+     "date": "2026-09-20"
+    },
+    "rucola": {
+     "name": "SPAR Rucola-Salat",
+     "price": 1.7,
+     "qty": 125,
+     "date": "2026-07-01"
+    },
+    "aepfel": {
+     "name": "S-BUDGET Apfel rot Sorte: siehe Etikett 2kg Sack",
+     "price": 3.32,
+     "qty": 2000,
+     "date": "2026-07-01"
+    },
+    "bananen": {
+     "name": "S-BUDGET Bananen per kg",
+     "price": 1.59,
+     "qty": 1000,
+     "date": "2026-08-30"
+    },
+    "rotezwiebel": {
+     "name": "SPAR Zwiebel rot",
+     "price": 1.61,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "chilischote": {
+     "name": "SPAR Pfefferoni bunt",
+     "price": 1.42,
+     "qty": 100,
+     "date": "2026-07-01"
+    },
+    "frischkaese": {
+     "name": "S-BUDGET Frischkäse-Zubereitung Natur",
+     "price": 1.13,
+     "qty": 200,
+     "date": "2026-07-21"
+    },
+    "gouda": {
+     "name": "SPAR österreichischer Gouda aus Heumilch",
+     "price": 3.19,
+     "qty": 250,
+     "date": "2026-04-06"
+    },
+    "halloumi": {
+     "name": "SPAR Halloumi Klassik",
+     "price": 3.79,
+     "qty": 250,
+     "date": "2023-12-20"
+    },
+    "ricotta": {
+     "name": "DESPAR Ricotta",
+     "price": 1.79,
+     "qty": 250,
+     "date": "2025-05-14"
+    },
+    "hafermilch": {
+     "name": "S-BUDGET Haferdrink",
+     "price": 0.99,
+     "qty": 1000,
+     "date": "2025-08-30"
+    },
+    "pizzateig": {
+     "name": "Tante Fanny Frischer Blech-Pizzateig",
+     "price": 2.49,
+     "qty": 600,
+     "date": "2026-02-09"
+    },
+    "strudelteig": {
+     "name": "SPAR Filo -& Yufka-Teig",
+     "price": 1.79,
+     "qty": 300,
+     "date": "2023-12-05"
+    },
+    "tortellini": {
+     "name": "SPAR Feine Küche Tortelloni mit Käsefüllung",
+     "price": 3.89,
+     "qty": 500,
+     "date": "2023-01-01"
+    },
+    "schupfnudeln": {
+     "name": "SPAR Feine Küche Schupfnudeln",
+     "price": 2.99,
+     "qty": 500,
+     "date": "2023-01-24"
+    },
+    "hendlkeulen": {
+     "name": "S-BUDGET Backhendlkeulen",
+     "price": 5.99,
+     "qty": 750,
+     "date": "2023-08-01"
+    },
+    "putenbrust": {
+     "name": "S-BUDGET Putenfilet Schnitzerl",
+     "price": 4.49,
+     "qty": 350,
+     "date": "2023-07-25"
+    },
+    "leberkaese": {
+     "name": "S-BUDGET Leberkäse per Packung",
+     "price": 3.99,
+     "qty": 500,
+     "date": "2022-11-01"
+    },
+    "bratwurst": {
+     "name": "Tann Rostbratwürstel",
+     "price": 2.79,
+     "qty": 360,
+     "was": 3.99,
+     "offer": {
+      "adv": "EUROSPAR",
+      "from": "2026-11-18",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "oder Mini Berner aus Österreich, der fein-würzige Klassiker für Pfanne & Grill - ohne Zusatz von Geschmacksverstärkern, gluten- und laktosefrei, 360 g/250 g"
+     }
+    },
+    "haferflocken": {
+     "name": "S-BUDGET Haferflocken Kleinblatt",
+     "price": 0.65,
+     "qty": 500,
+     "date": "2024-02-13"
+    },
+    "polenta": {
+     "name": "DESPAR Polenta Pronta Gialla",
+     "price": 0.79,
+     "qty": 1000,
+     "date": "2022-09-30"
+    },
+    "griess": {
+     "name": "S-BUDGET Weizengrieß Type 480",
+     "price": 0.94,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "bulgur": {
+     "name": "S-BUDGET Bulgur",
+     "price": 1.99,
+     "qty": 1000,
+     "date": "2025-09-16"
+    },
+    "reisnudeln": {
+     "name": "SPAR ASIA Reisnudeln",
+     "price": 1.42,
+     "qty": 250,
+     "date": "2026-07-03"
+    },
+    "mienudeln": {
+     "name": "SPAR ASIA Mie Nudeln ohne Ei",
+     "price": 1.42,
+     "qty": 250,
+     "date": "2026-07-01"
+    },
+    "weisseBohnen": {
+     "name": "SPAR Cannellini Bohnen",
+     "price": 0.79,
+     "qty": 400,
+     "date": "2023-11-14"
+    },
+    "cashews": {
+     "name": "S-BUDGET Cashewkerne Natur",
+     "price": 1.86,
+     "qty": 150,
+     "date": "2023-12-28"
+    },
+    "walnuesse": {
+     "name": "SPAR PREMIUM Walnüsse Sorte Franquette",
+     "price": 1.74,
+     "qty": 300,
+     "date": "2026-02-02"
+    },
+    "erdnuesse": {
+     "name": "SPAR Erdnüsse geröstet & gesalzen",
+     "price": 0.79,
+     "qty": 200,
+     "date": "2021-05-05"
+    },
+    "rosinen": {
+     "name": "Spar Rosinen",
+     "price": 1.99,
+     "qty": 500,
+     "was": 2.49,
+     "offer": {
+      "adv": "SPAR",
+      "from": "2026-11-18",
+      "to": "2026-12-09",
+      "loyalty": false,
+      "note": "500 g"
+     }
+    },
+    "broesel": {
+     "name": "S-BUDGET Semmelbrösel",
+     "price": 1.32,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "tahini": {
+     "name": "Koska Tahin",
+     "price": 2.99,
+     "qty": 300,
+     "date": "2022-09-30"
+    },
+    "getrTomaten": {
+     "name": "S-BUDGET Tomaten sonnengetrocknet",
+     "price": 1.99,
+     "qty": 280,
+     "date": "2025-05-14"
+    },
+    "kapern": {
+     "name": "S-BUDGET Kapern",
+     "price": 1.19,
+     "qty": 150,
+     "date": "2026-04-08"
+    },
+    "zartbitter": {
+     "name": "S-BUDGET Dunkle Schokolade",
+     "price": 0.79,
+     "qty": 100,
+     "date": "2024-03-08"
+    },
+    "pommes": {
+     "name": "S-BUDGET Pommes Frites",
+     "price": 1.79,
+     "qty": 1200,
+     "date": "2026-07-23"
+    },
+    "beeren": {
+     "name": "SPAR Beerenmix tiefgekühlt",
+     "price": 2.99,
+     "qty": 250,
+     "date": "2022-04-28"
+    },
+    "kaisergemuese": {
+     "name": "SPAR Kaisergemüse",
+     "price": 3.13,
+     "qty": 1000,
+     "date": "2026-07-01"
     }
    }
   },
@@ -878,6 +1388,32 @@
       "to": "2026-11-25",
       "loyalty": false,
       "note": "Klasse I  Je 500 g"
+     }
+    },
+    "bananen": {
+     "name": "Bananen",
+     "price": 1.11,
+     "qty": 1000,
+     "was": 1.69,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-22",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "HINWEIS: MIT LIDL PLUS APP 0.99 € je kg"
+     }
+    },
+    "roteRueben": {
+     "name": "Chef Select Rote Rüben",
+     "price": 1,
+     "qty": 500,
+     "was": 1.49,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-22",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "gekocht je 500 g"
      }
     },
     "blaetterteig": {
@@ -977,6 +1513,19 @@
    "asOf": "2026-11-22",
    "offersOnly": true,
    "items": {
+    "walnuesse": {
+     "name": "Puda Walnusskerne",
+     "price": 2.39,
+     "qty": 200,
+     "was": 2.99,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "200 g"
+     }
+    },
     "milch": {
      "name": "Schärdinger Formil H-Vollmilch",
      "price": 0.89,
@@ -1029,6 +1578,19 @@
       "note": "Kl. II,  2,5 kg"
      }
     },
+    "aepfel": {
+     "name": "Wunderlinge Äpfel",
+     "price": 2.19,
+     "qty": 2009,
+     "was": 2.66,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "Kl. II,   2 kg"
+     }
+    },
     "butter": {
      "name": "Heidi Butter",
      "price": 1.19,
@@ -1072,6 +1634,19 @@
       "to": "2026-11-26",
       "loyalty": false,
       "note": "Klasse I 500 g"
+     }
+    },
+    "leberkaese": {
+     "name": "Sonnhof Leberkäse Gebacken",
+     "price": 2.49,
+     "qty": 400,
+     "was": 3.29,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-19",
+      "to": "2026-11-26",
+      "loyalty": false,
+      "note": "verschiedene Sorten 400 g"
      }
     }
    }

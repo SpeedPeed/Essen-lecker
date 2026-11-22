@@ -52,9 +52,9 @@ Aufwand: S < 1 h, M ≈ halber Tag, L > 1 Tag.
 | N1 | Woche startet heute statt Montag. | `planner.js` `slotsFor` | Gewohnheitssache | S | bewusst nicht: rollierende 7 Tage ab heute passen zum Einkauf „heute“; mit K2 rollt der Plan jetzt automatisch weiter |
 | N2 | „Neu planen“ setzt Häkchen zurück. | `app.js:371` | bereits Gekauftes muss neu abgehakt werden | S | behoben: Häkchen bleiben, nur bei neuer Woche zurückgesetzt |
 | N3 | Fast jedes Gericht trägt „Aktion“, weil billige Basiszutaten (Karotten, Zwiebeln) in Aktion sind. | Screenshot Plan | Badge verliert Aussagekraft | S | offen |
-| N4 | Ähnliche Gerichte am selben Tag (Chili con/sin Carne, 2× Knödel). | Personas Familie/SPAR | weniger Abwechslung | S | offen |
+| N4 | Ähnliche Gerichte am selben Tag (Chili con/sin Carne, 2× Knödel). | Personas Familie/SPAR | weniger Abwechslung | S | behoben: Strafe für gemeinsame Hauptzutaten am selben Tag (gemessen 15 → 0,7 je Woche, Plan sogar günstiger); Test |
 | N5 | Single 25 € leicht über Budget, obwohl günstigere Kombinationen existieren. | Persona Single | „0,54 € über Budget“ | M | offen (60 Zufallsläufe; „Automatisch ausgleichen“ löst es) |
-| N6 | Nährwerte/Mengen geschätzt; 8 Rezepte ohne Foto, einige Fotos nur ungefähr (z. B. Krautfleckerl = „Pasta Salad“). | `data.js`, `img/credits.json` | Vertrauen | L | offen (redaktionelle Arbeit) |
+| N6 | Nährwerte/Mengen geschätzt; 8 Rezepte ohne Foto, einige Fotos nur ungefähr (z. B. Krautfleckerl = „Pasta Salad“). | `data.js`, `img/credits.json` | Vertrauen | L | offen (redaktionelle Arbeit). Seit der Erweiterung auf 317 Rezepte haben 267 kein Foto (Emoji-Platzhalter); Nährwerte werden jetzt automatisch auf Plausibilität geprüft (`scripts/check-recipes.js`) |
 | N7 | HOFER/LIDL/PENNY/MPREIS/ADEG Regalpreise nur über Faktor geschätzt; SPAR-Regalpreise Stand 09/2026; Aktionen nur PLZ 1010; Gang-Reihenfolgen erfunden. | `scripts/prices.js:8`, `data.js STORES` | Preise weichen ab | L | offen (Datenquellen fehlen) |
 | N8 | Kein Dark Mode, Desktop nur 480-px-Spalte. | `styles.css` | Optik am Desktop | M | bewusst nicht: mobile Nutzung im Fokus |
 | N9 | Kein Teilen zwischen Geräten. | – | – | L | bewusst nicht: bräuchte Konto/Server (Rückfrage); Export/Import (W4) als Brücke |
@@ -66,3 +66,11 @@ Aufwand: S < 1 h, M ≈ halber Tag, L > 1 Tag.
 - Fehlende `prices.json`/Openverse-Bilder: Schätzpreise bzw. Emoji-Platzhalter greifen.
 - Performance: 14 Slots ≈ 35 ms in Node (Faktor 5–10 auf schwachem Handy noch < 0,5 s); Bilder 50 × ≤ 120 kB, `loading="lazy"`.
 - `prefers-reduced-motion` und `:focus-visible` vorhanden; Touch-Ziele ≥ 40 px.
+
+## Nachtrag: Rezeptsammlung 58 → 317
+
+- 259 neue Rezepte in fünf Themenblöcken (Österreich & Mehlspeisen, Italien & Mittelmeer, Asien & Indien, Orient/Mexiko/Balkan/Diner, gesund & Geräte-Rezepte), 60 neue Zutaten mit Preisregeln für BILLA/SPAR.
+- Kleine Pools wachsen stark: vegan + streng glutenfrei 5 → 33 Rezepte, nur Mikrowelle 3 → 20.
+- `scripts/check-recipes.js` (läuft in `test.js`): Zutaten vorhanden, Mengen plausibel, kcal passt zu den Makros (±20 %), gültige Kategorien/Tags/Geräte, keine Doppelten.
+- Performance: Planer prüft bei großem Pool je Slot ein wechselndes Zufallsfenster von 60 Kandidaten (14 Slots ≈ 40 ms in Node); Tausch-Sheet und Entdecken zeigen 40 Einträge mit „Mehr anzeigen“. Gemessen bei 6-fach gedrosselter CPU: Tausch-Sheet 0,4 s, Entdecken 0,2 s.
+- Neue Allergene: Senf; Honig schließt vegan aus.

@@ -117,3 +117,15 @@ console.log('ok Aktions-Packungsgröße');
 const recipeErrs = require('./scripts/check-recipes.js').check(D.RECIPES);
 assert.deepStrictEqual(recipeErrs, [], recipeErrs.join('\n'));
 console.log('ok Rezeptdaten,', D.RECIPES.length, 'Rezepte');
+
+// Abwechslung am Tag: Mittag und Abend teilen selten eine Hauptzutat
+let shared = 0;
+for (let k = 0; k < 5; k++) {
+  const w = P.generate({ ...base, store: 'billa', meals: { lunch: true, dinner: true }, budget: 80 }, D.RECIPES, new Date('2026-11-23T12:00'));
+  for (let d = 0; d < w.length; d += 2) {
+    const a = Object.keys(D.RECIPES.find(r => r.id === w[d].rid).ing), b = Object.keys(D.RECIPES.find(r => r.id === w[d + 1].rid).ing);
+    shared += a.filter(id => b.includes(id) && !D.INGREDIENTS[id].flags.includes('pantry') && !['zwiebel', 'knoblauch', 'karotten', 'zitrone', 'petersilie', 'schnittlauch'].includes(id)).length;
+  }
+}
+assert.ok(shared <= 10, 'zu viele gleiche Hauptzutaten am selben Tag: ' + shared);
+console.log('ok Abwechslung am Tag (' + shared + ' geteilte Zutaten in 35 Tagen)');
