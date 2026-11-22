@@ -20,6 +20,7 @@
 
   // Harte Filter: Ernährung, Abneigungen, strenge Allergien, fehlende Geräte.
   function eligible(r, p) {
+    if ((p.blocked || []).includes(r.id)) return false; // „Nicht mehr vorschlagen“
     const f = flagsOf(r);
     if (!dietOk(f, p.diet)) return false;
     if (p.dislikes.some(d => f.has(d))) return false;
@@ -29,7 +30,7 @@
 
   function prefScore(r, p) {
     const f = flagsOf(r);
-    let s = r.tags.filter(t => p.styles.includes(t)).length * 2;
+    let s = r.tags.filter(t => p.styles.includes(t)).length * 2 + ((p.favs || []).includes(r.id) ? 2 : 0); // Favoriten öfter
     if (p.allergyMode !== 'strict') s -= p.allergies.filter(a => f.has(a)).length * 4; // Soft-Filter
     s += Math.min(3, offerSaving(r, p) * 1.5); // Aktionen nach gesparten Euro bevorzugen, nicht nach Anzahl
     return s;

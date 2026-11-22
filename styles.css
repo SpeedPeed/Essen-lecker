@@ -170,3 +170,4 @@ a { color: inherit; }
   .footer-cta > * { max-width: 616px; }
   .photo.hero { height: 320px; }
 }
+.btn.small.wide { display: block; width: 100%; }

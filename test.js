@@ -169,3 +169,15 @@ const karottenOnly = D.RECIPES.find(r => r.ing.karotten && !r.ing.faschiertes &&
 assert.ok(!P.hasDeal(karottenOnly, bil), 'ein paar Cent bei Karotten sind keine Aktion: ' + karottenOnly.id);
 P.setPrices(require('./prices.json'));
 console.log('ok Aktions-Badge');
+
+// Favoriten kommen öfter dran, ausgeschlossene Gerichte nie
+const fp = { ...base, budget: 60 };
+const favId = P.generate(fp, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(9))[0].rid;
+assert.ok(P.prefScore(D.RECIPES.find(r => r.id === favId), { ...fp, favs: [favId] }) - P.prefScore(D.RECIPES.find(r => r.id === favId), fp) === 2);
+const favs = P.generate(fp, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(50)).slice(0, 4).map(s => s.rid); // bezahlbare Gerichte
+const hits = pr => [1, 2, 3, 4, 5, 6].reduce((t, k) => t + P.generate(pr, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).filter(s => favs.includes(s.rid)).length, 0);
+const favHits = hits({ ...fp, favs }), plainHits = hits(fp);
+assert.ok(favHits > plainHits * 1.4, `Favoriten nicht bevorzugt (${favHits} vs. ${plainHits})`);
+for (let k = 1; k <= 4; k++) assert.ok(!P.generate({ ...fp, blocked: ['lasagne', 'bolognese'] }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).some(s => ['lasagne', 'bolognese'].includes(s.rid)));
+assert.ok(!P.eligible(D.RECIPES.find(r => r.id === 'lasagne'), { ...fp, blocked: ['lasagne'] }));
+console.log(`ok Favoriten (${favHits} statt ${plainHits} Treffer) & ausgeschlossen`);

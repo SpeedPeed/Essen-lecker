@@ -3,7 +3,7 @@
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
 const ROOT = path.join(__dirname, '..'), SHOTS = process.argv[2];
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 const server = http.createServer((req, res) => {
   const f = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
@@ -39,6 +39,9 @@ const server = http.createServer((req, res) => {
     const slots = await page.locator('.card.day').count();
     if (slots !== 14) errors.push(`${name}: ${slots} statt 14 Slots`);
     await shot('03-plan');
+    const before = (await page.locator('.card.day h3').allTextContents()).join();
+    await click('[data-a="regen"]'); await click('#toast [data-a="undo"]');
+    if ((await page.locator('.card.day h3').allTextContents()).join() !== before) errors.push(`${name}: Rückgängig nach Neu planen`);
 
     // Tauschen (mit Suche) → Gericht wird fixiert
     await click('[data-a="swap"]'); await page.waitForSelector('.sheet'); await shot('04-tauschen');
@@ -55,6 +58,10 @@ const server = http.createServer((req, res) => {
     await click('.card.day [data-a="recipe"]'); await page.waitForSelector('h1'); await shot('05-rezept');
     await click('[data-a="serv"][data-d="1"]');
     if ((await page.textContent('.stepper.small b')).trim() !== '3') errors.push(`${name}: Portionen anpassen`);
+    await click('[data-a="block"]');
+    if (!(await page.textContent('#app')).includes('ausgeschlossen')) errors.push(`${name}: Nicht mehr vorschlagen`);
+    await click('#toast [data-a="undoblock"]');
+    if (!(await page.textContent('[data-a="block"]')).includes('Nicht mehr vorschlagen')) errors.push(`${name}: Ausschließen rückgängig`);
     await click('[data-a="planrecipe"]'); await click('.sheet [data-a="planat"]');
     if (await page.locator('.sheet').count()) errors.push(`${name}: Einplanen schließt nicht`);
     await click('[data-a="cook"]'); await page.waitForSelector('.cook');
