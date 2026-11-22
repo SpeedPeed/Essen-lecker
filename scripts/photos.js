@@ -32,14 +32,18 @@ async function search(queriesFile, cache) {
   }
 }
 
-// Kleine Vorschau statt Originalgröße: Flickr _m (240 px), Wikimedia-Thumb 320 px.
-const preview = u => /staticflickr\.com/.test(u) ? u.replace(/(_[a-z])?\.jpg$/, '_m.jpg')
-  : /upload\.wikimedia\.org\/wikipedia\/commons\/(?!thumb)/.test(u) ? u.replace(/commons\/(.\/..\/)([^/]+)$/, 'commons/thumb/$1$2/320px-$2') : u;
+// Wikimedia liefert nur Standard-Thumbgrößen (250, 330, 500, 960, 1280 …), Originale sind oft riesig.
+const wmThumb = (u, px) => /upload\.wikimedia\.org\/wikipedia\/commons\/(?!thumb)/.test(u) ? u.replace(/commons\/(.\/..\/)([^/]+)$/, `commons/thumb/$1$2/${px}px-$2`) : u;
+// Kleine Vorschau statt Originalgröße: Flickr _m (240 px), Wikimedia 330 px.
+const preview = u => /staticflickr\.com/.test(u) ? u.replace(/(_[a-z])?\.jpg$/, '_m.jpg') : wmThumb(u, 330);
 
 async function download(url, file) {
-  const r = await fetch(url, { headers: { 'user-agent': UA } });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  fs.writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+  for (let k = 0; ; k++) { // Wikimedia drosselt die geteilte IP zeitweise mit 429
+    const r = await fetch(url, { headers: { 'user-agent': UA } });
+    if (r.ok) return fs.writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+    if (r.status !== 429 || k === 4) throw new Error('HTTP ' + r.status);
+    await sleep(3000 * 2 ** k);
+  }
 }
 
 async function sheet(cache, ids) {
@@ -62,7 +66,7 @@ async function take(cache, picksFile) {
   for (const [id, n] of Object.entries(picks)) {
     const x = JSON.parse(fs.readFileSync(path.join(cache, id + '.json'))).res[n], tmp = path.join(cache, id + '.orig');
     try {
-      await download(x.url, tmp);
+      await download(wmThumb(x.url, 1280), tmp).catch(() => download(x.url, tmp)); // Thumb > Original gibt es nicht
       execFileSync('convert', [tmp, '-auto-orient', '-resize', '800x600^', '-gravity', 'center', '-extent', '800x600', '-strip', '-quality', '78', path.join(IMG, id + '.jpg')]);
       credits[id] = { title: x.title, creator: x.creator, license: `${LIC[x.license] || x.license.toUpperCase()} ${x.version}`.trim(), licenseUrl: x.licenseUrl, source: x.source };
       console.log('ok', id);
