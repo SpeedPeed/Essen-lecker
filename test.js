@@ -100,11 +100,11 @@ P.setPrices({ stores: { spar: { asOf: '2026-09-10', items: { knoblauch: { name: 
 const kn = P.packOf('knoblauch', { ...base, store: 'spar' });
 assert.deepStrictEqual([kn.packQty, kn.pack], [10, '1 Knolle']);
 
-// Reste-Slot und sein Vorabend-Gericht bleiben beim Ausgleichen stehen
+// Selbst gewählter Reste-Slot (fixiert) und sein Vorabend-Gericht bleiben beim Ausgleichen stehen
 P.setPrices(require('./prices.json'));
 const lb = { ...base, meals: { lunch: true, dinner: true }, budget: 30 };
 const wl = P.planWeek(lb, D.RECIPES, [], new Date('2026-11-23T12:00'));
-wl[1] = { ...wl[1], rid: 'linseneintopf' }; wl[2] = { date: wl[2].date, meal: 'lunch', rid: 'linseneintopf', leftover: true };
+wl[1] = { ...wl[1], rid: 'linseneintopf' }; wl[2] = { date: wl[2].date, meal: 'lunch', rid: 'linseneintopf', leftover: true, pinned: true };
 const rl = P.rebalance(wl, -1, lb, D.RECIPES);
 assert.deepStrictEqual([rl[1].rid, rl[2].rid, rl[2].leftover], ['linseneintopf', 'linseneintopf', true]);
 console.log('ok Datum, Knoblauch, Reste');
@@ -140,3 +140,84 @@ for (const [id, c] of Object.entries(fotos)) {
 const quellen = Object.values(fotos).map(c => c.source);
 assert.strictEqual(new Set(quellen).size, quellen.length, 'dasselbe Foto bei mehreren Rezepten');
 console.log('ok Rezeptfotos,', Object.keys(fotos).length, 'mit Nachweis');
+
+// Knappes Budget (Review N5): Planer tauscht nach, bis es passt – reproduzierbar mit festem Zufall
+P.setPrices(require('./prices.json'));
+const seeded = s => () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
+const single = { ...base, adults: 1, store: 'spar', styles: [], budget: 17.5 };
+for (let k = 1; k <= 5; k++) {
+  const c = P.weekCost(P.generate(single, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).map(s => s.rid), D.RECIPES, single).total;
+  assert.ok(c <= single.budget, `Single ${single.budget} € überschritten: ${c.toFixed(2)} (Seed ${k})`);
+}
+console.log('ok knappes Budget');
+
+// Fixierte Gerichte (Review N10): Neu planen und Ausgleichen behalten sie, unpassende werden freigegeben
+const pw = P.planWeek(base, D.RECIPES, [], new Date('2026-11-23T12:00'));
+pw[4] = { ...pw[4], rid: 'lasagne', pinned: true };
+const pw2 = P.planWeek(base, D.RECIPES, pw, new Date('2026-11-23T12:00'));
+assert.deepStrictEqual([pw2[4].rid, pw2[4].pinned], ['lasagne', true]);
+const rbp = P.rebalance(pw2.map((s, i) => i === 1 ? { ...s, rid: 'slowgulasch' } : s), 1, { ...base, equipment: [...base.equipment, 'slowcooker'], budget: 20 }, D.RECIPES);
+assert.deepStrictEqual([rbp[1].rid, rbp[4].rid], ['slowgulasch', 'lasagne']);
+assert.ok(!P.planWeek({ ...base, diet: 'vegan' }, D.RECIPES, pw, new Date('2026-11-23T12:00'))[4].pinned, 'Lasagne passt nicht mehr zu vegan');
+console.log('ok fixierte Gerichte');
+
+// „Aktion“ nur bei spürbarer Ersparnis (Review N3)
+P.setPrices({ stores: { billa: { asOf: '2026-11-22', items: { faschiertes: { name: 'Faschiertes', price: 3.99, qty: 500, was: 5.99 }, karotten: { name: 'Karotten', price: 0.99, qty: 1000, was: 1.19 } } } } });
+const bil = { ...base, store: 'billa' }, rec = id => D.RECIPES.find(r => r.id === id);
+assert.ok(P.hasDeal(rec('bolognese'), bil), 'Faschiertes −2 € lohnt sich');
+const karottenOnly = D.RECIPES.find(r => r.ing.karotten && !r.ing.faschiertes && P.offersIn(r, bil).length === 1);
+assert.ok(!P.hasDeal(karottenOnly, bil), 'ein paar Cent bei Karotten sind keine Aktion: ' + karottenOnly.id);
+P.setPrices(require('./prices.json'));
+console.log('ok Aktions-Badge');
+
+// Favoriten kommen öfter dran, ausgeschlossene Gerichte nie
+const fp = { ...base, budget: 60 };
+const favId = P.generate(fp, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(9))[0].rid;
+assert.ok(P.prefScore(D.RECIPES.find(r => r.id === favId), { ...fp, favs: [favId] }) - P.prefScore(D.RECIPES.find(r => r.id === favId), fp) === 2);
+const favs = P.generate(fp, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(50)).slice(0, 4).map(s => s.rid); // bezahlbare Gerichte
+const hits = pr => [1, 2, 3, 4, 5, 6].reduce((t, k) => t + P.generate(pr, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).filter(s => favs.includes(s.rid)).length, 0);
+const favHits = hits({ ...fp, favs }), plainHits = hits(fp);
+assert.ok(favHits > plainHits * 1.4, `Favoriten nicht bevorzugt (${favHits} vs. ${plainHits})`);
+for (let k = 1; k <= 4; k++) assert.ok(!P.generate({ ...fp, blocked: ['lasagne', 'bolognese'] }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).some(s => ['lasagne', 'bolognese'].includes(s.rid)));
+assert.ok(!P.eligible(D.RECIPES.find(r => r.id === 'lasagne'), { ...fp, blocked: ['lasagne'] }));
+console.log(`ok Favoriten (${favHits} statt ${plainHits} Treffer) & ausgeschlossen`);
+
+// Suche: Umlaute, bundesdeutsche Begriffe, mehrere Wörter
+const hit = (q, id) => P.matches(rec(id), q);
+assert.ok(hit('kartoffelgulasch', 'erdaepfelgulasch') && hit('knoedel', 'semmelknoedel') && hit('Hackfleisch', 'laibchen'));
+assert.ok(hit('tomatensauce', 'gefuelltepaprika') && hit('quark pfannkuchen', 'palatschinken') && hit('pilze', 'semmelknoedel'));
+assert.ok(!hit('fisch', 'erdaepfelgulasch') && !hit('topfen speck', 'semmelknoedel') && hit('', 'lasagne'));
+console.log('ok Suche (Umlaute & Synonyme)');
+
+// Reste: Mittag = Abendessen vom Vortag (doppelt gekocht), nur bei Rezepten, die sich aufwärmen lassen
+const lp = { ...base, meals: { lunch: true, dinner: true }, budget: 70, leftoverLunch: true };
+let leftovers = 0, costLo = 0, costNo = 0;
+for (let k = 1; k <= 4; k++) {
+  const w = P.generate(lp, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k));
+  w.forEach((s, i) => {
+    if (!s.leftover) return;
+    leftovers++;
+    const prev = w.find(o => o.meal === 'dinner' && o.date === P.isoDay(new Date(new Date(s.date + 'T12:00').getTime() - 864e5)));
+    assert.ok(prev && prev.rid === s.rid && rec(s.rid).leftovers && s.meal === 'lunch', 'Reste-Mittag ohne passendes Vorabend-Gericht: ' + i);
+  });
+  assert.ok(!w[0].leftover, 'erster Mittag hat keinen Vorabend');
+  const own = w.filter(s => !s.leftover).map(s => s.rid);
+  assert.strictEqual(new Set(own).size, own.length, 'keine Doppelten außer Resten');
+  costLo += P.weekCost(w.map(s => s.rid), D.RECIPES, lp).total;
+  costNo += P.weekCost(P.generate({ ...lp, leftoverLunch: false }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).map(s => s.rid), D.RECIPES, lp).total;
+}
+assert.ok(leftovers >= 4 * 4, 'zu wenige Reste-Mittage: ' + leftovers);
+console.log(`ok Reste-Mittage (${leftovers} in 4 Wochen, Ø ${(costLo / 4).toFixed(2)} € statt ${(costNo / 4).toFixed(2)} €)`);
+
+// Fixierter Reste-Mittag behält sein Abendessen; feste Kochpause schlägt Fixiertes
+const lw = P.planWeek({ ...base, meals: { lunch: true, dinner: true }, budget: 70 }, D.RECIPES, [], new Date('2026-11-23T12:00')); // [Mo M, Mo A, Di M, …]
+lw[1] = { ...lw[1], rid: 'linseneintopf', pinned: true }; lw[2] = { ...lw[2], rid: 'linseneintopf', leftover: true, pinned: true };
+for (let k = 0; k < 5; k++) {
+  const lw2 = P.planWeek({ ...base, meals: { lunch: true, dinner: true }, budget: 70 }, D.RECIPES, lw, new Date('2026-11-23T12:00'));
+  assert.deepStrictEqual([lw2[1].rid, lw2[2].rid, !!lw2[2].leftover], ['linseneintopf', 'linseneintopf', true]);
+}
+const fr = P.planWeek(base, D.RECIPES, [], new Date('2026-11-23T12:00'));
+fr[4] = { ...fr[4], rid: 'lasagne', pinned: true }; // Freitag
+const fr2 = P.planWeek({ ...base, skipDays: [5] }, D.RECIPES, fr, new Date('2026-11-23T12:00'));
+assert.deepStrictEqual([fr2[4].rid, fr2[4].skip], [null, 'self']);
+console.log('ok Reste-Paar & Kochpause vor Fixiertem');

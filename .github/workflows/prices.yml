@@ -15,7 +15,7 @@ jobs:
           node-version: 22
       - run: node scripts/prices.js # Regalpreise (heisse-preise.io) + Flugblatt-Aktionen (marktguru.at)
       - run: node test.js
-      - run: npm i --no-save playwright@1.49.1 && npx playwright install --with-deps chromium
+      - run: npm i --no-save playwright@1.49.1 axe-core@4.10.2 && npx playwright install --with-deps chromium
       - run: node tests/e2e.js
       - name: Commit, falls sich Preise geändert haben
         run: |
