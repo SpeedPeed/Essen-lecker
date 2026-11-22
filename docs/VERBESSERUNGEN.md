@@ -45,3 +45,4 @@ Leitlinien: kein Framework, kein Build, alles lokal; jede Logikänderung mit Tes
 | 25 | Plan | Wochenplan teilen (Text) und Druckansicht für Plan und Einkaufsliste | Familie informieren, Liste am Kühlschrank | ✅ umgesetzt |
 | 26 | Tempo | Packungen je Markt gemerkt, Rezept-Index für Wochenpreise, Suche wartet kurz aufs Tippen | 6× gedrosselte CPU: Tausch-Fenster 519 → 364 ms, Suche 778 → 231 ms, Neu planen 588 → 447 ms | ✅ umgesetzt |
 | 27 | Bedienung | Zurück-Geste/-Taste: schließt Fenster, verlässt Kochmodus und Rezept; Direktlinks `#list`, `#discover`, App-Verknüpfungen | Android-Zurück schloss bisher die ganze App | ✅ umgesetzt |
+| 28 | Plan | „Neue Woche“, sobald nur noch heute/morgen geplant ist: heutige Gerichte bleiben, neue Einkaufsliste, Rückgängig möglich | Bisher erst nach Ablauf aller Tage automatisch | ✅ umgesetzt |

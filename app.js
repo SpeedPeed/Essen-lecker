@@ -150,6 +150,7 @@ function vPlan() {
       ${left < 0 ? `<button class="btn small" style="margin-top:8px" data-a="rebalance">Automatisch ausgleichen</button>` : ''}</div></div></div>
     ${vOffers()}
     ${poolHint()}
+    ${S.plan.length && all.filter(d => d >= today).length <= 2 ? `<div class="card sand row"><span class="grow"><b>${all.some(d => d >= today) ? `Nur noch ${all.filter(d => d >= today).length === 1 ? 'heute' : 'heute und morgen'} geplant.` : 'Diese Woche ist vorbei.'}</b><br><span class="muted">Ab heute 7 Tage neu planen – heutige Gerichte bleiben.</span></span><button class="btn small" data-a="newweek">Neue Woche</button></div>` : ''}
     ${past.length ? `<button class="btn small ghost pastbtn" data-a="togglepast" aria-expanded="${!!ui.showPast}">${ui.showPast ? 'Vergangene Tage ausblenden' : `${past.length} vergangene${past.length > 1 ? '' : 'r'} Tag${past.length > 1 ? 'e' : ''} anzeigen`}</button>` : ''}
     <div class="days">${days.map(d => `<section><div class="daylabel${d === today ? ' now' : ''}">${relDay(d)}${dayLabel(d)}</div>${S.plan.map((s, i) => s.date !== d ? '' : slotCard(s, i)).join('')}</section>`).join('')}</div>
     <div class="row noprint" style="margin-top:16px"><button class="btn small ghost grow" data-a="shareplan">↗ Wochenplan teilen</button><button class="btn small ghost grow" data-a="print">🖨 Drucken</button></div>`;
@@ -492,7 +493,7 @@ function toast(msg, action, label) {
 // Für die Planung zählen auch Favoriten (öfter) – sie liegen außerhalb des Profils.
 const PP = () => ({ ...S.profile, favs: S.favs });
 function regenerate() { S.plan = P.planWeek(PP(), recipes(), S.plan); save(); }
-const keepUndo = () => { ui.undo = structuredClone(S.plan); };
+const keepUndo = () => { ui.undo = { plan: structuredClone(S.plan), checked: { ...S.checked } }; };
 // Selbst gewähltes Gericht: fixieren (bleibt beim Neuplanen), bei Budgetüberschreitung Ausgleich anbieten.
 function setSlot(i, rid, msg) {
   S.plan[i] = { date: S.plan[i].date, meal: S.plan[i].meal, rid, pinned: true }; ui.sheet = null; save();
@@ -564,7 +565,14 @@ const A = {
   },
   go: d => { ui.view = d.id; ui.sheet = null; ui.form = null; },
   regen: () => { keepUndo(); regenerate(); const n = S.plan.filter(s => s.pinned).length; toast(`Neuer Wochenplan${n ? ` · ${n} fixierte${n > 1 ? '' : 's'} behalten` : ''}`, 'undo', 'Rückgängig'); },
-  undo: () => { if (!ui.undo) return; S.plan = ui.undo; ui.undo = null; save(); document.getElementById('toast').classList.remove('show'); toast('Rückgängig gemacht'); },
+  undo: () => { if (!ui.undo) return; ({ plan: S.plan, checked: S.checked } = ui.undo); ui.undo = null; save(); document.getElementById('toast').classList.remove('show'); toast('Rückgängig gemacht'); },
+  newweek: () => {
+    // Heutige Gerichte bleiben (sind meist schon eingekauft), ab morgen wird neu geplant; neue Woche = neue Liste.
+    const today = P.isoDay(); keepUndo();
+    const tmp = S.plan.map(s => s.date === today && s.rid && !s.pinned ? { ...s, pinned: true, tmpPin: true } : s);
+    S.plan = P.planWeek(PP(), recipes(), tmp).map(({ tmpPin, ...s }) => tmp.some(o => o.tmpPin && o.date === s.date && o.meal === s.meal) ? (({ pinned, ...x }) => x)(s) : s);
+    S.checked = {}; save(); toast('Neue Woche geplant – Einkaufsliste ist neu', 'undo', 'Rückgängig');
+  },
   rebalance: () => {
     const before = cost().total; keepUndo(); S.plan = P.rebalance(S.plan, -1, PP(), recipes()); save();
     const after = cost().total; toast(after <= S.profile.budget ? `Ausgeglichen: ${eur(before - after)} gespart` : 'Budget sehr knapp – günstigste Kombination gewählt', 'undo', 'Rückgängig');
