@@ -35,3 +35,13 @@ assert.ok(!P.weekCost(['ofenerdaepfel'], D.RECIPES, { ...base, adults: 1 }).item
 P.setPrices(require('./prices.json'));
 const real = P.generate({ ...base, store: 'billa' }, D.RECIPES);
 console.log('ok echte Preise BILLA', P.weekCost(real.map(s => s.rid), D.RECIPES, { ...base, store: 'billa' }).total.toFixed(2) + ' €');
+
+// Keine Doppelten: weder knappes Budget noch Mittag+Abend dürfen Rezepte wiederholen
+for (const pr of [{ ...base, budget: 20 }, { ...base, meals: { lunch: true, dinner: true }, budget: 60 }, { ...base, store: 'billa', meals: { lunch: true, dinner: true }, budget: 300 }]) {
+  for (let k = 0; k < 5; k++) { const ids = P.generate(pr, D.RECIPES).map(s => s.rid); assert.strictEqual(new Set(ids).size, ids.length, 'Doppelt: ' + ids); }
+}
+// Kleiner Pool (vegan + streng Soja/Gluten): Wiederholung erlaubt, aber gleichmäßig verteilt
+const small = { ...base, diet: 'vegan', allergies: ['soy', 'gluten'], allergyMode: 'strict', meals: { lunch: true, dinner: true } };
+const sp = P.generate(small, D.RECIPES).map(s => s.rid), max = Math.ceil(14 / D.RECIPES.filter(r => P.eligible(r, small)).length);
+assert.ok(Object.values(sp.reduce((m, id) => (m[id] = (m[id] || 0) + 1, m), {})).every(n => n <= max));
+console.log('ok keine Doppelten');

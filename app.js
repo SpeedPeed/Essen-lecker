@@ -155,7 +155,7 @@ function vSwapSheet() {
   const alts = recipes().filter(r => P.eligible(r, p) && r.id !== slot.rid).map(r => {
     const t = P.weekCost(rids.map((x, j) => j === i ? r.id : x), recipes(), p).total;
     return { r, t };
-  }).sort((a, b) => a.t - b.t);
+  }).sort((a, b) => rids.includes(a.r.id) - rids.includes(b.r.id) || a.t - b.t);
   const cur = cost().total;
   return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-label="Gericht tauschen" data-stop>
     <div class="row between"><h2>Gericht tauschen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
@@ -163,7 +163,7 @@ function vSwapSheet() {
     ${slot.rid ? `<button class="alt" data-a="pick" data-id=""><div class="photo" style="background:var(--sand)">🛋️</div><div class="grow"><b>Freier Abend / Reste-Tag</b><div class="meta">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)}</div></div></button>` : ''}
     ${alts.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
       return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b>
-      <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}</div></div></button>`; }).join('')}
+      <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}${rids.includes(r.id) ? '<span>· schon in dieser Woche</span>' : ''}</div></div></button>`; }).join('')}
   </div></div>`;
 }
 
@@ -463,6 +463,7 @@ const getJSON = url => fetch(url).then(r => r.ok ? r.json() : null).catch(() => 
 Promise.all([getJSON('prices.json'), getJSON('img/credits.json')]).then(([pr, cr]) => {
   if (pr) P.setPrices(pr);
   CREDITS = cr || {};
-  if (S.onboarded && !S.plan.length) regenerate();
+  // planVersion 2: alte Pläne mit doppelten Rezepten einmalig neu erstellen
+  if (S.onboarded && (!S.plan.length || S.planVersion !== 2)) { regenerate(); S.planVersion = 2; save(); }
   render();
 });

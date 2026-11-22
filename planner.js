@@ -89,6 +89,8 @@
     const base = locked || slotsFor(p, start);
     const pool = recipes.filter(r => eligible(r, p));
     if (!pool.length) return base.map(s => ({ ...s, rid: s.locked ? s.rid : null }));
+    // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
+    const maxUses = Math.ceil(base.length / pool.length);
     let best = null;
     for (let iter = 0; iter < 60; iter++) {
       const costW = 0.5 + (iter / 60) * 4;
@@ -101,6 +103,7 @@
         let pick = null, pickScore = -Infinity;
         for (const r of pool) {
           const uses = cur.filter(x => x === r.id).length;
+          if (uses >= maxUses) continue;
           const marginal = weekCost([...cur, r.id], recipes, p).total - curCost;
           const synergy = Object.keys(r.ing).filter(id => open.includes(id)).length;
           const s = prefScore(r, p) + synergy * 1.5 - marginal * costW - uses * 10 - (plan.some(o => o.date === slot.date && o.rid === r.id) ? 50 : 0)
