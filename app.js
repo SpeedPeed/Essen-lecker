@@ -141,7 +141,7 @@ const WD = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'
 const dayLabel = iso => { const d = new Date(iso + 'T12:00'); return `${WD[d.getDay()]}, ${d.getDate()}.${d.getMonth() + 1}.`; };
 let CREDITS = {};
 const photo = (r, cls = '') => `<div class="photo ${cls}" style="background:linear-gradient(135deg,hsl(${r.hue ?? 30} 70% 88%),hsl(${r.hue ?? 30} 55% 72%))" aria-hidden="true">${CREDITS[r.id] ? `<img src="img/${r.id}.jpg" alt="" loading="lazy">` : esc(r.emoji || '🍽️')}</div>`;
-const credit = id => { const c = CREDITS[id]; return c ? `<p class="muted" style="font-size:12px;margin-top:-8px">Foto: <a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title)}</a> von ${esc(c.creator || 'unbekannt')}, ${c.licenseUrl ? `<a href="${esc(c.licenseUrl)}" target="_blank" rel="noopener">${esc(c.license)}</a>` : esc(c.license)}</p>` : ''; };
+const credit = id => { const c = CREDITS[id]; return c ? `<p class="muted" style="font-size:0.75rem;margin-top:-8px">Foto: <a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title)}</a> von ${esc(c.creator || 'unbekannt')}, ${c.licenseUrl ? `<a href="${esc(c.licenseUrl)}" target="_blank" rel="noopener">${esc(c.license)}</a>` : esc(c.license)}</p>` : ''; };
 const cost = () => P.weekCost(S.plan.map(s => s.rid), recipes(), S.profile);
 const itemCount = () => cost().items.filter(i => !i.pantry).length + S.extras.length;
 
@@ -200,8 +200,8 @@ function vOffers() {
       return `<button class="card offer-card" data-a="offer" data-id="${o.id}"><span class="tag offer">−${Math.round((1 - o.price / o.was) * 100)} %</span>
         <b>${esc(o.ing.name)}</b><div class="muted">${esc(o.name)}</div>
         <div><b class="price">${eur(o.price)}</b> <s class="muted">${eur(o.was)}</s></div>
-        ${o.offer ? `<div class="muted" style="font-size:12px">${esc(offerWhen(o.offer))}</div>` : ''}
-        <div class="muted" style="font-size:12px">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : uses.length ? `${uses.length} Rezept${uses.length > 1 ? 'e' : ''} passen` : 'in keinem Rezept'}</div></button>`;
+        ${o.offer ? `<div class="muted" style="font-size:0.75rem">${esc(offerWhen(o.offer))}</div>` : ''}
+        <div class="muted" style="font-size:0.75rem">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : uses.length ? `${uses.length} Rezept${uses.length > 1 ? 'e' : ''} passen` : 'in keinem Rezept'}</div></button>`;
     }).join('')}</div>`;
 }
 const fmtServ = n => (Math.round(n * 10) / 10).toLocaleString('de-AT');
@@ -269,7 +269,7 @@ function vSwapSheet() {
     <div class="card sand" style="padding:12px"><b>Diesen ${slot.meal === 'lunch' ? 'Mittag' : 'Abend'} aussetzen</b>
       <input id="selfnote" placeholder="Was kochst du? (optional, z. B. Omas Gulasch)" maxlength="60" value="${esc(slot.skip === 'self' ? slot.note || '' : '')}" style="margin:8px 0">
       <div class="row"><button class="btn small grow" data-a="skip" data-id="self">🧑‍🍳 Ich koche selbst</button><button class="btn small ghost grow" data-a="skip" data-id="free">🛋️ Frei / Reste</button></div>
-      ${slot.rid ? `<div class="muted" style="margin-top:6px;font-size:13px">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''}</div>
+      ${slot.rid ? `<div class="muted" style="margin-top:6px;font-size:0.8125rem">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''}</div>
     ${(() => { const pd = prevDinner(slot); return pd && !(slot.leftover && slot.rid === pd.id) ? `<button class="alt" data-a="leftover">${photo(pd)}<div class="grow"><b>🥡 Reste vom Vorabend</b><div class="meta"><span>${esc(pd.title)} – am Abend davor doppelt kochen</span><span class="price">${eur(P.weekCost(rids.map((x, j) => j === i ? pd.id : x), recipes(), p).total - cur)} Woche</span></div></div></button>` : ''; })()}
     <h3 style="margin-top:16px">Anderes Gericht</h3>
     <input type="search" placeholder="Gericht oder Zutat suchen …" value="${esc(ui.sheet.q || '')}" data-i="sq" aria-label="Gericht suchen" style="margin-bottom:10px">
@@ -316,7 +316,7 @@ function vRecipe() {
   return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="${ui.back}" aria-label="Zurück">←</button>
     <button class="back" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${fav}">${fav ? '♥' : '♡'}</button></div>
     ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span>${offerTag(r)}<h1 style="margin-top:8px">${esc(r.title)}</h1>
-    <div class="meta" style="font-size:14px;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p) * sv / P.servings(p))}</span><span>${r.m[0]} kcal / Portion</span></div>
+    <div class="meta" style="font-size:0.875rem;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p) * sv / P.servings(p))}</span><span>${r.m[0]} kcal / Portion</span></div>
     ${p.blocked.includes(r.id) ? `<div class="card sand">🚫 Du hast dieses Gericht ausgeschlossen – es wird nicht mehr vorgeschlagen.</div>` : P.eligible(r, p) ? '' : `<div class="card sand over">Passt nicht zu deinem Profil (Ernährung, Allergie, Abneigung oder Küchengerät).</div>`}
     ${allergenLine(r)}
     <div class="card"><h2 class="h3">Pro Portion</h2>${donut(r.m)}</div>
@@ -342,7 +342,7 @@ function vCook() {
     <button class="btn small cookbtn" data-a="cooking" aria-expanded="${!!ui.cookIng}">🧺 Zutaten</button><button class="back cookbtn" data-a="exitcook" aria-label="Schließen">✕</button></div>
     ${ui.cookIng ? `<div class="cooking" tabindex="0" role="region" aria-label="Zutaten">${ingRows(r, recipeServ())}</div>` : ''}
     <div class="stepbody"><div class="muted" style="color:var(--gold)">Schritt ${i + 1} von ${r.steps.length}</div><p>${esc(s.x)}</p><div>${timer}</div>
-    ${last && r.leftovers ? `<p class="muted" style="color:#e9d8bf;font-size:15px;font-family:var(--sans)">🥡 Reste in einer Dose abkühlen lassen und in den Kühlschrank stellen – aufwärmen bis alles dampfend heiß ist.</p>` : ''}</div>
+    ${last && r.leftovers ? `<p class="muted" style="color:#e9d8bf;font-size:0.9375rem;font-family:var(--sans)">🥡 Reste in einer Dose abkühlen lassen und in den Kühlschrank stellen – aufwärmen bis alles dampfend heiß ist.</p>` : ''}</div>
     <div class="dots">${r.steps.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>
     <div class="row"><button class="btn ghost" data-a="cstep" data-d="-1" ${i ? '' : 'disabled'}>Zurück</button><button class="btn" data-a="${last ? 'exitcook' : 'cstep'}" data-d="1">${last ? 'Fertig – Mahlzeit!' : 'Weiter'}</button></div></div>`;
 }
