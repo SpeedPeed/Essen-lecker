@@ -120,18 +120,34 @@ function ring(spent, budget) {
 
 function vPlan() {
   const p = S.profile, st = P.store(p), c = cost(), meals = S.plan.filter(s => s.rid).length, left = p.budget - c.total;
-  const days = [...new Set(S.plan.map(s => s.date))];
+  const days = [...new Set(S.plan.map(s => s.date))], saved = c.items.reduce((t, i) => t + i.saved, 0);
   return `<div class="row between"><h1>Deine Woche</h1><button class="btn small ghost" data-a="regen">↻ Neu planen</button></div>
     <div class="card banner"><span class="badge" style="background:${st.color}">${st.name}</span>
       <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${priceNote(st)}</div></div>
       <button class="btn small" data-a="go" data-id="list">Liste öffnen</button></div>
     <div class="card row">${ring(c.total, p.budget)}<div class="grow">
       <div class="muted">${meals} Mahlzeiten · ${fmtServ(P.servings(p))} Portionen</div>
-      <h2 class="${left < 0 ? 'over' : 'price'}" style="margin:4px 0">${left < 0 ? `${eur(-left, 0)} über Budget` : `${eur(left, 0)} übrig`}</h2>
+      <h2 class="${left < 0 ? 'over' : 'price'}" style="margin:4px 0">${left < 0 ? `${eur(-left, left > -1 ? 2 : 0)} über Budget` : `${eur(left, 0)} übrig`}</h2>
       <div class="muted">Budget ${eur(p.budget, 0)} / Woche</div>
+      ${saved ? `<div class="offer-text">🏷 Aktionen sparen dir ${eur(saved)}</div>` : ''}
       ${left < 0 ? `<button class="btn small" style="margin-top:8px" data-a="rebalance">Automatisch ausgleichen</button>` : ''}</div></div>
+    ${vOffers()}
     ${!S.plan.length ? `<div class="card"><p>Keine passenden Rezepte für deine Filter gefunden. Passe dein Profil an.</p></div>` : ''}
     ${days.map(d => `<div class="daylabel">${dayLabel(d)}</div>${S.plan.map((s, i) => s.date !== d ? '' : slotCard(s, i)).join('')}`).join('')}`;
+}
+const offerTag = r => P.offersIn(r, S.profile).length ? '<span class="tag offer">🏷 Aktion</span>' : '';
+function vOffers() {
+  const p = S.profile, st = P.store(p), list = P.offers(p), rs = recipes().filter(r => P.eligible(r, p)), planned = S.plan.map(s => s.rid);
+  if (!P.realStore(p)) return '';
+  if (!list.length) return `<p class="muted" style="margin:4px">${P.realStore(p).asOf < new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10) ? `Für ${st.name} gibt es keine tagesaktuellen Daten – Angebote derzeit nur bei BILLA.` : 'Gerade keine Aktionen auf deine Zutaten.'}</p>`;
+  return `<div class="row between" style="margin:16px 4px 6px"><h3 style="margin:0">Angebote diese Woche</h3><span class="muted">${st.name}</span></div>
+    <div class="offers">${list.sort((a, b) => b.was / b.price - a.was / a.price).map(o => {
+      const uses = rs.filter(r => r.ing[o.id]), inPlan = uses.filter(r => planned.includes(r.id));
+      return `<button class="card offer-card" data-a="offer" data-id="${o.id}"><span class="tag offer">−${Math.round((1 - o.price / o.was) * 100)} %</span>
+        <b>${esc(o.ing.name)}</b><div class="muted">${esc(o.name)}</div>
+        <div><b class="price">${eur(o.price)}</b> <s class="muted">${eur(o.was)}</s></div>
+        <div class="muted" style="font-size:12px">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : uses.length ? `${uses.length} Rezept${uses.length > 1 ? 'e' : ''} passen` : 'in keinem Rezept'}</div></button>`;
+    }).join('')}</div>`;
 }
 const fmtServ = n => (Math.round(n * 10) / 10).toLocaleString('de-AT');
 const MEAL = { lunch: 'Mittag', dinner: 'Abend' };
@@ -144,7 +160,7 @@ function slotCard(s, i) {
   const r = R(s.rid);
   if (!r) return '';
   return `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left">
-    <span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${esc(r.cat)}</span><h3>${esc(r.title)}</h3>
+    <span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${esc(r.cat)}</span>${offerTag(r)}<h3>${esc(r.title)}</h3>
     <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(P.servings(S.profile))}</span><span class="price">${eur(P.shareCost(r, S.profile), 0)}</span></div></div></button>
     <button class="swap" data-a="swap" data-i="${i}" aria-label="Gericht tauschen">⇄</button></div>`;
 }
@@ -162,7 +178,7 @@ function vSwapSheet() {
     <p class="muted">${dayLabel(slot.date)} · sortiert nach Wochenpreis. Aktuell ${eur(cur)}.</p>
     ${slot.rid ? `<button class="alt" data-a="pick" data-id=""><div class="photo" style="background:var(--sand)">🛋️</div><div class="grow"><b>Freier Abend / Reste-Tag</b><div class="meta">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)}</div></div></button>` : ''}
     ${alts.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
-      return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b>
+      return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b> ${offerTag(r)}
       <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}${rids.includes(r.id) ? '<span>· schon in dieser Woche</span>' : ''}</div></div></button>`; }).join('')}
   </div></div>`;
 }
@@ -188,12 +204,12 @@ function vRecipe() {
   const fav = S.favs.includes(r.id);
   return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="${ui.back}" aria-label="Zurück">←</button>
     <button class="back" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${fav}">${fav ? '♥' : '♡'}</button></div>
-    ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span><h1 style="margin-top:8px">${esc(r.title)}</h1>
+    ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span>${offerTag(r)}<h1 style="margin-top:8px">${esc(r.title)}</h1>
     <div class="meta" style="font-size:14px;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p))}</span></div>
     ${P.eligible(r, p) ? '' : `<div class="card sand over">Passt nicht zu deinem Profil (Ernährung, Allergie, Abneigung oder Küchengerät).</div>`}
     <div class="card"><h3>Pro Portion</h3>${donut(r.m)}</div>
     <div class="card"><h3>Zutaten für ${fmtServ(sv)} Portionen</h3>${Object.entries(r.ing).map(([id, a]) => { const g = D.INGREDIENTS[id];
-      return `<div class="ing"><span>${esc(g.name)}</span><span class="muted">${fmtQty(a * sv, g.unit)}</span></div>`; }).join('')}</div>
+      return `<div class="ing"><span>${esc(g.name)}${P.packOf(id, p).was && !g.flags.includes('pantry') ? ' <span class="tag offer">Aktion</span>' : ''}</span><span class="muted">${fmtQty(a * sv, g.unit)}</span></div>`; }).join('')}</div>
     ${r.leftovers ? `<div class="card sand">🥡 <b>Gut für Reste:</b> ${p.fridge ? 'Hält 2–3 Tage im Kühlschrank. Aufwärmen mit einem Schuss Wasser bei mittlerer Hitze.' : 'Am besten frisch essen.'}${p.freezer ? ' Lässt sich portionsweise einfrieren.' : ''}</div>` : ''}
     <div class="card"><h3>Zubereitung</h3><ol style="padding-left:20px;margin:0">${r.steps.map(s => `<li style="margin-bottom:8px">${esc(s.x)}${s.t ? ` <span class="tag">⏱ ${fmtTime(s.t)}</span>` : ''}</li>`).join('')}</ol></div>
     <div class="footer-cta"><button class="btn" data-a="cook">Loslegen</button></div>`;
@@ -230,7 +246,7 @@ function vList() {
     <h1>Einkaufsliste</h1><div class="row between muted"><span>${done}/${all.length} erledigt</span><span>${eur(cost().total)}</span></div>
     <div class="progress" style="margin:8px 0 16px"><i style="width:${all.length ? done / all.length * 100 : 0}%;background:var(--sage)"></i></div>
     <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Liste kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button></div>
-    ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}`)).join('')}`).join('')}
+    ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.saved ? ` · <span class="offer-text">🏷 Aktion statt ${eur(i.cost + i.saved)}</span>` : ''}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}`)).join('')}`).join('')}
     <div class="aisle-title">Eigene Einkäufe</div>
     ${S.extras.map((e, n) => `<div class="row">${row('x:' + e, e)}<button class="back" data-a="rmextra" data-i="${n}" aria-label="${esc(e)} entfernen">✕</button></div>`).join('')}
     <form class="row" data-f="extra" style="margin-top:12px"><input name="x" placeholder="z. B. Kaffee, Klopapier" aria-label="Artikel" maxlength="80"><button class="btn small">+ Hinzufügen</button></form>
@@ -247,7 +263,7 @@ function discoverList() {
   const q = ui.q.trim().toLowerCase(), p = S.profile;
   const rs = recipes().filter(r => (ui.filter === 'alle' || (ui.filter === 'fav' && S.favs.includes(r.id)) || (ui.filter === 'passt' && P.eligible(r, p)) || (ui.filter === 'eigene' && r.custom))
     && (!q || (r.title + ' ' + r.cat + ' ' + Object.keys(r.ing).map(i => D.INGREDIENTS[i].name).join(' ')).toLowerCase().includes(q)));
-  return rs.length ? rs.map(r => `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left"><span class="tag">${esc(r.cat)}</span>
+  return rs.length ? rs.map(r => `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left"><span class="tag">${esc(r.cat)}</span>${offerTag(r)}
     <h3>${esc(r.title)}</h3><div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span>${r.m[0]} kcal</span><span class="price">${eur(P.shareCost(r, p))}</span></div></div></button>
     <button class="swap" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${S.favs.includes(r.id)}">${S.favs.includes(r.id) ? '♥' : '♡'}</button></div>`).join('') : '<p class="muted">Keine Rezepte gefunden.</p>';
 }
@@ -407,6 +423,7 @@ const A = {
     return false;
   },
   filter: d => { ui.filter = d.id; },
+  offer: d => { ui.q = D.INGREDIENTS[d.id].name.replace(/ \(.*\)/, ''); ui.filter = 'passt'; ui.view = 'discover'; return 'top'; },
   newrecipe: () => { ui.form = { title: '', emoji: '🍽️', time: 30, tag: 'schnell', ing: [{ id: 'zwiebel', amt: 50 }], steps: '', m: [500, 20, 60, 15] }; },
   cancelform: () => { ui.form = null; },
   addrow: () => { readForm(document.querySelector('[data-f="recipe"]')); ui.form.ing.push({ id: 'erdaepfel', amt: 100 }); },

@@ -21,7 +21,8 @@
      "name": "Clever Karotten",
      "price": 0.99,
      "qty": 1000,
-     "date": "2026-11-21"
+     "date": "2026-11-21",
+     "was": 1.49
     },
     "paradeiser": {
      "name": "Clever Tomaten",
@@ -33,7 +34,8 @@
      "name": "Karfiol",
      "price": 1.79,
      "qty": 1,
-     "date": "2026-11-19"
+     "date": "2026-11-19",
+     "was": 2.29
     },
     "brokkoli": {
      "name": "BILLA Brokkoli",
@@ -45,13 +47,15 @@
      "name": "Da komm ich her! Weißkraut",
      "price": 0.99,
      "qty": 1000,
-     "date": "2026-11-10"
+     "date": "2026-11-10",
+     "was": 1.13
     },
     "salat": {
      "name": "Häuptelsalat",
      "price": 0.99,
      "qty": 1,
-     "date": "2026-11-19"
+     "date": "2026-11-19",
+     "was": 1.39
     },
     "champignons": {
      "name": "Clever Champignons",
@@ -171,7 +175,8 @@
      "name": "Clever Faschiertes gemischt",
      "price": 3.99,
      "qty": 500,
-     "date": "2026-11-19"
+     "date": "2026-11-19",
+     "was": 4.99
     },
     "rindsgulasch": {
      "name": "Clever Rindsgulasch",

@@ -27,6 +27,7 @@
     const f = flagsOf(r);
     let s = r.tags.filter(t => p.styles.includes(t)).length * 2;
     if (p.allergyMode !== 'strict') s -= p.allergies.filter(a => f.has(a)).length * 4; // Soft-Filter
+    s += offersIn(r, p).length * 1.5; // Supermarkt-Aktionen bevorzugen
     return s;
   }
 
@@ -40,8 +41,12 @@
     const metric = ing.unit === 'g' || ing.unit === 'ml';
     // Bei Kopf/Bund/Zehe usw. gilt 1 echtes Stück = 1 unserer Packungen.
     const packQty = metric || ing.unit === 'Stk' ? real.qty : ing.packQty;
-    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : ing.pack), product: real.name };
+    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : ing.pack), product: real.name, was: real.was || null };
   }
+
+  // Zutaten eines Rezepts, die im gewählten Markt gerade in Aktion sind.
+  const offersIn = (r, p) => Object.keys(r.ing).filter(id => !D.INGREDIENTS[id].flags.includes('pantry') && packOf(id, p).was);
+  const offers = p => Object.entries((realStore(p) || { items: {} }).items).filter(([, x]) => x.was).map(([id, x]) => ({ id, ...x, ing: D.INGREDIENTS[id] }));
 
   // Whole-Pack Costing: Wochenmenge je Zutat → ganze Packungen. Basisvorrat wird nicht gerechnet.
   function weekCost(rids, recipes, p) {
@@ -58,7 +63,7 @@
       const packs = pantry ? 0 : Math.max(1, Math.ceil(qty / pk.packQty - 1e-9));
       const cost = packs * pk.price;
       total += cost;
-      return { id, ing, qty, packs, cost, pantry, leftover: packs * pk.packQty - qty, pack: pk.pack, product: pk.product };
+      return { id, ing, qty, packs, cost, pantry, leftover: packs * pk.packQty - qty, pack: pk.pack, product: pk.product, saved: pk.was && !pantry ? packs * (pk.was - pk.price) : 0 };
     });
     return { total, items };
   }
@@ -129,6 +134,6 @@
     return generate(p, recipes, null, locked);
   }
 
-  const API = { setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  const API = { offers, offersIn, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);

@@ -45,3 +45,15 @@ const small = { ...base, diet: 'vegan', allergies: ['soy', 'gluten'], allergyMod
 const sp = P.generate(small, D.RECIPES).map(s => s.rid), max = Math.ceil(14 / D.RECIPES.filter(r => P.eligible(r, small)).length);
 assert.ok(Object.values(sp.reduce((m, id) => (m[id] = (m[id] || 0) + 1, m), {})).every(n => n <= max));
 console.log('ok keine Doppelten');
+
+// Aktionen: erkannt, gespart, bevorzugt
+const { offerWas } = require('./scripts/prices.js');
+assert.strictEqual(offerWas({ priceHistory: [{ date: '2026-11-19', price: 3.99 }, { date: '2026-10-01', price: 4.99 }] }, '2026-11-22'), 4.99);
+assert.strictEqual(offerWas({ priceHistory: [{ date: '2026-10-19', price: 3.99 }, { date: '2026-10-01', price: 4.99 }] }, '2026-11-22'), null, 'zu alt');
+assert.strictEqual(offerWas({ priceHistory: [{ date: '2026-11-19', price: 4.99 }, { date: '2026-10-01', price: 3.99 }] }, '2026-11-22'), null, 'teurer');
+P.setPrices({ stores: { billa: { asOf: '2026-11-22', items: { faschiertes: { name: 'Clever Faschiertes', price: 3.99, qty: 500, was: 4.99 } } } } });
+const bp = { ...base, store: 'billa', adults: 4 };
+const fi = P.weekCost(['bolognese'], D.RECIPES, bp).items.find(i => i.id === 'faschiertes');
+assert.ok(Math.abs(fi.saved - 1) < 1e-9 && P.offersIn(D.RECIPES.find(r => r.id === 'bolognese'), bp).length === 1);
+assert.ok(P.prefScore(D.RECIPES.find(r => r.id === 'bolognese'), bp) > P.prefScore(D.RECIPES.find(r => r.id === 'bolognese'), base));
+console.log('ok Aktionen');

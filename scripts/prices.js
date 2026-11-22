@@ -100,6 +100,12 @@ function pick(all, store, id) {
     .sort((a, b) => a.p.price / a.q - b.p.price / b.q || a.p.price - b.p.price)[0];
 }
 
+// Aktion = Preis in den letzten 14 Tagen um mind. 5 % gesunken (nur bei täglich aktuellen Daten sinnvoll).
+function offerWas(p, today) {
+  const [now, prev] = p.priceHistory, since = new Date(Date.parse(today) - 14 * 864e5).toISOString().slice(0, 10);
+  return prev && now.date >= since && now.price < prev.price * 0.95 ? prev.price : null;
+}
+
 async function main() {
   const all = process.argv[2] ? JSON.parse(fs.readFileSync(process.argv[2])) : await (await fetch(SRC)).json();
   const out = { source: 'heisse-preise.io', fetched: new Date().toISOString().slice(0, 10), stores: {} };
@@ -112,11 +118,13 @@ async function main() {
       const date = c.p.priceHistory[0].date;
       if (date > latest) latest = date;
       items[id] = { name: c.p.name, price: c.p.price, qty: c.q, date };
+      const was = store === 'billa' && offerWas(c.p, out.fetched);
+      if (was) items[id].was = was;
     }
     out.stores[store] = { asOf: store === 'billa' ? out.fetched : latest, items };
     console.error(store, Object.keys(items).length + '/' + Object.keys(RULES).length, 'Stand', out.stores[store].asOf);
   }
   fs.writeFileSync(__dirname + '/../prices.json', JSON.stringify(out, null, 1));
 }
-module.exports = { RULES, pick };
+module.exports = { RULES, pick, offerWas };
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });

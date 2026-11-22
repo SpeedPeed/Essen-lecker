@@ -75,6 +75,13 @@ a { color: inherit; }
 .price { font-weight: 700; color: var(--sage); }
 .over { color: var(--danger); }
 
+/* Angebote */
+.tag.offer { background: var(--gold); margin-left: 4px; }
+.offer-text { color: #8a5a00; font-weight: 600; font-size: 13px; }
+.offers { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; margin: 0 -16px; padding: 0 16px 4px; }
+.offer-card { flex: 0 0 170px; scroll-snap-align: start; text-align: left; display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.offer-card .tag.offer { margin: 0; align-self: flex-start; }
+
 /* Tabs */
 .tabs { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--line); display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
 .tabs button { flex: 1; max-width: 160px; padding: 10px 0 12px; font-size: 12px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 2px; }
