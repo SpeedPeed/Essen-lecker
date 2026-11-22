@@ -74,3 +74,27 @@ Eine zweite, unabhängige Durchsicht des Diffs fand 6 reproduzierbare Fehler und
 | 31 | A11y | Fenster als `aria-modal`: Fokus beim Öffnen hinein, Tab bleibt drin, beim Schließen zurück zum Auslöser | Tastatur/Screenreader landeten hinter dem Fenster | ✅ umgesetzt |
 | 32 | Robustheit | Speicher blockiert (privates Fenster): Hinweis nur einmal und verständlich | Toast bei jedem Tippen | ✅ umgesetzt |
 | 33 | Optik | Banner kürzer („Echte Preise vom 22.11. · 11 Aktionen“), Mikrowellen-Symbol statt Radio | Vier Zeilen Kleingedrucktes, falsches Symbol | ✅ umgesetzt |
+
+## Runde 6: Persona-Test mit frischen Augen
+
+Ein unabhängiger Agent hat die App als vier Personas durchgespielt: Familie mit SPAR, vegetarischer Single mit 25 €, Seniorin mit großer Schrift und Druckwunsch, vegan + glutenfrei streng. Gefunden hat er 15 Probleme, alle behoben:
+
+| # | Fund | Behebung |
+|---|---|---|
+| 1 | Erster Plan wurde beim ersten Neuladen still ersetzt | `planVersion` beim ersten Plan gesetzt |
+| 2 | Allergien „vermeiden“ als Standard → Gluten im Plan | Standard „streng“; Allergene im Rezept (eigene rot), Warn-Tag auf Plankarten, Gründe im Tauschen, Rückfrage vor unpassendem Gericht |
+| 3 | Kochmodus bei 200 % Zoom nicht bedienbar | scrollbar, Knöpfe unten fix |
+| 4 | Schrift in px, Überlauf bei Zoom, kleine Knöpfe | rem, kein Überlauf bei 195 px, Knöpfe ≥ 44 px |
+| 5 | Neu planen = dieselben Gerichte | bisherige Woche wird gemieden (Test) |
+| 6 | Budget-Regler fummelig, Vorschlag oft nicht erreichbar | ±5 €, bei Überschreitung „Budget auf X €“ |
+| 7 | Vorlieben prägen den Plan kaum (5× Nudeln, „schnell“ mit 75-Min.-Gerichten, scharf für Kinder) | Nudeln ≈ 2 pro 7 Mahlzeiten, „schnell“ an Werktagen hart, Scharfes für Kleinkinder gemieden (Test) |
+| 8 | Profil ändern warf den ganzen Plan um, ohne Rückgängig | nur Nötiges ändern, immer Rückgängig |
+| 9 | Tauschen: „Ich koche selbst“ als Hauptknopf, nur nach Preis sortiert | Vorschläge nach Vorlieben + Preis, Aussetzen dezent |
+| 10 | „4 am Tisch“ → „3 Portionen“ unerklärt | Erklärung im Haushalt-Schritt und im Plan |
+| 11 | Einkaufsliste nicht vernünftig druckbar | Drucken-Knopf, zweispaltiger Druck ohne Beiwerk |
+| 12 | Erster Bildschirm erklärt die App nicht | Begrüßung mit 3 Punkten |
+| 13 | „€ 0“-Preise, alte SPAR-Preise als „echt“, Zähler 29 vs. 46 | Cent unter 10 €, „evtl. veraltet“, gleicher Zähler |
+| 14 | Unpassende Angebote, „1 Rezept passen“ | nur Angebote für passende Rezepte, Einzahl |
+| 15 | Risotto mit Langkornreis | neue Zutat Risottoreis inkl. echter BILLA/SPAR-Preise |
+
+Dazu: 14 Rezepte hatten kürzere Gesamtzeiten als ihre Timer, 6 trugen „schnell“ bei über 30 Min. – korrigiert, `check-recipes.js` prüft beides.

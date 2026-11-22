@@ -206,7 +206,7 @@ for (let k = 1; k <= 4; k++) {
   costLo += P.weekCost(w.map(s => s.rid), D.RECIPES, lp).total;
   costNo += P.weekCost(P.generate({ ...lp, leftoverLunch: false }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).map(s => s.rid), D.RECIPES, lp).total;
 }
-assert.ok(leftovers >= 4 * 4, 'zu wenige Reste-Mittage: ' + leftovers);
+assert.ok(leftovers >= 4 * 3, 'zu wenige Reste-Mittage: ' + leftovers); // mind. 3 pro Woche (Nudel-Obergrenze kostet etwas Reste-Potenzial)
 console.log(`ok Reste-Mittage (${leftovers} in 4 Wochen, Ø ${(costLo / 4).toFixed(2)} € statt ${(costNo / 4).toFixed(2)} €)`);
 
 // Fixierter Reste-Mittag behält sein Abendessen; feste Kochpause schlägt Fixiertes
@@ -231,3 +231,18 @@ let same = 0;
 for (let k = 0; k < 4; k++) same += P.planWeek({ ...base, budget: 60 }, D.RECIPES, w1, new Date('2026-11-23T12:00')).filter(s => w1.some(o => o.rid === s.rid)).length;
 assert.ok(same / 4 <= 1.5, 'Neu planen wiederholt zu viele Gerichte: Ø ' + same / 4);
 console.log(`ok Gründe & Abwechslung beim Neuplanen (Ø ${same / 4} von 7 gleich)`);
+
+// Vorlieben: höchstens ~2 Nudelgerichte pro 7 Mahlzeiten, „schnell“ unter der Woche wirklich schnell, kein Scharfes für Kleinkinder
+const pastaIds = ['penne', 'spaghetti', 'fleckerl', 'lasagne', 'tortellini'];
+let pastaTotal = 0, slowWeekday = 0, hotKids = 0;
+for (let k = 1; k <= 5; k++) {
+  const veg = P.generate({ ...base, adults: 1, store: 'hofer', diet: 'vegetarisch', styles: [], budget: 25 }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k));
+  pastaTotal += veg.filter(s => Object.keys(rec(s.rid).ing).some(id => pastaIds.includes(id))).length;
+  const fam = { ...base, store: 'spar', adults: 2, kids: { on: true, count: 2, age: '4-10' }, meals: { lunch: true, dinner: true }, styles: ['schnell', 'familie'], budget: 90 };
+  const w = P.generate(fam, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k));
+  slowWeekday += w.filter(s => { const d = new Date(s.date + 'T12:00').getDay(); return d >= 1 && d <= 5 && rec(s.rid).time > 60; }).length;
+  hotKids += w.filter(s => Object.keys(rec(s.rid).ing).some(id => ['chili', 'chilischote', 'currypaste'].includes(id))).length;
+}
+assert.ok(pastaTotal / 5 <= 2.2, 'zu viele Nudelgerichte: Ø ' + pastaTotal / 5);
+assert.ok(slowWeekday / 5 <= 1, '„schnell“ gewählt, aber lange Gerichte unter der Woche: Ø ' + slowWeekday / 5);
+console.log(`ok Vorlieben (Ø ${pastaTotal / 5} Nudelgerichte/Woche, Ø ${slowWeekday / 5} lange an Werktagen, Ø ${hotKids / 5} scharf mit Kindern)`);

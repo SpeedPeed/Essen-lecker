@@ -9,6 +9,8 @@
   const isoDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const ZEHEN_PRO_KNOLLE = 10;
   const WIN = 60, BASICS = new Set(['zwiebel', 'knoblauch', 'karotten', 'zitrone', 'petersilie', 'schnittlauch']);
+  const PASTA = new Set(['penne', 'spaghetti', 'fleckerl', 'lasagne', 'tortellini']), HOT = new Set(['chili', 'chilischote', 'currypaste']);
+  const WEEKDAY = iso => { const d = new Date(iso + 'T12:00').getDay(); return d >= 1 && d <= 5; };
   const flagsOf = r => new Set(Object.keys(r.ing).flatMap(id => (D.INGREDIENTS[id] || { flags: [] }).flags));
 
   function dietOk(flags, diet) {
@@ -134,6 +136,12 @@
     const ings = new Map(recipes.map(r => [r.id, Object.entries(r.ing).filter(([id]) => D.INGREDIENTS[id] && !pantry(id)).map(([id, a]) => [id, a * sv, pack(id)])]));
     // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
     const maxUses = Math.ceil(base.length / pool.length);
+    // Vorlieben, die über Tags hinausgehen: Nudeln max. ~2 pro 7 Mahlzeiten, Scharfes nicht für kleine Kinder,
+    // „Schnelle Gerichte“ heißt unter der Woche wirklich schnell.
+    const isPasta = new Map(recipes.map(r => [r.id, Object.keys(r.ing).some(id => PASTA.has(id))]));
+    const pastaMax = Math.max(1, Math.round(base.length / 7 * 2));
+    const smallKids = p.kids && p.kids.on && p.kids.age !== '11-17', quick = p.styles.includes('schnell');
+    const hot = new Map(recipes.map(r => [r.id, Object.keys(r.ing).some(id => HOT.has(id))]));
     // Reste: Mittag = Abendessen vom Vortag (doppelt gekocht), wenn das Profil es will und das Rezept sich eignet.
     const lo = !!(p.leftoverLunch && p.meals.lunch && p.meals.dinner);
     const dayBefore = iso => { const d = new Date(iso + 'T12:00'); d.setDate(d.getDate() - 1); return isoDay(d); };
@@ -145,10 +153,10 @@
       const costW = iter < 60 ? 0.5 + (iter / 60) * 4 : 6 + (iter - 60) / 2;
       const plan = base.map(s => ({ ...s, rid: s.locked ? s.rid : null, leftover: s.locked ? s.leftover : undefined }));
       const need = {}, uses = {}, cats = {};
-      let sweets = 0;
+      let sweets = 0, pastas = 0;
       const add = r => {
         for (const [id, q] of ings.get(r.id)) need[id] = (need[id] || 0) + q;
-        uses[r.id] = (uses[r.id] || 0) + 1; cats[r.cat] = (cats[r.cat] || 0) + 1; if (r.sweet) sweets++;
+        uses[r.id] = (uses[r.id] || 0) + 1; cats[r.cat] = (cats[r.cat] || 0) + 1; if (r.sweet) sweets++; if (isPasta.get(r.id)) pastas++;
       };
       plan.forEach(s => s.rid && byId.has(s.rid) && add(byId.get(s.rid)));
       // Großer Pool: je Slot nur ein Fenster von WIN Kandidaten aus einer pro Durchlauf neu gemischten Reihenfolge.
@@ -184,7 +192,9 @@
           const sc = score.get(r.id) + synergy * 1.5 - marginal * costW - u * 10 - sameDay * 6
             - (plan.some(o => o.date === slot.date && o.rid === r.id) ? 50 : 0)
             - (r.sweet && sweets >= 1 ? 30 : 0) - (cats[r.cat] || 0) * 1.5 // Abwechslung: max. 1 Süßspeise, Kategorien mischen
-            + (slot.meal === 'lunch' && r.leftovers ? 1 : 0) + (f === 2 ? 6 : 0) + rand() * 2;
+            + (slot.meal === 'lunch' && r.leftovers ? 1 : 0) + (f === 2 ? 6 : 0) + rand() * 2
+            - (isPasta.get(r.id) ? Math.max(0, pastas + 1 - pastaMax) * 6 : 0) - (smallKids && hot.get(r.id) ? 3 : 0)
+            - (quick ? (r.time > 60 ? 7 : r.time > 40 ? 4 : 0) * (WEEKDAY(slot.date) ? 1 : 0.4) : 0);
           if (sc > pickScore) { pickScore = sc; pick = r; }
         }
         if (!pick) pick = pool[Math.floor(rand() * pool.length)];

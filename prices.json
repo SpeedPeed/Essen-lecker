@@ -221,6 +221,12 @@
      "qty": 500,
      "date": "2026-10-15"
     },
+    "risottoreis": {
+     "name": "BILLA Risotto Reis Arborio",
+     "price": 1.42,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
     "reis": {
      "name": "Clever Langkornreis",
      "price": 1.13,
@@ -916,6 +922,12 @@
      "name": "Recheis Goldmarke Fleckerl",
      "price": 2.37,
      "qty": 500,
+     "date": "2026-07-01"
+    },
+    "risottoreis": {
+     "name": "DESPAR Riso Arborio",
+     "price": 2.66,
+     "qty": 1000,
      "date": "2026-07-01"
     },
     "reis": {

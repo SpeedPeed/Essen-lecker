@@ -87,6 +87,7 @@
     spaghetti: ['Spaghetti', 'konserven', 500, 'g', 0.99, '500-g-Packung', 'gluten'],
     fleckerl: ['Fleckerl (Eiernudeln)', 'konserven', 500, 'g', 1.29, '500-g-Packung', 'gluten egg'],
     reis: ['Langkornreis', 'konserven', 1000, 'g', 1.79, '1-kg-Packung', ''],
+    risottoreis: ['Risottoreis', 'konserven', 500, 'g', 2.29, '500-g-Packung', ''],
     linsen: ['Linsen (braun)', 'konserven', 500, 'g', 1.69, '500-g-Packung', ''],
     roteLinsen: ['Rote Linsen', 'konserven', 500, 'g', 1.99, '500-g-Packung', ''],
     couscous: ['Couscous', 'konserven', 500, 'g', 1.49, '500-g-Packung', 'gluten'],
@@ -429,7 +430,7 @@
       ] },
     { id: 'risotto', title: 'Schwammerl-Risotto', emoji: '🍄', hue: 35, cat: 'Wohlfühlessen', time: 35,
       tags: ['gesund'], needs: ['kochfeld'], m: [520, 14, 80, 14],
-      ing: { reis: 90, champignons: 125, zwiebel: 40, parmesan: 15, bruehe: 0.5, butter: 10 },
+      ing: { risottoreis: 90, champignons: 125, zwiebel: 40, parmesan: 15, bruehe: 0.5, butter: 10 },
       steps: [
         { x: 'Zwiebel und Champignons in Butter anrösten, Reis kurz glasig mitrösten.', t: 5 },
         { x: 'Nach und nach mit heißer Suppe aufgießen und unter Rühren cremig garen.', t: 22 },
@@ -1371,7 +1372,7 @@
       ] },
     { id: 'risiebisi', title: 'Risi e bisi – Erbsenrisotto mit Parmesan', emoji: '🍚', hue: 100, cat: 'Vegetarisch', time: 30,
       tags: ['familie', 'gesund'], needs: ['kochfeld'], m: [530, 18, 75, 15],
-      ing: { reis: 80, erbsen: 100, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, petersilie: 0.1, salz: 0 },
+      ing: { risottoreis: 80, erbsen: 100, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, petersilie: 0.1, salz: 0 },
       steps: [
         { x: 'Zwiebel fein hacken und in der Hälfte der Butter glasig anschwitzen, Reis kurz mitrösten.', t: 3 },
         { x: 'Nach und nach mit heißer Suppe aus Suppenwürfel (ca. 300 ml pro Portion) aufgießen und unter Rühren cremig garen.', t: 18 },
@@ -1380,7 +1381,7 @@
       ] },
     { id: 'kuerbisrisotto', title: 'Kürbisrisotto mit Rosmarin & Parmesan', emoji: '🎃', hue: 28, cat: 'Wohlfühlessen', time: 40,
       tags: ['gesund', 'familie'], needs: ['kochfeld'], m: [515, 15, 77, 15],
-      ing: { reis: 80, kuerbis: 200, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, rosmarin: 0, salz: 0 },
+      ing: { risottoreis: 80, kuerbis: 200, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, rosmarin: 0, salz: 0 },
       steps: [
         { x: 'Kürbis entkernen und mit Schale klein würfeln, Zwiebel fein hacken.' },
         { x: 'Zwiebel in der Hälfte der Butter anschwitzen, Kürbis und Reis kurz mitrösten.', t: 4 },
@@ -1389,7 +1390,7 @@
       ] },
     { id: 'zitronenrisottogarnelen', title: 'Zitronenrisotto mit Garnelen', emoji: '🍤', hue: 50, cat: 'Eiweißreich', time: 35,
       tags: ['eiweiss', 'mediterran'], needs: ['kochfeld'], m: [490, 22, 66, 15],
-      ing: { reis: 80, garnelen: 100, zitrone: 0.5, zwiebel: 40, knoblauch: 1, butter: 10, petersilie: 0.1, bruehe: 0.5, olivenoel: 5, salz: 0 },
+      ing: { risottoreis: 80, garnelen: 100, zitrone: 0.5, zwiebel: 40, knoblauch: 1, butter: 10, petersilie: 0.1, bruehe: 0.5, olivenoel: 5, salz: 0 },
       steps: [
         { x: 'Garnelen auftauen lassen. Zwiebel fein hacken, in Butter glasig anschwitzen und den Reis kurz mitrösten.', t: 3 },
         { x: 'Nach und nach mit heißer Suppe aus Suppenwürfel aufgießen und unter Rühren cremig garen.', t: 20 },
@@ -1398,7 +1399,7 @@
       ] },
     { id: 'veganesrisotto', title: 'Veganes Zucchini-Paradeiser-Risotto', emoji: '🍅', hue: 8, cat: 'Vegan', time: 35,
       tags: ['gesund', 'mediterran', 'kalorienarm'], needs: ['kochfeld'], m: [470, 8, 71, 16],
-      ing: { reis: 80, zucchini: 0.5, paradeiser: 100, zwiebel: 40, knoblauch: 1, bruehe: 0.5, basilikum: 0.2, olivenoel: 15, salz: 0 },
+      ing: { risottoreis: 80, zucchini: 0.5, paradeiser: 100, zwiebel: 40, knoblauch: 1, bruehe: 0.5, basilikum: 0.2, olivenoel: 15, salz: 0 },
       steps: [
         { x: 'Zwiebel und Knoblauch fein hacken, Zucchini würfeln, Paradeiser vierteln.' },
         { x: 'Zwiebel und Knoblauch in Olivenöl anschwitzen, Reis kurz glasig mitrösten.', t: 3 },
