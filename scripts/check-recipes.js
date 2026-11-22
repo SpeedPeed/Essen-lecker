@@ -15,6 +15,9 @@ function check(recipes, existing = []) {
     if (titles.has((r.title || '').toLowerCase())) e('Titel doppelt'); titles.add((r.title || '').toLowerCase());
     if (!CATS.has(r.cat)) e('cat unbekannt: ' + r.cat);
     if (!(r.time >= 5 && r.time <= 480)) e('time');
+    const timers = (r.steps || []).reduce((t, x) => t + (x.t || 0), 0);
+    if (r.time < timers * 0.85) e(`time ${r.time} < Timer-Summe ${timers}`); // parallele Schritte erlaubt, aber nicht viel weniger
+    if ((r.tags || []).includes('schnell') && r.time > 30) e('„schnell“ bei über 30 Min.');
     if (!(r.hue >= 0 && r.hue <= 360) || !r.emoji) e('hue/emoji');
     if (!Array.isArray(r.tags) || !r.tags.length || !r.tags.every(t => STYLES.has(t))) e('tags');
     if (!Array.isArray(r.needs) || !r.needs.every(n => EQUIP.has(n))) e('needs');

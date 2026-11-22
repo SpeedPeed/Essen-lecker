@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const ROOT = path.join(__dirname, '..'), SHOTS = process.argv[2];
 // Barrierefreiheit: axe-core, falls installiert (CI: npm i axe-core) – jede Regelverletzung ist ein Fehler.
 let AXE = null; try { AXE = require.resolve('axe-core/axe.min.js'); } catch { console.log('Hinweis: axe-core nicht installiert – A11y-Prüfung übersprungen'); }
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
 
 const server = http.createServer((req, res) => {
   const f = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
@@ -20,14 +20,14 @@ const server = http.createServer((req, res) => {
   const browser = await chromium.launch(), errors = [];
   for (const [name, viewport] of [['mobil', { width: 390, height: 844 }], ['desktop', { width: 1280, height: 900 }]]) {
     const page = await browser.newPage({ viewport, reducedMotion: 'reduce' }); // ohne Einblend-Animation (sonst misst axe Zwischenfarben)
-    page.on('console', m => m.type() === 'error' && !/fonts\.g|ERR_|Failed to load resource/.test(m.text()) && errors.push(`${name}: ${m.text()}`));
+    page.on('console', m => m.type() === 'error' && !/ERR_|Failed to load resource/.test(m.text()) && errors.push(`${name}: ${m.text()}`));
     page.on('pageerror', e => errors.push(`${name}: ${e.message}`));
     await page.route(/^https?:\/\/(?!localhost)/, r => r.abort()); // offline gegenüber Dritten
     const shot = async n => SHOTS && page.screenshot({ path: path.join(SHOTS, `${name}-${n}.png`), fullPage: true });
     const click = sel => page.locator(sel).first().click();
     const axe = async view => {
       if (!AXE) return;
-      await page.addScriptTag({ path: AXE });
+      await page.evaluate(fs.readFileSync(AXE, 'utf8')); // per evaluate statt <script>: die CSP der App verbietet Inline-Skripte
       const v = await page.evaluate(() => axe.run(document, { resultTypes: ['violations'] }).then(r => r.violations.map(x => `${x.id}: ${x.nodes.map(n => n.target.join(' ')).slice(0, 3).join(', ')}`)));
       v.forEach(x => errors.push(`${name}/${view} A11y ${x}`));
     };

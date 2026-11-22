@@ -87,6 +87,7 @@
     spaghetti: ['Spaghetti', 'konserven', 500, 'g', 0.99, '500-g-Packung', 'gluten'],
     fleckerl: ['Fleckerl (Eiernudeln)', 'konserven', 500, 'g', 1.29, '500-g-Packung', 'gluten egg'],
     reis: ['Langkornreis', 'konserven', 1000, 'g', 1.79, '1-kg-Packung', ''],
+    risottoreis: ['Risottoreis', 'konserven', 500, 'g', 2.29, '500-g-Packung', ''],
     linsen: ['Linsen (braun)', 'konserven', 500, 'g', 1.69, '500-g-Packung', ''],
     roteLinsen: ['Rote Linsen', 'konserven', 500, 'g', 1.99, '500-g-Packung', ''],
     couscous: ['Couscous', 'konserven', 500, 'g', 1.49, '500-g-Packung', 'gluten'],
@@ -429,7 +430,7 @@
       ] },
     { id: 'risotto', title: 'Schwammerl-Risotto', emoji: '🍄', hue: 35, cat: 'Wohlfühlessen', time: 35,
       tags: ['gesund'], needs: ['kochfeld'], m: [520, 14, 80, 14],
-      ing: { reis: 90, champignons: 125, zwiebel: 40, parmesan: 15, bruehe: 0.5, butter: 10 },
+      ing: { risottoreis: 90, champignons: 125, zwiebel: 40, parmesan: 15, bruehe: 0.5, butter: 10 },
       steps: [
         { x: 'Zwiebel und Champignons in Butter anrösten, Reis kurz glasig mitrösten.', t: 5 },
         { x: 'Nach und nach mit heißer Suppe aufgießen und unter Rühren cremig garen.', t: 22 },
@@ -495,7 +496,7 @@
         { x: 'Goldbraun überbacken.', t: 25 },
       ] },
     { id: 'grenadiermarsch', title: 'Grenadiermarsch', emoji: '🍳', hue: 35, cat: 'Hausmannskost', time: 35,
-      tags: ['haus', 'familie', 'schnell'], needs: ['kochfeld'], m: [610, 22, 72, 26],
+      tags: ['haus', 'familie'], needs: ['kochfeld'], m: [610, 22, 72, 26],
       ing: { erdaepfel: 200, fleckerl: 60, speck: 40, zwiebel: 60, eier: 1, schnittlauch: 0.2, kuemmel: 0, oel: 10 },
       steps: [
         { x: 'Erdäpfel in der Schale weich kochen, Fleckerl separat kochen.', t: 20 },
@@ -555,7 +556,7 @@
         { x: 'Hühnerfilet würzen, aufs Gemüse legen und mitbacken, bis es durch ist.', t: 22 },
       ] },
     { id: 'fischstaebchen', title: 'Fischstäbchen mit Erdäpfelsalat', emoji: '🐟', hue: 45, cat: 'Familienliebling', time: 35,
-      tags: ['familie', 'schnell'], needs: ['kochfeld'], m: [560, 24, 62, 22],
+      tags: ['familie'], needs: ['kochfeld'], m: [560, 24, 62, 22],
       ing: { fischstaebchen: 150, erdaepfel: 250, zwiebel: 30, bruehe: 0.25, essig: 0, oel: 15, schnittlauch: 0.2 },
       steps: [
         { x: 'Erdäpfel in der Schale weich kochen.', t: 20 },
@@ -758,7 +759,7 @@
         { x: 'Inzwischen Erdäpfel schälen und in Salzwasser weich kochen.', t: 20 },
         { x: 'Sauerrahm mit Mehl glatt rühren, in die Sauce rühren und kurz aufkochen. Wickel mit Sauce und Erdäpfeln servieren.' },
       ] },
-    { id: 'bratwurstSauerkraut', title: 'Bratwürstel mit Sauerkraut und Erdäpfelpüree', emoji: '🌭', hue: 28, cat: 'Hausmannskost', time: 35,
+    { id: 'bratwurstSauerkraut', title: 'Bratwürstel mit Sauerkraut und Erdäpfelpüree', emoji: '🌭', hue: 28, cat: 'Hausmannskost', time: 50,
       tags: ['haus', 'familie'], needs: ['kochfeld'], m: [820, 28, 55, 55],
       ing: { bratwurst: 130, sauerkraut: 200, zwiebel: 40, kuemmel: 0, lorbeer: 0, zucker: 0, erdaepfel: 250, milch: 70, butter: 10, muskat: 0, oel: 10, salz: 0 },
       steps: [
@@ -865,8 +866,8 @@
         { x: 'Fisch in die Sauce legen und zugedeckt bei kleiner Hitze gar ziehen lassen.', t: 8 },
         { x: 'Mit Petersilie bestreuen und mit den Salzerdäpfeln servieren.' },
       ] },
-    { id: 'currywurst', title: 'Currywurst mit Pommes', emoji: '🌭', hue: 8, cat: 'Lieferdienst selbst gemacht', time: 30,
-      tags: ['lieferdienst', 'schnell', 'familie'], needs: ['kochfeld', 'ofen'], m: [790, 24, 66, 48],
+    { id: 'currywurst', title: 'Currywurst mit Pommes', emoji: '🌭', hue: 8, cat: 'Lieferdienst selbst gemacht', time: 40,
+      tags: ['lieferdienst', 'familie'], needs: ['kochfeld', 'ofen'], m: [790, 24, 66, 48],
       ing: { bratwurst: 130, passata: 100, paradeismark: 15, zwiebel: 30, zucker: 10, essig: 0, curry: 0, paprikapulver: 0, pommes: 180, oel: 5, salz: 0 },
       steps: [
         { x: 'Backrohr laut Packung vorheizen und die Pommes knusprig backen.', t: 20 },
@@ -903,7 +904,7 @@
         { x: 'Erdäpfel, Karotten und Sellerie würfeln, Lauch in Ringe schneiden, alles zum Fleisch geben und weiterköcheln, bis es weich ist.', t: 25 },
         { x: 'Mit Majoran, Salz und Pfeffer abschmecken und mit Petersilie bestreuen.' },
       ] },
-    { id: 'rahmlinsenKnoedel', title: 'Rahmlinsen mit Speck und Semmelknödel', emoji: '🍲', hue: 30, cat: 'Hausmannskost', time: 55,
+    { id: 'rahmlinsenKnoedel', title: 'Rahmlinsen mit Speck und Semmelknödel', emoji: '🍲', hue: 30, cat: 'Hausmannskost', time: 65,
       tags: ['haus', 'eiweiss'], needs: ['kochfeld'], m: [790, 37, 90, 32], leftovers: true,
       ing: { linsen: 70, speck: 30, zwiebel: 40, karotten: 50, bruehe: 0.5, lorbeer: 0, majoran: 0, essig: 0, sauerrahm: 40, mehl: 5, knoedelbrot: 70, milch: 80, eier: 0.5, petersilie: 0.2, butter: 10, salz: 0 },
       steps: [
@@ -971,8 +972,8 @@
         { x: 'Im Rohr goldbraun backen.', t: 30 },
         { x: 'Sauerrahm mit gehacktem Schnittlauch und Salz verrühren und zum Strudel servieren.' },
       ] },
-    { id: 'karfiolPolonaise', title: 'Karfiol mit Butterbröseln und Ei', emoji: '🥦', hue: 55, cat: 'Vegetarisch', time: 30,
-      tags: ['haus', 'schnell'], needs: ['kochfeld'], m: [630, 22, 71, 29],
+    { id: 'karfiolPolonaise', title: 'Karfiol mit Butterbröseln und Ei', emoji: '🥦', hue: 55, cat: 'Vegetarisch', time: 40,
+      tags: ['haus'], needs: ['kochfeld'], m: [630, 22, 71, 29],
       ing: { karfiol: 0.5, erdaepfel: 200, eier: 1, butter: 25, broesel: 25, petersilie: 0.2, salz: 0 },
       steps: [
         { x: 'Erdäpfel schälen, vierteln und in Salzwasser weich kochen.', t: 20 },
@@ -1067,7 +1068,7 @@
         { x: 'Kidneybohnen und weiße Bohnen abspülen, dazugeben und sämig einköcheln lassen.', t: 10 },
         { x: 'Mit Salz und Pfeffer abschmecken und mit Bauernbrot servieren.' },
       ] },
-    { id: 'erdaepfelknoedelRotkraut', title: 'Erdäpfelknödel mit Apfelrotkraut', emoji: '🥔', hue: 320, cat: 'Vegan', time: 70,
+    { id: 'erdaepfelknoedelRotkraut', title: 'Erdäpfelknödel mit Apfelrotkraut', emoji: '🥔', hue: 320, cat: 'Vegan', time: 80,
       tags: ['haus'], needs: ['kochfeld'], m: [680, 15, 121, 15], leftovers: true,
       ing: { erdaepfel: 250, mehl: 40, griess: 20, muskat: 0, rotkraut: 200, aepfel: 80, zwiebel: 40, zucker: 10, essig: 0, lorbeer: 0, zimt: 0, oel: 15, salz: 0 },
       steps: [
@@ -1371,7 +1372,7 @@
       ] },
     { id: 'risiebisi', title: 'Risi e bisi – Erbsenrisotto mit Parmesan', emoji: '🍚', hue: 100, cat: 'Vegetarisch', time: 30,
       tags: ['familie', 'gesund'], needs: ['kochfeld'], m: [530, 18, 75, 15],
-      ing: { reis: 80, erbsen: 100, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, petersilie: 0.1, salz: 0 },
+      ing: { risottoreis: 80, erbsen: 100, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, petersilie: 0.1, salz: 0 },
       steps: [
         { x: 'Zwiebel fein hacken und in der Hälfte der Butter glasig anschwitzen, Reis kurz mitrösten.', t: 3 },
         { x: 'Nach und nach mit heißer Suppe aus Suppenwürfel (ca. 300 ml pro Portion) aufgießen und unter Rühren cremig garen.', t: 18 },
@@ -1380,7 +1381,7 @@
       ] },
     { id: 'kuerbisrisotto', title: 'Kürbisrisotto mit Rosmarin & Parmesan', emoji: '🎃', hue: 28, cat: 'Wohlfühlessen', time: 40,
       tags: ['gesund', 'familie'], needs: ['kochfeld'], m: [515, 15, 77, 15],
-      ing: { reis: 80, kuerbis: 200, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, rosmarin: 0, salz: 0 },
+      ing: { risottoreis: 80, kuerbis: 200, zwiebel: 40, parmesan: 20, butter: 10, bruehe: 0.5, rosmarin: 0, salz: 0 },
       steps: [
         { x: 'Kürbis entkernen und mit Schale klein würfeln, Zwiebel fein hacken.' },
         { x: 'Zwiebel in der Hälfte der Butter anschwitzen, Kürbis und Reis kurz mitrösten.', t: 4 },
@@ -1389,7 +1390,7 @@
       ] },
     { id: 'zitronenrisottogarnelen', title: 'Zitronenrisotto mit Garnelen', emoji: '🍤', hue: 50, cat: 'Eiweißreich', time: 35,
       tags: ['eiweiss', 'mediterran'], needs: ['kochfeld'], m: [490, 22, 66, 15],
-      ing: { reis: 80, garnelen: 100, zitrone: 0.5, zwiebel: 40, knoblauch: 1, butter: 10, petersilie: 0.1, bruehe: 0.5, olivenoel: 5, salz: 0 },
+      ing: { risottoreis: 80, garnelen: 100, zitrone: 0.5, zwiebel: 40, knoblauch: 1, butter: 10, petersilie: 0.1, bruehe: 0.5, olivenoel: 5, salz: 0 },
       steps: [
         { x: 'Garnelen auftauen lassen. Zwiebel fein hacken, in Butter glasig anschwitzen und den Reis kurz mitrösten.', t: 3 },
         { x: 'Nach und nach mit heißer Suppe aus Suppenwürfel aufgießen und unter Rühren cremig garen.', t: 20 },
@@ -1398,7 +1399,7 @@
       ] },
     { id: 'veganesrisotto', title: 'Veganes Zucchini-Paradeiser-Risotto', emoji: '🍅', hue: 8, cat: 'Vegan', time: 35,
       tags: ['gesund', 'mediterran', 'kalorienarm'], needs: ['kochfeld'], m: [470, 8, 71, 16],
-      ing: { reis: 80, zucchini: 0.5, paradeiser: 100, zwiebel: 40, knoblauch: 1, bruehe: 0.5, basilikum: 0.2, olivenoel: 15, salz: 0 },
+      ing: { risottoreis: 80, zucchini: 0.5, paradeiser: 100, zwiebel: 40, knoblauch: 1, bruehe: 0.5, basilikum: 0.2, olivenoel: 15, salz: 0 },
       steps: [
         { x: 'Zwiebel und Knoblauch fein hacken, Zucchini würfeln, Paradeiser vierteln.' },
         { x: 'Zwiebel und Knoblauch in Olivenöl anschwitzen, Reis kurz glasig mitrösten.', t: 3 },
@@ -1640,7 +1641,7 @@
         { x: 'Abgetropfte Kichererbsen und einen Schuss Wasser dazugeben und sämig köcheln, dabei ein paar Kichererbsen zerdrücken.', t: 12 },
         { x: 'Mit Salz, Garam Masala und einem Spritzer Zitrone abschmecken und mit Koriander zum Reis servieren.' },
       ] },
-    { id: 'rajma', title: 'Rajma – Kidneybohnen-Curry mit Reis', emoji: '🫘', hue: 8, cat: 'Indisch', time: 35,
+    { id: 'rajma', title: 'Rajma – Kidneybohnen-Curry mit Reis', emoji: '🫘', hue: 8, cat: 'Indisch', time: 45,
       tags: ['gesund', 'familie'], needs: ['kochfeld'], m: [590, 21, 94, 11], leftovers: true,
       ing: { kidney: 200, dosenparadeiser: 150, zwiebel: 70, knoblauch: 1, ingwer: 10, reis: 70, kreuzkuemmel: 0, kurkuma: 0, paprikapulver: 0, koriander: 0.2, oel: 10, salz: 0 },
       steps: [
@@ -1660,7 +1661,7 @@
         { x: 'Paradeiser dazugeben und offen weiterbraten, bis das Gemüse weich und leicht gebräunt ist.', t: 6 },
         { x: 'Mit Garam Masala abschmecken und mit Koriander bestreut servieren.' },
       ] },
-    { id: 'dalmakhani', title: 'Dal Makhani mit braunen Linsen', emoji: '🍲', hue: 20, cat: 'Indisch', time: 55,
+    { id: 'dalmakhani', title: 'Dal Makhani mit braunen Linsen', emoji: '🍲', hue: 20, cat: 'Indisch', time: 65,
       tags: ['eiweiss', 'asiatisch'], needs: ['kochfeld'], m: [740, 27, 99, 24], leftovers: true,
       ing: { linsen: 60, kidney: 80, dosenparadeiser: 100, zwiebel: 50, knoblauch: 1, ingwer: 10, butter: 10, schlagobers: 40, reis: 60, kreuzkuemmel: 0, kurkuma: 0, chili: 0, salz: 0 },
       steps: [
@@ -1690,7 +1691,7 @@
         { x: 'Inzwischen den Reis in Salzwasser kochen.', t: 15 },
         { x: 'Suppe mit dem Mixer pürieren, Kokosmilch einrühren, mit Salz und Zitrone abschmecken und den Reis als Einlage dazugeben.' },
       ] },
-    { id: 'butterchicken', title: 'Butter Chicken mit Reis', emoji: '🍗', hue: 22, cat: 'Lieferdienst selbst gemacht', time: 40,
+    { id: 'butterchicken', title: 'Butter Chicken mit Reis', emoji: '🍗', hue: 22, cat: 'Lieferdienst selbst gemacht', time: 50,
       tags: ['lieferdienst', 'familie', 'eiweiss'], needs: ['kochfeld'], m: [750, 45, 78, 27], leftovers: true,
       ing: { huhn: 150, joghurt: 50, dosenparadeiser: 150, zwiebel: 50, knoblauch: 1, ingwer: 10, butter: 10, schlagobers: 40, reis: 75, kurkuma: 0, paprikapulver: 0, kreuzkuemmel: 0, zucker: 3, koriander: 0.2, salz: 0 },
       steps: [
@@ -1969,7 +1970,7 @@
         { x: 'Nudeln, Sojasauce und Zucker dazugeben und alles gut durchschwenken.', t: 2 },
         { x: 'Mit geröstetem Sesam bestreuen. Schmeckt warm oder lauwarm.' },
       ] },
-    { id: 'dakgalbi', title: 'Dakgalbi – scharfe Hühnerpfanne mit Kraut & Süßkartoffel', emoji: '🌶️', hue: 0, cat: 'Asiatisch inspiriert', time: 35,
+    { id: 'dakgalbi', title: 'Dakgalbi – scharfe Hühnerpfanne mit Kraut & Süßkartoffel', emoji: '🌶️', hue: 0, cat: 'Asiatisch inspiriert', time: 45,
       tags: ['asiatisch', 'eiweiss'], needs: ['kochfeld'], m: [630, 43, 85, 13],
       ing: { huhn: 140, weisskraut: 120, suesskartoffel: 120, zwiebel: 40, fruehlingszwiebel: 0.25, sojasauce: 20, paradeismark: 15, chili: 0, zucker: 6, knoblauch: 1, ingwer: 5, reis: 50, oel: 10 },
       steps: [
@@ -2009,8 +2010,8 @@
         { x: 'Paradeismark, Essig, Zucker, Sojasauce und ca. 80 ml Wasser pro Portion dazugeben und sämig einkochen.', t: 3 },
         { x: 'Hendl kurz in der Sauce schwenken und sofort mit Reis servieren.' },
       ] },
-    { id: 'mapotofu', title: 'Mapo Tofu mit Faschiertem', emoji: '🌶️', hue: 2, cat: 'Asiatisch inspiriert', time: 25,
-      tags: ['asiatisch', 'eiweiss', 'schnell'], needs: ['kochfeld'], m: [710, 38, 65, 33],
+    { id: 'mapotofu', title: 'Mapo Tofu mit Faschiertem', emoji: '🌶️', hue: 2, cat: 'Asiatisch inspiriert', time: 35,
+      tags: ['asiatisch', 'eiweiss'], needs: ['kochfeld'], m: [710, 38, 65, 33],
       ing: { tofu: 150, faschiertes: 60, fruehlingszwiebel: 0.25, knoblauch: 1, ingwer: 5, chili: 0, paradeismark: 10, sojasauce: 20, bruehe: 0.25, reis: 70, oel: 10 },
       steps: [
         { x: 'Reis nach Packungsanleitung kochen.', t: 15 },
@@ -2136,7 +2137,7 @@
         { x: 'Salat, Paradeiser und Gurke schneiden. Tortillas kurz in einer trockenen Pfanne erwärmen.', t: 1 },
         { x: 'Tortillas mit Salat, Gemüse und Falafel belegen, mit Tahinsauce beträufeln und einrollen.' },
       ] },
-    { id: 'mujaddara', title: 'Mujaddara – Linsenreis mit Röstzwiebeln', emoji: '🍚', hue: 30, cat: 'Orientalisch', time: 45,
+    { id: 'mujaddara', title: 'Mujaddara – Linsenreis mit Röstzwiebeln', emoji: '🍚', hue: 30, cat: 'Orientalisch', time: 55,
       tags: ['gesund', 'eiweiss'], needs: ['kochfeld'], m: [630, 21, 91, 20], leftovers: true,
       ing: { linsen: 60, reis: 50, zwiebel: 150, oel: 20, kreuzkuemmel: 0, zimt: 0, gurke: 0.25, paradeiser: 100, zitrone: 0.25, salz: 0 },
       steps: [
@@ -2419,7 +2420,7 @@
         { x: 'Teig dünn ausrollen, Kreise ausstechen, mit Fülle belegen, zu Halbmonden falten und die Ränder gut andrücken. In Salzwasser ziehen lassen, bis sie aufsteigen.', t: 4 },
         { x: 'Restliche Zwiebeln in Ringen in der übrigen Butter rösten und mit Sauerrahm über die Pierogi geben.', t: 8 },
       ] },
-    { id: 'bigos', title: 'Bigos – polnischer Krauteintopf mit Würstel', emoji: '🍲', hue: 35, cat: 'Balkan & Osteuropa', time: 75,
+    { id: 'bigos', title: 'Bigos – polnischer Krauteintopf mit Würstel', emoji: '🍲', hue: 35, cat: 'Balkan & Osteuropa', time: 85,
       tags: ['familie', 'eiweiss'], needs: ['kochfeld'], m: [700, 28, 57, 40], leftovers: true,
       ing: { speck: 20, zwiebel: 60, oel: 5, bratwurst: 100, champignons: 80, weisskraut: 150, paradeismark: 15, paprikapulver: 0, sauerkraut: 150, lorbeer: 0, majoran: 0, erdaepfel: 200, salz: 0 },
       steps: [
@@ -2521,7 +2522,7 @@
         { x: 'Kraut fein hobeln, Karotten raspeln und mit Joghurt, einem Spritzer Essig, Salz und Pfeffer zu Coleslaw mischen.' },
         { x: 'Mais abtropfen lassen, die letzten Minuten mit aufs Blech geben und mit Keulen, Erdäpfeln und Coleslaw servieren.', t: 5 },
       ] },
-    { id: 'fishAndChips', title: 'Fish & Chips mit Erbsenpüree', emoji: '🍟', hue: 42, cat: 'Lieferdienst selbst gemacht', time: 35,
+    { id: 'fishAndChips', title: 'Fish & Chips mit Erbsenpüree', emoji: '🍟', hue: 42, cat: 'Lieferdienst selbst gemacht', time: 45,
       tags: ['lieferdienst', 'familie'], needs: ['kochfeld', 'ofen'], m: [770, 46, 86, 26],
       ing: { pommes: 150, seelachs: 150, mehl: 20, eier: 0.5, broesel: 25, oel: 10, erbsen: 120, butter: 5, zitrone: 0.25, salz: 0 },
       steps: [
@@ -2531,8 +2532,8 @@
         { x: 'Erbsen in wenig Salzwasser weich kochen, abseihen und mit Butter, Salz und Pfeffer grob zerdrücken.', t: 5 },
         { x: 'Fisch und Pommes mit Erbsenpüree und Zitronenspalten servieren.' },
       ] },
-    { id: 'hotDogs', title: 'Hot Dogs mit Röstzwiebeln & Airfryer-Pommes', emoji: '🌭', hue: 8, cat: 'Lieferdienst selbst gemacht', time: 25,
-      tags: ['lieferdienst', 'familie', 'schnell'], needs: ['airfryer', 'kochfeld'], m: [820, 26, 88, 41],
+    { id: 'hotDogs', title: 'Hot Dogs mit Röstzwiebeln & Airfryer-Pommes', emoji: '🌭', hue: 8, cat: 'Lieferdienst selbst gemacht', time: 35,
+      tags: ['lieferdienst', 'familie'], needs: ['airfryer', 'kochfeld'], m: [820, 26, 88, 41],
       ing: { pommes: 100, zwiebel: 60, oel: 10, gurke: 0.25, essig: 0, zucker: 0, frankfurter: 100, semmeln: 2, senf: 0, salz: 0 },
       steps: [
         { x: 'Pommes in der Heißluftfritteuse bei 200 °C knusprig frittieren, zwischendurch schütteln.', t: 15 },
