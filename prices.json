@@ -323,6 +323,60 @@
      "qty": 190,
      "date": "2026-10-29"
     },
+    "speck": {
+     "name": "Clever Speckwürfel",
+     "price": 3.49,
+     "qty": 200,
+     "date": "2026-09-17"
+    },
+    "schinken": {
+     "name": "Clever Toastschinken",
+     "price": 2.49,
+     "qty": 200,
+     "date": "2026-09-20"
+    },
+    "knoedelbrot": {
+     "name": "Clever Semmelwürfel",
+     "price": 1.13,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "sauerkraut": {
+     "name": "Clever Sauerkraut",
+     "price": 0.89,
+     "qty": 500,
+     "date": "2026-11-12"
+    },
+    "apfelmus": {
+     "name": "Alnatura Apfelmark",
+     "price": 2.69,
+     "qty": 700,
+     "date": "2025-09-15"
+    },
+    "lasagne": {
+     "name": "Clever Lasagne",
+     "price": 1.6,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "suppennudeln": {
+     "name": "Recheis Goldmarke Fadennudeln",
+     "price": 2.37,
+     "qty": 500,
+     "date": "2026-10-15"
+    },
+    "fischstaebchen": {
+     "name": "Clever Fischstäbchen",
+     "price": 2.65,
+     "qty": 450,
+     "date": "2026-11-22"
+    },
+    "blaetterteig": {
+     "name": "Clever Blätterteig",
+     "price": 0.99,
+     "qty": 275,
+     "date": "2026-08-27"
+    },
     "erbsen": {
      "name": "Clever Junge Erbsen",
      "price": 1.89,
@@ -723,6 +777,60 @@
      "qty": 190,
      "date": "2025-08-28"
     },
+    "speck": {
+     "name": "TANN Speckwürfel",
+     "price": 3.39,
+     "qty": 150,
+     "date": "2022-11-17"
+    },
+    "schinken": {
+     "name": "Holzbauer Toastschinken per Packung",
+     "price": 2.99,
+     "qty": 200,
+     "date": "2023-04-14"
+    },
+    "knoedelbrot": {
+     "name": "S-BUDGET Semmelwürfel",
+     "price": 1.13,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "sauerkraut": {
+     "name": "Machland Sauerkraut",
+     "price": 0.69,
+     "qty": 500,
+     "date": "2025-12-22"
+    },
+    "apfelmus": {
+     "name": "S-BUDGET Apfelmus ungezuckert",
+     "price": 1.59,
+     "qty": 700,
+     "date": "2025-08-05"
+    },
+    "lasagne": {
+     "name": "De Cecco Lasagneblätter Lasagna Riccia",
+     "price": 2.56,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "suppennudeln": {
+     "name": "Recheis Goldmarke Fadennudeln",
+     "price": 2.37,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "fischstaebchen": {
+     "name": "S-BUDGET MSC Fischstäbchen aus Alaska-Seelachsfilet 15 Stück",
+     "price": 3.69,
+     "qty": 450,
+     "date": "2026-07-21"
+    },
+    "blaetterteig": {
+     "name": "S-BUDGET Blätterteig",
+     "price": 0.99,
+     "qty": 275,
+     "date": "2025-05-14"
+    },
     "erbsen": {
      "name": "S-BUDGET Erbsen tiefgekühlt",
      "price": 1.89,
@@ -792,6 +900,19 @@
       "note": "Klasse I  Je 500 g"
      }
     },
+    "blaetterteig": {
+     "name": "Chef Select Blätterteig",
+     "price": 0.79,
+     "qty": 275,
+     "was": 0.99,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-22",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "275 g"
+     }
+    },
     "topfen": {
      "name": "Alpengut Speisetopfen",
      "price": 0.79,
@@ -816,6 +937,19 @@
       "to": "2026-11-28",
       "loyalty": false,
       "note": "1 kg"
+     }
+    },
+    "schinken": {
+     "name": "Wiesentaler Wiener Beinschinken",
+     "price": 1.79,
+     "qty": 175,
+     "was": 2.29,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-11-28",
+      "loyalty": false,
+      "note": "175 g"
      }
     },
     "weisskraut": {
@@ -900,6 +1034,19 @@
       "to": "2026-11-25",
       "loyalty": false,
       "note": "3,5 % Fett, 1 l"
+     }
+    },
+    "schinken": {
+     "name": "Ich bin Österreich Beinschinken",
+     "price": 1.99,
+     "qty": 175,
+     "was": 2.14,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "HINWEIS: MIT PENNY GUTSCHEIN 1.79 € Farmer- od. Barbecueschinken 175 g"
      }
     },
     "schlagobers": {

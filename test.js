@@ -69,3 +69,21 @@ const m = matchOffers([mk('EUROSPAR', 'Gemischt Faschiertes', 4.99, 9.98, null),
 assert.deepStrictEqual(Object.keys(m), ['spar'], 'abgelaufen (HOFER), teurer als Regal (Lidl), Laibchen (PENNY) ignoriert');
 assert.strictEqual(m.spar.faschiertes.was, 6.99);
 console.log('ok Flugblatt-Aktionen');
+
+// Tage aussetzen: bleiben beim Neuplanen erhalten, feste Kochpause-Tage, keine Zutaten dafür
+const wk = P.planWeek(base, D.RECIPES, [], new Date('2026-11-23T12:00')); // Montag
+wk[2] = { ...wk[2], rid: null, skip: 'self', note: 'Omas Gulasch' };
+const wk2 = P.planWeek(base, D.RECIPES, wk, new Date('2026-11-23T12:00'));
+assert.deepStrictEqual([wk2[2].rid, wk2[2].skip, wk2[2].note], [null, 'self', 'Omas Gulasch']);
+assert.ok(wk2.filter(s => s.rid).length === 6);
+const fri = P.planWeek({ ...base, skipDays: [5] }, D.RECIPES, [], new Date('2026-11-23T12:00'));
+assert.ok(fri.every(s => (new Date(s.date + 'T12:00').getDay() === 5) === (s.skip === 'self' && !s.rid)), 'Freitag ausgesetzt');
+assert.strictEqual(D.RECIPES.length >= 55, true);
+console.log('ok Aussetzen,', D.RECIPES.length, 'Rezepte');
+
+// Abwechslung: höchstens 1 Süßspeise pro Woche, auch bei Mittag + Abend
+for (let k = 0; k < 5; k++) {
+  const w = P.generate({ ...base, meals: { lunch: true, dinner: true }, budget: 50 }, D.RECIPES);
+  assert.ok(w.filter(s => D.RECIPES.find(r => r.id === s.rid).sweet).length <= 1, 'zu viel Süßes');
+}
+const t0 = Date.now(); P.generate({ ...base, meals: { lunch: true, dinner: true } }, D.RECIPES); console.log('ok Süßspeisen, 14 Slots in', Date.now() - t0, 'ms');

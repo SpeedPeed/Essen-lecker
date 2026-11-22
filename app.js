@@ -155,9 +155,13 @@ const MEAL = { lunch: 'Mittag', dinner: 'Abend' };
 
 function slotCard(s, i) {
   const both = S.profile.meals.lunch && S.profile.meals.dinner;
-  if (!s.rid) return `<div class="card day sand"><div class="photo" style="background:var(--card)">🛋️</div><div class="grow">
-    <span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}Frei</span><h3>Freier Abend / Reste-Tag</h3><div class="meta">Reste genießen oder auswärts essen</div></div>
-    <button class="swap" data-a="swap" data-i="${i}" aria-label="Gericht wählen">⇄</button></div>`;
+  if (!s.rid) {
+    const self = s.skip === 'self';
+    return `<div class="card day sand"><div class="photo" style="background:var(--card)">${self ? '🧑‍🍳' : '🛋️'}</div><div class="grow">
+    <span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}Ausgesetzt</span><h3>${self ? (s.note ? esc(s.note) : 'Ich koche selbst') : 'Freier Abend / Reste-Tag'}</h3>
+    <div class="meta">${self ? 'Dein eigenes Gericht – nicht in der Einkaufsliste' : 'Reste genießen oder auswärts essen'}</div></div>
+    <button class="swap" data-a="swap" data-i="${i}" aria-label="Gericht einplanen">⇄</button></div>`;
+  }
   const r = R(s.rid);
   if (!r) return '';
   return `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left">
@@ -175,9 +179,13 @@ function vSwapSheet() {
   }).sort((a, b) => rids.includes(a.r.id) - rids.includes(b.r.id) || a.t - b.t);
   const cur = cost().total;
   return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-label="Gericht tauschen" data-stop>
-    <div class="row between"><h2>Gericht tauschen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
+    <div class="row between"><h2>Tauschen oder aussetzen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
     <p class="muted">${dayLabel(slot.date)} · sortiert nach Wochenpreis. Aktuell ${eur(cur)}.</p>
-    ${slot.rid ? `<button class="alt" data-a="pick" data-id=""><div class="photo" style="background:var(--sand)">🛋️</div><div class="grow"><b>Freier Abend / Reste-Tag</b><div class="meta">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)}</div></div></button>` : ''}
+    <div class="card sand" style="padding:12px"><b>Diesen ${slot.meal === 'lunch' ? 'Mittag' : 'Abend'} aussetzen</b>
+      <input id="selfnote" placeholder="Was kochst du? (optional, z. B. Omas Gulasch)" maxlength="60" value="${esc(slot.skip === 'self' ? slot.note || '' : '')}" style="margin:8px 0">
+      <div class="row"><button class="btn small grow" data-a="skip" data-id="self">🧑‍🍳 Ich koche selbst</button><button class="btn small ghost grow" data-a="skip" data-id="free">🛋️ Frei / Reste</button></div>
+      ${slot.rid ? `<div class="muted" style="margin-top:6px;font-size:13px">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''}</div>
+    <h3 style="margin-top:16px">Anderes Gericht</h3>
     ${alts.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
       return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b> ${offerTag(r)}
       <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}${rids.includes(r.id) ? '<span>· schon in dieser Woche</span>' : ''}</div></div></button>`; }).join('')}
@@ -338,6 +346,8 @@ function vProfile() {
   ];
   return `<h1>Profil</h1><p class="muted">Alles bleibt lokal auf diesem Gerät – kein Konto nötig.</p>
     <div class="card">${rows.map(([n, l, v]) => `<button class="toggle" style="width:100%;text-align:left" data-a="edit" data-i="${n}"><div><b>${l}</b><div class="muted">${esc(v)}</div></div><span aria-hidden="true">›</span></button>`).join('')}</div>
+    <div class="card"><b>Feste Kochpause-Tage</b><div class="muted" style="margin-bottom:10px">An diesen Wochentagen kochst du immer selbst – sie werden nicht verplant.</div>
+      <div class="chips">${[1, 2, 3, 4, 5, 6, 0].map(n => `<button class="chip" ${sel((p.skipDays || []).includes(n))} data-a="skipday" data-id="${n}">${WD[n].slice(0, 2)}</button>`).join('')}</div></div>
     <button class="btn ghost" data-a="reset">Alle Daten löschen</button>`;
 }
 
@@ -358,7 +368,7 @@ function toast(msg, action, label) {
   t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), action ? 7000 : 3000);
 }
 
-function regenerate() { S.plan = P.generate(S.profile, recipes()); S.checked = {}; save(); }
+function regenerate() { S.plan = P.planWeek(S.profile, recipes(), S.plan); S.checked = {}; save(); }
 
 // ---------- Kochmodus: Wake Lock & Timer ----------
 let wake = null, tick = null, audio;
@@ -419,8 +429,19 @@ const A = {
   },
   swap: d => { ui.sheet = { i: +d.i }; },
   closesheet: (d, e) => { if (e.target.closest('[data-stop]') && !e.target.closest('button[data-a="closesheet"]')) return false; ui.sheet = null; },
+  skip: d => {
+    const i = ui.sheet.i, note = d.id === 'self' ? document.getElementById('selfnote').value.trim() : '';
+    S.plan[i] = { date: S.plan[i].date, meal: S.plan[i].meal, rid: null, skip: d.id, note }; ui.sheet = null; save();
+    toast(d.id === 'self' ? 'Ausgesetzt – du kochst selbst' : 'Ausgesetzt – freier Abend');
+  },
+  skipday: d => {
+    const n = +d.id; S.profile.skipDays = toggleIn(S.profile.skipDays || [], n);
+    // Weggenommener fester Tag: dessen Selbstkoch-Slots wieder freigeben, damit neu geplant wird
+    if (!S.profile.skipDays.includes(n)) S.plan = S.plan.map(s => s.skip === 'self' && !s.note && new Date(s.date + 'T12:00').getDay() === n ? { date: s.date, meal: s.meal, rid: null } : s);
+    regenerate(); toast(S.profile.skipDays.includes(n) ? `${WD[n]}s kochst du ab jetzt selbst` : `${WD[n]} wird wieder eingeplant`);
+  },
   pick: d => {
-    const i = ui.sheet.i; S.plan[i] = { ...S.plan[i], rid: d.id || null }; ui.sheet = null; save();
+    const i = ui.sheet.i; S.plan[i] = { date: S.plan[i].date, meal: S.plan[i].meal, rid: d.id || null, ...(d.id ? {} : { skip: 'free' }) }; ui.sheet = null; save();
     const t = cost().total;
     if (t > S.profile.budget) { ui.lastSwap = i; toast(`${eur(t - S.profile.budget)} über Budget`, 'autofix', 'Andere Tage anpassen'); }
     else toast(`Getauscht · Woche jetzt ${eur(t)}`);

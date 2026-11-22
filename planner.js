@@ -94,38 +94,68 @@
     const base = locked || slotsFor(p, start);
     const pool = recipes.filter(r => eligible(r, p));
     if (!pool.length) return base.map(s => ({ ...s, rid: s.locked ? s.rid : null }));
+    const byId = new Map(recipes.map(r => [r.id, r])), sv = servings(p), pk = {};
+    const pack = id => pk[id] || (pk[id] = packOf(id, p));
+    const pantry = id => D.INGREDIENTS[id].flags.includes('pantry');
+    const score = new Map(pool.map(r => [r.id, prefScore(r, p)]));
     // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
     const maxUses = Math.ceil(base.length / pool.length);
     let best = null;
     for (let iter = 0; iter < 60; iter++) {
       const costW = 0.5 + (iter / 60) * 4;
       const plan = base.map(s => ({ ...s, rid: s.locked ? s.rid : null }));
+      const need = {}, uses = {}, cats = {};
+      let sweets = 0;
+      const add = r => {
+        for (const [id, a] of Object.entries(r.ing)) need[id] = (need[id] || 0) + a * sv;
+        uses[r.id] = (uses[r.id] || 0) + 1; cats[r.cat] = (cats[r.cat] || 0) + 1; if (r.sweet) sweets++;
+      };
+      plan.forEach(s => s.rid && byId.has(s.rid) && add(byId.get(s.rid)));
       for (const slot of plan) {
         if (slot.locked) continue;
-        const cur = plan.map(s => s.rid).filter(Boolean);
-        const curCost = weekCost(cur, recipes, p).total;
-        const open = p.fridge !== false ? weekCost(cur, recipes, p).items.filter(i => i.leftover > 0 && !i.pantry).map(i => i.id) : [];
         let pick = null, pickScore = -Infinity;
         for (const r of pool) {
-          const uses = cur.filter(x => x === r.id).length;
-          if (uses >= maxUses) continue;
-          const marginal = weekCost([...cur, r.id], recipes, p).total - curCost;
-          const synergy = Object.keys(r.ing).filter(id => open.includes(id)).length;
-          const s = prefScore(r, p) + synergy * 1.5 - marginal * costW - uses * 10 - (plan.some(o => o.date === slot.date && o.rid === r.id) ? 50 : 0)
+          const u = uses[r.id] || 0;
+          if (u >= maxUses) continue;
+          // Grenzkosten über ganze Packungen + Synergie mit bereits geöffneten Packungen
+          let marginal = 0, synergy = 0;
+          for (const [id, a] of Object.entries(r.ing)) {
+            if (pantry(id)) continue;
+            const k = pack(id), have = need[id] || 0;
+            marginal += (Math.ceil((have + a * sv) / k.packQty - 1e-9) - Math.ceil(have / k.packQty - 1e-9)) * k.price;
+            if (p.fridge !== false && have > 0 && Math.ceil(have / k.packQty - 1e-9) * k.packQty - have > 1e-9) synergy++;
+          }
+          const sc = score.get(r.id) + synergy * 1.5 - marginal * costW - u * 10
+            - (plan.some(o => o.date === slot.date && o.rid === r.id) ? 50 : 0)
+            - (r.sweet && sweets >= 1 ? 30 : 0) - (cats[r.cat] || 0) * 1.5 // Abwechslung: max. 1 Süßspeise, Kategorien mischen
             + (slot.meal === 'lunch' && r.leftovers ? 1 : 0) + rand() * 2;
-          if (s > pickScore) { pickScore = s; pick = r; }
+          if (sc > pickScore) { pickScore = sc; pick = r; }
         }
-        slot.rid = pick.id;
+        if (!pick) pick = pool[Math.floor(rand() * pool.length)];
+        slot.rid = pick.id; add(pick);
       }
       const rids = plan.map(s => s.rid).filter(Boolean);
       const cost = weekCost(rids, recipes, p).total;
-      const pref = rids.reduce((s, id) => s + prefScore(recipes.find(r => r.id === id), p), 0)
-        - (rids.length - new Set(rids).size) * 3;
+      const pref = rids.reduce((s, id) => s + (score.get(id) ?? prefScore(byId.get(id), p)), 0)
+        - (rids.length - new Set(rids).size) * 3 - Math.max(0, sweets - 1) * 10;
       const fits = cost <= p.budget;
       const better = !best || (fits && !best.fits) || (fits === best.fits && (fits ? pref > best.pref || (pref === best.pref && cost < best.cost) : cost < best.cost));
       if (better) best = { plan, cost, pref, fits };
     }
     return best.plan.map(({ locked, ...s }) => s);
+  }
+
+
+  // Neue Woche: ausgesetzte Slots (skip: 'self' = selbst kochen, 'free' = frei/Reste) bleiben,
+  // feste Kochpause-Wochentage aus dem Profil (p.skipDays, 0 = Sonntag) werden automatisch ausgesetzt.
+  function planWeek(p, recipes, old = [], start = new Date()) {
+    const base = slotsFor(p, start).map(s => {
+      const o = old.find(x => x.date === s.date && x.meal === s.meal && x.skip);
+      if (o) return { ...s, skip: o.skip, note: o.note, locked: true };
+      if ((p.skipDays || []).includes(new Date(s.date + 'T12:00').getDay())) return { ...s, skip: 'self', note: '', locked: true };
+      return s;
+    });
+    return generate(p, recipes, null, base);
   }
 
   // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren.
@@ -134,6 +164,6 @@
     return generate(p, recipes, null, locked);
   }
 
-  const API = { offers, offersIn, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  const API = { planWeek, offers, offersIn, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);
