@@ -43,3 +43,5 @@ Leitlinien: kein Framework, kein Build, alles lokal; jede Logikänderung mit Tes
 | 23 | Planer | Option „Mittag = Reste vom Vorabend“: Abendessen doppelt, Mittag aufwärmen; Plan bevorzugt dafür aufwärmbare Gerichte | Weniger kochen, im Test Ø 44 € statt 62 € pro Woche | ✅ umgesetzt |
 | 24 | Onboarding | „Rest überspringen – Plan jetzt erstellen“ ab Schritt 5 | 9 Schritte bis zum ersten Plan | ✅ umgesetzt |
 | 25 | Plan | Wochenplan teilen (Text) und Druckansicht für Plan und Einkaufsliste | Familie informieren, Liste am Kühlschrank | ✅ umgesetzt |
+| 26 | Tempo | Packungen je Markt gemerkt, Rezept-Index für Wochenpreise, Suche wartet kurz aufs Tippen | 6× gedrosselte CPU: Tausch-Fenster 519 → 364 ms, Suche 778 → 231 ms, Neu planen 588 → 447 ms | ✅ umgesetzt |
+| 27 | Bedienung | Zurück-Geste/-Taste: schließt Fenster, verlässt Kochmodus und Rezept; Direktlinks `#list`, `#discover`, App-Verknüpfungen | Android-Zurück schloss bisher die ganze App | ✅ umgesetzt |

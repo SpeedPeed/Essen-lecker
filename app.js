@@ -458,7 +458,28 @@ function render() {
   app.dataset.view = v === 'cook' ? 'recipe' : v;
   app.innerHTML = body + tabs + (ui.sheet ? vSwapSheet() : '') + (v === 'cook' ? vCook() : '');
   if (key) app.querySelector(key)?.focus({ preventScroll: true });
+  syncHistory();
 }
+
+// Verlauf: Zurück-Geste/-Taste schließt Fenster, verlässt Kochmodus und Rezept statt die App.
+// Adresse z. B. #plan, #list, #recipe/lasagne, #cook/lasagne, mit „+“ für ein offenes Fenster.
+const ROUTE_DEPTH = { plan: 1, discover: 1, profile: 1, list: 2, recipe: 2, cook: 3 };
+const routeOf = () => ui.view === 'onboarding' ? '' : `#${ui.view}${['recipe', 'cook'].includes(ui.view) ? '/' + ui.recipe : ''}${ui.sheet ? '+' : ''}`;
+const depthOf = h => { const m = h.match(/^#(\w+)/); return m ? (ROUTE_DEPTH[m[1]] || 1) + (h.endsWith('+') ? 1 : 0) : 0; };
+function syncHistory() {
+  const h = routeOf(), cur = location.hash;
+  if (!h || h === cur) return;
+  if (cur && depthOf(h) > depthOf(cur)) history.pushState(null, '', h); else history.replaceState(null, '', h); // erster Eintrag ersetzt: Zurück auf dem Plan verlässt die App
+}
+window.addEventListener('popstate', () => {
+  if (ui.view === 'onboarding') return;
+  const m = location.hash.match(/^#(\w+)(?:\/([^+]+))?/), v = m && m[1], id = m && m[2] && decodeURIComponent(m[2]);
+  ui.sheet = location.hash.endsWith('+') ? ui.sheet : null;
+  if (ui.view === 'cook' && v !== 'cook') { wake?.release?.(); wake = null; }
+  if (v && ROUTE_DEPTH[v] && (!['recipe', 'cook'].includes(v) || R(id))) { ui.view = v; if (id) ui.recipe = id; }
+  else ui.view = 'plan';
+  ui.form = null; render();
+});
 function rerender(scrollTop) { render(); if (scrollTop) scrollTo(0, 0); }
 
 let toastT;
@@ -722,6 +743,7 @@ document.addEventListener('submit', e => {
 });
 
 if (ui.view === 'onboarding') ui.draft = structuredClone(S.profile);
+else { const h = location.hash.slice(1); if (['list', 'discover', 'profile'].includes(h)) ui.view = h; history.replaceState(null, '', location.pathname + location.search); }
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 // Echte Preise laden; ohne Datei (z. B. file://) bleiben die Schätzungen.
 const getJSON = url => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);

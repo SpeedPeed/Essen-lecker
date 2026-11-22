@@ -75,6 +75,10 @@ const server = http.createServer((req, res) => {
     await click('[data-a="cook"]'); await page.waitForSelector('.cook');
     await click('[data-a="cooking"]'); if (!(await page.locator('.cooking .ing').count())) errors.push(`${name}: Zutaten im Kochmodus`);
     await click('.cook [data-a="cstep"][data-d="1"]'); await shot('06-kochmodus');
+    // Zurück-Geste: Kochmodus → Rezept → Plan
+    await page.goBack(); await page.waitForSelector('.photo.hero');
+    if (await page.locator('.cook').count()) errors.push(`${name}: Zurück verlässt den Kochmodus nicht`);
+    await click('[data-a="cook"]'); await page.waitForSelector('.cook');
     await click('.cook [data-a="exitcook"]'); await click('[data-a="go"][data-id="plan"]');
 
     // Einkaufsliste: abhaken + eigener Artikel; Fokus bleibt nach dem Neurendern erhalten
@@ -103,7 +107,7 @@ const server = http.createServer((req, res) => {
 
     // Kaputter localStorage-Stand darf die App nicht leeren
     await page.evaluate(() => localStorage.setItem('piatto.v1', JSON.stringify({ onboarded: true, profile: { store: 'spar' }, plan: [null, { date: 'x' }] })));
-    await page.reload(); await page.waitForSelector('.card.day');
+    await page.goto(url); await page.waitForSelector('.card.day');
     await page.close();
   }
   await browser.close(); server.close();
