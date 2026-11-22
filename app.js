@@ -124,11 +124,11 @@ const itemCount = () => cost().items.filter(i => !i.pantry).length + S.extras.le
 function ring(spent, budget) {
   const pct = Math.min(1, spent / budget), C = 2 * Math.PI * 42, over = spent > budget;
   return `<svg viewBox="0 0 100 100" width="104" height="104" role="img" aria-label="${eur(spent, 0)} von ${eur(budget, 0)}">
-    <circle cx="50" cy="50" r="42" fill="none" stroke="#F3EFEA" stroke-width="10"/>
-    <circle cx="50" cy="50" r="42" fill="none" stroke="${over ? '#b54a3a' : '#4A7C59'}" stroke-width="10" stroke-linecap="round"
+    <circle cx="50" cy="50" r="42" fill="none" style="stroke:var(--sand)" stroke-width="10"/>
+    <circle cx="50" cy="50" r="42" fill="none" style="stroke:var(${over ? '--danger' : '--sage'})" stroke-width="10" stroke-linecap="round"
       stroke-dasharray="${C * pct} ${C}" transform="rotate(-90 50 50)" style="transition:stroke-dasharray .5s"/>
-    <text x="50" y="50" text-anchor="middle" font-family="Fraunces" font-size="20" font-weight="700" fill="#3D2C24">${eur(spent, 0)}</text>
-    <text x="50" y="66" text-anchor="middle" font-size="9" fill="#7a6c63">geschätzt</text></svg>`;
+    <text x="50" y="50" text-anchor="middle" font-family="Fraunces" font-size="20" font-weight="700" style="fill:var(--text)">${eur(spent, 0)}</text>
+    <text x="50" y="66" text-anchor="middle" font-size="9" style="fill:var(--muted)">geschätzt</text></svg>`;
 }
 
 function vPlan() {
@@ -137,7 +137,7 @@ function vPlan() {
   const days = ui.showPast ? all : all.filter(d => d >= today);
   const rs = S.plan.map(s => s.rid && R(s.rid)).filter(Boolean), avg = k => Math.round(rs.reduce((t, r) => t + r.m[k], 0) / (rs.length || 1));
   return `<div class="row between"><h1>Deine Woche</h1><button class="btn small ghost" data-a="regen">↻ Neu planen</button></div>
-    <div class="card banner">${badge(st)}
+    <div class="plan-top"><div class="card banner">${badge(st)}
       <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${priceNote(st)}</div></div>
       <button class="btn small" data-a="go" data-id="list">Liste öffnen</button></div>
     <div class="card row">${ring(c.total, p.budget)}<div class="grow">
@@ -146,11 +146,11 @@ function vPlan() {
       <div class="muted">Budget ${eur(p.budget, 0)} / Woche</div>
       ${rs.length ? `<div class="muted">Ø ${avg(0)} kcal · ${avg(1)} g Eiweiß pro Portion</div>` : ''}
       ${saved ? `<div class="offer-text">🏷 Aktionen sparen dir ${eur(saved)}</div>` : ''}
-      ${left < 0 ? `<button class="btn small" style="margin-top:8px" data-a="rebalance">Automatisch ausgleichen</button>` : ''}</div></div>
+      ${left < 0 ? `<button class="btn small" style="margin-top:8px" data-a="rebalance">Automatisch ausgleichen</button>` : ''}</div></div></div>
     ${vOffers()}
     ${poolHint()}
     ${past.length ? `<button class="btn small ghost pastbtn" data-a="togglepast" aria-expanded="${!!ui.showPast}">${ui.showPast ? 'Vergangene Tage ausblenden' : `${past.length} vergangene${past.length > 1 ? '' : 'r'} Tag${past.length > 1 ? 'e' : ''} anzeigen`}</button>` : ''}
-    ${days.map(d => `<div class="daylabel${d === today ? ' now' : ''}">${relDay(d)}${dayLabel(d)}</div>${S.plan.map((s, i) => s.date !== d ? '' : slotCard(s, i)).join('')}`).join('')}`;
+    <div class="days">${days.map(d => `<section><div class="daylabel${d === today ? ' now' : ''}">${relDay(d)}${dayLabel(d)}</div>${S.plan.map((s, i) => s.date !== d ? '' : slotCard(s, i)).join('')}</section>`).join('')}</div>`;
 }
 const relDay = d => { const t = new Date(); t.setDate(t.getDate() + 1); return d === P.isoDay() ? 'Heute · ' : d === P.isoDay(t) ? 'Morgen · ' : ''; };
 function poolHint() {
@@ -162,7 +162,7 @@ function poolHint() {
   return strict ? `<div class="card sand">${strict}</div>` : '';
 }
 // Helle Markenfarben (BILLA-Gelb) brauchen dunkle Schrift für ausreichenden Kontrast.
-const badge = st => { const [r, g, b] = st.color.match(/\w\w/g).map(h => parseInt(h, 16)); return `<span class="badge" style="background:${st.color};color:${r * .299 + g * .587 + b * .114 > 150 ? 'var(--espresso)' : '#fff'}">${st.name}</span>`; };
+const badge = st => { const [r, g, b] = st.color.match(/\w\w/g).map(h => parseInt(h, 16)); return `<span class="badge" style="background:${st.color};color:${r * .299 + g * .587 + b * .114 > 150 ? '#2a1f1a' : '#fff'}">${st.name}</span>`; };
 const offerTag = r => P.hasDeal(r, S.profile) ? `<span class="tag offer" title="spart ca. ${eur(P.offerSaving(r, S.profile))}">🏷 Aktion</span>` : '';
 function vOffers() {
   const p = S.profile, st = P.store(p), list = P.offers(p), rs = recipes().filter(r => P.eligible(r, p)), planned = S.plan.map(s => s.rid);
@@ -258,11 +258,11 @@ function fmtQty(qty, unit) {
   return `${r.toLocaleString('de-AT')} ${unit}`;
 }
 function donut(m) {
-  const [kcal, p, c, f] = m, parts = [[p * 4, '#4A7C59', 'Eiweiß', p], [c * 4, '#E8C568', 'Kohlenhydrate', c], [f * 9, '#3D2C24', 'Fett', f]];
+  const [kcal, p, c, f] = m, parts = [[p * 4, 'var(--sage)', 'Eiweiß', p], [c * 4, 'var(--gold)', 'Kohlenhydrate', c], [f * 9, 'var(--espresso)', 'Fett', f]];
   const tot = parts.reduce((s, x) => s + x[0], 0) || 1, C = 2 * Math.PI * 40; let off = 0;
   return `<div class="row"><svg viewBox="0 0 100 100" width="110" height="110" role="img" aria-label="${kcal} kcal">
-    ${parts.map(([v, col]) => { const l = v / tot * C, s = `<circle cx="50" cy="50" r="40" fill="none" stroke="${col}" stroke-width="12" stroke-dasharray="${l} ${C - l}" stroke-dashoffset="${-off}" transform="rotate(-90 50 50)"/>`; off += l; return s; }).join('')}
-    <text x="50" y="50" text-anchor="middle" font-family="Fraunces" font-size="20" font-weight="700" fill="#3D2C24">${kcal}</text><text x="50" y="64" text-anchor="middle" font-size="9" fill="#7a6c63">kcal</text></svg>
+    ${parts.map(([v, col]) => { const l = v / tot * C, s = `<circle cx="50" cy="50" r="40" fill="none" style="stroke:${col}" stroke-width="12" stroke-dasharray="${l} ${C - l}" stroke-dashoffset="${-off}" transform="rotate(-90 50 50)"/>`; off += l; return s; }).join('')}
+    <text x="50" y="50" text-anchor="middle" font-family="Fraunces" font-size="20" font-weight="700" style="fill:var(--text)">${kcal}</text><text x="50" y="64" text-anchor="middle" font-size="9" style="fill:var(--muted)">kcal</text></svg>
     <div class="grow">${parts.map(([, col, l, g]) => `<div class="row" style="margin:6px 0"><i style="width:10px;height:10px;border-radius:3px;background:${col}"></i><span class="grow">${l}</span><b>${g} g</b></div>`).join('')}</div></div>`;
 }
 const recipeServ = () => ui.sv ?? P.servings(S.profile);
@@ -448,6 +448,7 @@ function render() {
   // Fokus über das Neurendern retten (sonst landen Tastatur/Screenreader nach jedem Klick am Seitenanfang).
   const f = document.activeElement, key = f && f !== document.body && app.contains(f) && f.dataset.a
     ? ['a', 'id', 'i', 'd'].filter(k => f.dataset[k] != null).map(k => `[data-${k}="${CSS.escape(f.dataset[k])}"]`).join('') : null;
+  app.dataset.view = v === 'cook' ? 'recipe' : v;
   app.innerHTML = body + tabs + (ui.sheet ? vSwapSheet() : '') + (v === 'cook' ? vCook() : '');
   if (key) app.querySelector(key)?.focus({ preventScroll: true });
 }
