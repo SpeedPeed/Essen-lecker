@@ -213,6 +213,7 @@ function vRecipe() {
       return `<div class="ing"><span>${esc(g.name)}${P.packOf(id, p).was && !g.flags.includes('pantry') ? ' <span class="tag offer">Aktion</span>' : ''}</span><span class="muted">${fmtQty(a * sv, g.unit)}</span></div>`; }).join('')}</div>
     ${r.leftovers ? `<div class="card sand">🥡 <b>Gut für Reste:</b> ${p.fridge ? 'Hält 2–3 Tage im Kühlschrank. Aufwärmen mit einem Schuss Wasser bei mittlerer Hitze.' : 'Am besten frisch essen.'}${p.freezer ? ' Lässt sich portionsweise einfrieren.' : ''}</div>` : ''}
     <div class="card"><h3>Zubereitung</h3><ol style="padding-left:20px;margin:0">${r.steps.map(s => `<li style="margin-bottom:8px">${esc(s.x)}${s.t ? ` <span class="tag">⏱ ${fmtTime(s.t)}</span>` : ''}</li>`).join('')}</ol></div>
+    <button class="btn small bring" data-a="bringrecipe" style="margin-bottom:12px">Zutaten in Bring! übernehmen</button>
     <div class="footer-cta"><button class="btn" data-a="cook">Loslegen</button></div>`;
 }
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -256,6 +257,7 @@ function vList() {
     <h1>Einkaufsliste</h1><div class="row between muted"><span>${done}/${all.length} erledigt</span><span>${eur(cost().total)}</span></div>
     <div class="progress" style="margin:8px 0 16px"><i style="width:${all.length ? done / all.length * 100 : 0}%;background:var(--sage)"></i></div>
     <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Liste kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button></div>
+    <button class="btn small bring" data-a="bringlist">In Bring! übernehmen</button>
     ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.saved ? ` · <span class="offer-text">🏷 Aktion statt ${eur(i.cost + i.saved)}${i.offer ? ` (${esc(offerWhen(i.offer))})` : ''}</span>` : ''}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}`)).join('')}`).join('')}
     <div class="aisle-title">Eigene Einkäufe</div>
     ${S.extras.map((e, n) => `<div class="row">${row('x:' + e, e)}<button class="back" data-a="rmextra" data-i="${n}" aria-label="${esc(e)} entfernen">✕</button></div>`).join('')}
@@ -263,6 +265,21 @@ function vList() {
     <p class="muted" style="margin-top:16px">${priceNote(st)}, jeweils ganze Packungen. Echte Preise via heisse-preise.io, ohne Gewähr – Aktionen und Filialpreise können abweichen. Einwegpfand (Getränke) ist nicht enthalten.</p>
     ${done ? `<button class="btn ghost" data-a="uncheck" style="margin-top:8px">Häkchen zurücksetzen</button>` : ''}`;
 }
+// Bring! liest nur serverseitiges schema.org-Rezept-Markup (kein JS). Die Seite wird daher als Base64 in einer
+// httpbin.org-URL verpackt, die genau dieses HTML ausliefert; Bring! öffnet dann seinen Import-Dialog.
+// shortcut: hängt an httpbin.org – bei Ausfällen eigenen Mini-Endpoint (z. B. Cloudflare Worker) nehmen.
+function bringUrl(title, lines) {
+  const ld = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Recipe', name: title, recipeYield: '1', recipeIngredient: lines }).replace(/</g, '\\u003c');
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><script type="application/ld+json">${ld}</script></head><body><h1>${esc(title)}</h1></body></html>`;
+  const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(html))).replace(/\+/g, '-').replace(/\//g, '_');
+  return `https://api.getbring.com/rest/bringrecipes/deeplink?url=${encodeURIComponent('https://httpbin.org/base64/' + b64)}&source=web&baseQuantity=1&requestedQuantity=1`;
+}
+const shortName = ing => ing.name.replace(/ \(.*\)/, '');
+function bringListLines() {
+  const items = listGroups().flatMap(g => g.items).filter(i => !i.pantry && !S.checked[i.id]);
+  return [...items.map(i => `${shortName(i.ing)}, ${i.packs}× ${i.pack}`), ...S.extras.filter(e => !S.checked['x:' + e])];
+}
+
 function listText() {
   return `Einkaufsliste – ${P.store(S.profile).name}\n` + listGroups().map(g => `\n${g.title}\n` + g.items.map(i => `${S.checked[i.id] ? '☑' : '☐'} ${itemLine(i)}`).join('\n')).join('\n')
     + (S.extras.length ? `\n\nEigene Einkäufe\n` + S.extras.map(e => `${S.checked['x:' + e] ? '☑' : '☐'} ${e}`).join('\n') : '');
@@ -427,6 +444,16 @@ const A = {
   uncheck: () => { S.checked = {}; save(); },
   rmextra: d => { S.extras.splice(+d.i, 1); save(); },
   copy: async () => { try { await navigator.clipboard.writeText(listText()); toast('Liste kopiert'); } catch { toast('Kopieren nicht möglich'); } return false; },
+  bringlist: () => {
+    const lines = bringListLines();
+    if (!lines.length) { toast('Alles erledigt – nichts zu übertragen'); return false; }
+    location.href = bringUrl(`Piatto Einkaufsliste ${P.store(S.profile).name}`, lines); return false;
+  },
+  bringrecipe: () => {
+    const r = R(ui.recipe), sv = P.servings(S.profile);
+    const lines = Object.entries(r.ing).filter(([id]) => !D.INGREDIENTS[id].flags.includes('pantry')).map(([id, a]) => `${shortName(D.INGREDIENTS[id])}, ${fmtQty(a * sv, D.INGREDIENTS[id].unit)}`);
+    location.href = bringUrl(r.title, lines); return false;
+  },
   share: async () => {
     if (navigator.share) { try { await navigator.share({ title: 'Einkaufsliste', text: listText() }); } catch { /* abgebrochen */ } }
     else await A.copy();

@@ -75,6 +75,9 @@ a { color: inherit; }
 .price { font-weight: 700; color: var(--sage); }
 .over { color: var(--danger); }
 
+/* Bring! */
+.btn.bring { display: block; width: 100%; margin-top: 8px; background: #E5464B; color: #fff; }
+
 /* Angebote */
 .tag.offer { background: var(--gold); margin-left: 4px; }
 .offer-text { color: #8a5a00; font-weight: 600; font-size: 13px; }
