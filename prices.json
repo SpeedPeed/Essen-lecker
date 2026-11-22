@@ -1,0 +1,700 @@
+{
+ "source": "heisse-preise.io",
+ "fetched": "2026-11-22",
+ "stores": {
+  "billa": {
+   "asOf": "2026-11-22",
+   "items": {
+    "erdaepfel": {
+     "name": "Wunderlinge Erdäpfel",
+     "price": 2.07,
+     "qty": 2500,
+     "date": "2026-10-06"
+    },
+    "zwiebel": {
+     "name": "Clever Zwiebel Gelb",
+     "price": 1.99,
+     "qty": 3000,
+     "date": "2026-09-15"
+    },
+    "karotten": {
+     "name": "Clever Karotten",
+     "price": 0.99,
+     "qty": 1000,
+     "date": "2026-11-21"
+    },
+    "paradeiser": {
+     "name": "Clever Tomaten",
+     "price": 2.69,
+     "qty": 1000,
+     "date": "2026-11-03"
+    },
+    "karfiol": {
+     "name": "Karfiol",
+     "price": 1.79,
+     "qty": 1,
+     "date": "2026-11-19"
+    },
+    "brokkoli": {
+     "name": "BILLA Brokkoli",
+     "price": 1.89,
+     "qty": 500,
+     "date": "2026-09-24"
+    },
+    "weisskraut": {
+     "name": "Da komm ich her! Weißkraut",
+     "price": 0.99,
+     "qty": 1000,
+     "date": "2026-11-10"
+    },
+    "salat": {
+     "name": "Häuptelsalat",
+     "price": 0.99,
+     "qty": 1,
+     "date": "2026-11-19"
+    },
+    "champignons": {
+     "name": "Clever Champignons",
+     "price": 0.99,
+     "qty": 400,
+     "date": "2026-04-12"
+    },
+    "lauch": {
+     "name": "Da komm ich her! Lauch",
+     "price": 1.42,
+     "qty": 1,
+     "date": "2026-07-01"
+    },
+    "ingwer": {
+     "name": "BILLA Ingwer",
+     "price": 1.38,
+     "qty": 50,
+     "date": "2026-11-22"
+    },
+    "schwarzbrot": {
+     "name": "Clever Mischbrot 45%",
+     "price": 1.61,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "feta": {
+     "name": "Clever Hirtenkäse",
+     "price": 2.29,
+     "qty": 250,
+     "date": "2026-09-12"
+    },
+    "emmentaler": {
+     "name": "Clever Emmentaler gerieben",
+     "price": 2.79,
+     "qty": 250,
+     "date": "2026-07-30"
+    },
+    "bergkaese": {
+     "name": "Clever Cheddar Käse gerieben",
+     "price": 2.99,
+     "qty": 250,
+     "date": "2026-10-01"
+    },
+    "mozzarella": {
+     "name": "Clever Mozzarella",
+     "price": 0.75,
+     "qty": 125,
+     "date": "2026-11-05"
+    },
+    "parmesan": {
+     "name": "Grana Padano Flocken",
+     "price": 3.29,
+     "qty": 125,
+     "date": "2026-06-03"
+    },
+    "frankfurter": {
+     "name": "Hofstädter Fair zum Tier Sacherwürstel",
+     "price": 5.49,
+     "qty": 320,
+     "date": "2026-11-19"
+    },
+    "topfen": {
+     "name": "Clever Topfen 20%",
+     "price": 1.19,
+     "qty": 250,
+     "date": "2026-04-12"
+    },
+    "schlagobers": {
+     "name": "Clever Schlagobers 36% länger frisch",
+     "price": 1.49,
+     "qty": 250,
+     "date": "2026-04-12"
+    },
+    "sauerrahm": {
+     "name": "BILLA Free Sauerrahm 15%",
+     "price": 0.99,
+     "qty": 250,
+     "date": "2026-10-31"
+    },
+    "milch": {
+     "name": "Clever Vollmilch",
+     "price": 1.32,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "butter": {
+     "name": "Clever Österreichische Teebutter",
+     "price": 1.59,
+     "qty": 250,
+     "date": "2026-10-01"
+    },
+    "eier": {
+     "name": "BILLA Freilandeier M",
+     "price": 3.32,
+     "qty": 10,
+     "date": "2026-11-05"
+    },
+    "joghurt": {
+     "name": "Clever Naturjoghurt 3.6%",
+     "price": 0.94,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "spaetzle": {
+     "name": "BILLA Eierspätzle",
+     "price": 2.18,
+     "qty": 500,
+     "date": "2026-07-26"
+    },
+    "gnocchi": {
+     "name": "Clever Gnocchi",
+     "price": 0.99,
+     "qty": 500,
+     "date": "2026-04-12"
+    },
+    "faschiertes": {
+     "name": "Clever Faschiertes gemischt",
+     "price": 3.99,
+     "qty": 500,
+     "date": "2026-11-19"
+    },
+    "rindsgulasch": {
+     "name": "Clever Rindsgulasch",
+     "price": 2.99,
+     "qty": 400,
+     "date": "2026-06-13"
+    },
+    "huhn": {
+     "name": "Clever Hendlfilet",
+     "price": 9.09,
+     "qty": 700,
+     "date": "2026-04-12"
+    },
+    "penne": {
+     "name": "Barilla Penne Rigate",
+     "price": 1.89,
+     "qty": 500,
+     "date": "2026-09-10"
+    },
+    "spaghetti": {
+     "name": "BILLA Spaghetti Bronze",
+     "price": 1.23,
+     "qty": 500,
+     "date": "2026-09-24"
+    },
+    "fleckerl": {
+     "name": "Recheis Goldmarke Fleckerl",
+     "price": 2.37,
+     "qty": 500,
+     "date": "2026-10-15"
+    },
+    "reis": {
+     "name": "Clever Langkornreis",
+     "price": 1.13,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "linsen": {
+     "name": "Clever Linsen",
+     "price": 1.39,
+     "qty": 800,
+     "date": "2026-10-29"
+    },
+    "roteLinsen": {
+     "name": "Sera Rote Linsen",
+     "price": 3.99,
+     "qty": 900,
+     "date": "2026-03-27"
+    },
+    "couscous": {
+     "name": "BILLA Couscous",
+     "price": 1.49,
+     "qty": 500,
+     "date": "2025-09-22"
+    },
+    "kidney": {
+     "name": "Clever Rote Kidney Bohnen",
+     "price": 0.65,
+     "qty": 400,
+     "date": "2026-10-01"
+    },
+    "kichererbsen": {
+     "name": "Clever Kichererbsen 400g",
+     "price": 0.69,
+     "qty": 400,
+     "date": "2026-11-12"
+    },
+    "mais": {
+     "name": "BILLA Mais dampfgegart",
+     "price": 1.49,
+     "qty": 340,
+     "date": "2026-07-30"
+    },
+    "passata": {
+     "name": "Clever Passierte Tomaten",
+     "price": 0.69,
+     "qty": 500,
+     "date": "2026-04-12"
+    },
+    "dosenparadeiser": {
+     "name": "Clever Geschälte Tomaten",
+     "price": 0.49,
+     "qty": 400,
+     "date": "2026-04-12"
+    },
+    "paradeismark": {
+     "name": "Clever Tomatenmark",
+     "price": 0.99,
+     "qty": 200,
+     "date": "2026-04-12"
+    },
+    "kokosmilch": {
+     "name": "Windmill Kokosmilch",
+     "price": 1.99,
+     "qty": 400,
+     "date": "2025-06-04"
+    },
+    "currypaste": {
+     "name": "BILLA Thai Rote Currypaste",
+     "price": 1.69,
+     "qty": 70,
+     "date": "2026-03-01"
+    },
+    "thunfisch": {
+     "name": "Clever Thunfisch im eigenen Saft",
+     "price": 1.69,
+     "qty": 195,
+     "date": "2026-09-17"
+    },
+    "oliven": {
+     "name": "Hutesa Schwarze Oliven ohne Kern",
+     "price": 1.49,
+     "qty": 140,
+     "date": "2025-06-04"
+    },
+    "sojasauce": {
+     "name": "BILLA Sojasauce",
+     "price": 1.65,
+     "qty": 250,
+     "date": "2026-09-24"
+    },
+    "erdnussmus": {
+     "name": "bett'r Erdnussbutter",
+     "price": 3.49,
+     "qty": 250,
+     "date": "2025-09-15"
+    },
+    "pesto": {
+     "name": "Clever Pesto Alla Genovese",
+     "price": 1.59,
+     "qty": 190,
+     "date": "2026-10-29"
+    },
+    "erbsen": {
+     "name": "Clever Junge Erbsen",
+     "price": 1.89,
+     "qty": 1000,
+     "date": "2026-11-22"
+    },
+    "spinat": {
+     "name": "BILLA Blattspinat",
+     "price": 2.71,
+     "qty": 700,
+     "date": "2026-11-22"
+    },
+    "wokgemuese": {
+     "name": "BILLA Wok Gemüse",
+     "price": 2.66,
+     "qty": 700,
+     "date": "2026-11-22"
+    },
+    "lachs": {
+     "name": "Clever Wildlachsfilet ohne Haut",
+     "price": 4.49,
+     "qty": 250,
+     "date": "2026-11-22"
+    },
+    "garnelen": {
+     "name": "Clever Riesengarnelen geschält",
+     "price": 3.99,
+     "qty": 225,
+     "date": "2026-11-22"
+    }
+   }
+  },
+  "spar": {
+   "asOf": "2026-09-10",
+   "items": {
+    "erdaepfel": {
+     "name": "SPAR Kartoffel Heurige 1,5kg Netz",
+     "price": 0.95,
+     "qty": 1500,
+     "date": "2026-07-01"
+    },
+    "zwiebel": {
+     "name": "S-BUDGET Zwiebel gelb",
+     "price": 1.99,
+     "qty": 3000,
+     "date": "2026-08-31"
+    },
+    "knoblauch": {
+     "name": "Knoblauch frisch 1 STK",
+     "price": 1.23,
+     "qty": 1,
+     "date": "2026-07-01"
+    },
+    "karotten": {
+     "name": "SPAR Karotten",
+     "price": 1.13,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "paradeiser": {
+     "name": "S-BUDGET Tomaten rund per kg",
+     "price": 1.42,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "paprika": {
+     "name": "SPAR Spitzpaprika Mix",
+     "price": 2.37,
+     "qty": 3,
+     "date": "2026-07-01"
+    },
+    "zucchini": {
+     "name": "SPAR Zucchini",
+     "price": 2.37,
+     "qty": 2,
+     "date": "2026-08-30"
+    },
+    "melanzani": {
+     "name": "SPAR Melanzani",
+     "price": 1.89,
+     "qty": 1,
+     "date": "2026-07-01"
+    },
+    "weisskraut": {
+     "name": "SPAR Weißkraut per kg",
+     "price": 1.23,
+     "qty": 1000,
+     "date": "2026-09-10"
+    },
+    "salat": {
+     "name": "Kopfsalat             Kl.1 Stk 1 STK",
+     "price": 1.51,
+     "qty": 1,
+     "date": "2026-08-31"
+    },
+    "gurke": {
+     "name": "SPAR Gurke",
+     "price": 1.32,
+     "qty": 1,
+     "date": "2026-09-06"
+    },
+    "champignons": {
+     "name": "S-BUDGET Champignons weiß",
+     "price": 1.99,
+     "qty": 500,
+     "date": "2026-09-07"
+    },
+    "lauch": {
+     "name": "Porree per Stk 1 STK",
+     "price": 1.49,
+     "qty": 1,
+     "date": "2025-05-14"
+    },
+    "zitrone": {
+     "name": "S-BUDGET Zitronen 7 Stk.",
+     "price": 1.39,
+     "qty": 7,
+     "date": "2025-12-22"
+    },
+    "ingwer": {
+     "name": "SPAR Ingwer 150g",
+     "price": 1.99,
+     "qty": 150,
+     "date": "2025-12-22"
+    },
+    "fruehlingszwiebel": {
+     "name": "SPAR Jungzwiebel per Bund",
+     "price": 1.59,
+     "qty": 1,
+     "date": "2025-08-03"
+    },
+    "schwarzbrot": {
+     "name": "S-BUDGET Hausbrot",
+     "price": 1.61,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "feta": {
+     "name": "S-BUDGET Hirtenkäse",
+     "price": 1.99,
+     "qty": 250,
+     "date": "2022-12-06"
+    },
+    "emmentaler": {
+     "name": "S-BUDGET Emmentaler gerieben",
+     "price": 2.79,
+     "qty": 250,
+     "date": "2026-07-21"
+    },
+    "bergkaese": {
+     "name": "Schärdinger Bergkäse gerieben",
+     "price": 3.19,
+     "qty": 200,
+     "date": "2026-04-09"
+    },
+    "mozzarella": {
+     "name": "S-BUDGET Mozzarella",
+     "price": 0.79,
+     "qty": 125,
+     "date": "2026-09-08"
+    },
+    "parmesan": {
+     "name": "DESPAR Grana Padano gehobelt",
+     "price": 2.39,
+     "qty": 100,
+     "date": "2024-11-20"
+    },
+    "frankfurter": {
+     "name": "TANN Frankfurter 2 Paar per 250g-Packung",
+     "price": 3.39,
+     "qty": 250,
+     "date": "2023-01-02"
+    },
+    "topfen": {
+     "name": "SPAR Österreichischer Speisetopfen",
+     "price": 1.19,
+     "qty": 250,
+     "date": "2026-03-18"
+    },
+    "schlagobers": {
+     "name": "Schärdinger Formil H-Schlagobers",
+     "price": 0.99,
+     "qty": 200,
+     "date": "2026-02-24"
+    },
+    "sauerrahm": {
+     "name": "SPAR Sauerrahm 18% Fett",
+     "price": 0.89,
+     "qty": 250,
+     "date": "2023-04-14"
+    },
+    "milch": {
+     "name": "S-BUDGET Vollmilch 3,5% Fett länger frisch",
+     "price": 1.32,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "butter": {
+     "name": "S-BUDGET Butter",
+     "price": 1.51,
+     "qty": 250,
+     "date": "2026-07-01"
+    },
+    "eier": {
+     "name": "S-BUDGET Frische Eier aus Freilandhaltung",
+     "price": 3.32,
+     "qty": 10,
+     "date": "2026-07-01"
+    },
+    "joghurt": {
+     "name": "SalzburgMilch Premium Naturjoghurt 3,6% Fett cremig",
+     "price": 1,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "spaetzle": {
+     "name": "S-BUDGET Eierspätzle 500G",
+     "price": 1.32,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "gnocchi": {
+     "name": "S-BUDGET Kartoffel-Gnocchi 500G",
+     "price": 0.79,
+     "qty": 500,
+     "date": "2023-04-21"
+    },
+    "faschiertes": {
+     "name": "TANN Faschiertes gemischt per Packung",
+     "price": 6.99,
+     "qty": 500,
+     "date": "2025-09-08"
+    },
+    "rindsgulasch": {
+     "name": "S-BUDGET Rindsgulasch",
+     "price": 2.99,
+     "qty": 400,
+     "date": "2026-04-14"
+    },
+    "huhn": {
+     "name": "SPAR Feinstes Geflügel Hendlfilet 2 Stück",
+     "price": 16.19,
+     "qty": 1000,
+     "date": "2026-07-30"
+    },
+    "penne": {
+     "name": "DESPAR Penne Rigate",
+     "price": 1.13,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "spaghetti": {
+     "name": "DESPAR Spaghetti n. 5",
+     "price": 1.13,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "fleckerl": {
+     "name": "Recheis Goldmarke Fleckerl",
+     "price": 2.37,
+     "qty": 500,
+     "date": "2026-07-01"
+    },
+    "reis": {
+     "name": "S-BUDGET Langkornreis",
+     "price": 1.23,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "linsen": {
+     "name": "S-BUDGET Linsen",
+     "price": 1.19,
+     "qty": 800,
+     "date": "2026-03-24"
+    },
+    "roteLinsen": {
+     "name": "S-BUDGET Rote Linsen",
+     "price": 1.19,
+     "qty": 500,
+     "date": "2026-05-12"
+    },
+    "couscous": {
+     "name": "S-BUDGET Couscous",
+     "price": 1.99,
+     "qty": 1000,
+     "date": "2025-09-13"
+    },
+    "kidney": {
+     "name": "S-BUDGET Rote Kidney Bohnen",
+     "price": 0.59,
+     "qty": 400,
+     "date": "2026-09-08"
+    },
+    "kichererbsen": {
+     "name": "SPAR Kichererbsen",
+     "price": 0.99,
+     "qty": 380,
+     "date": "2025-11-18"
+    },
+    "mais": {
+     "name": "Cirio Mais",
+     "price": 1.49,
+     "qty": 300,
+     "date": "2022-12-21"
+    },
+    "passata": {
+     "name": "S-BUDGET Passierte Tomaten",
+     "price": 0.69,
+     "qty": 500,
+     "date": "2023-12-19"
+    },
+    "dosenparadeiser": {
+     "name": "S-BUDGET Tomaten gewürfelt",
+     "price": 0.69,
+     "qty": 400,
+     "date": "2025-10-21"
+    },
+    "paradeismark": {
+     "name": "DESPAR Tomatenmark 2-fach konzentriert",
+     "price": 0.99,
+     "qty": 140,
+     "date": "2025-11-20"
+    },
+    "kokosmilch": {
+     "name": "Shan'shi Kokosmilch",
+     "price": 2.39,
+     "qty": 400,
+     "date": "2024-11-28"
+    },
+    "currypaste": {
+     "name": "Shan'shi Thai Curry Paste Red",
+     "price": 2.99,
+     "qty": 115,
+     "date": "2023-03-07"
+    },
+    "thunfisch": {
+     "name": "S-BUDGET MSC Thunfisch Natur",
+     "price": 1.69,
+     "qty": 195,
+     "date": "2026-09-01"
+    },
+    "oliven": {
+     "name": "SPAR Spanische Oliven schwarz ohne Kern",
+     "price": 1.69,
+     "qty": 225,
+     "date": "2024-04-16"
+    },
+    "sojasauce": {
+     "name": "Bonasia Sojasauce hell",
+     "price": 1.39,
+     "qty": 250,
+     "date": "2024-10-15"
+    },
+    "erdnussmus": {
+     "name": "SPAR Peanut Butter American Style Creamy",
+     "price": 2.49,
+     "qty": 350,
+     "date": "2024-02-20"
+    },
+    "pesto": {
+     "name": "S-BUDGET Pesto alla Genovese",
+     "price": 1.49,
+     "qty": 190,
+     "date": "2025-08-28"
+    },
+    "erbsen": {
+     "name": "S-BUDGET Erbsen tiefgekühlt",
+     "price": 1.89,
+     "qty": 1000,
+     "date": "2026-07-01"
+    },
+    "spinat": {
+     "name": "S-BUDGET Blattspinat tiefgekühlt 15 x 50g",
+     "price": 2.08,
+     "qty": 750,
+     "date": "2026-07-01"
+    },
+    "lachs": {
+     "name": "S-BUDGET MSC Wildlachsfilet mit Haut 2 Stück",
+     "price": 3.99,
+     "qty": 250,
+     "date": "2023-10-10"
+    },
+    "garnelen": {
+     "name": "S-BUDGET ASC Riesengarnelen geschält",
+     "price": 3.99,
+     "qty": 225,
+     "date": "2026-02-12"
+    }
+   }
+  }
+ }
+}

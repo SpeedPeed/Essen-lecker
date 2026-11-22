@@ -26,3 +26,12 @@ const both = P.generate({ ...base, meals: { lunch: true, dinner: true }, budget:
 const rb = P.rebalance(both.map((s, i) => i === 3 ? { ...s, rid: 'slowgulasch' } : s), 3, { ...base, equipment: [...base.equipment, 'slowcooker'], meals: { lunch: true, dinner: true }, budget: 70 }, D.RECIPES);
 assert.strictEqual(rb[3].rid, 'slowgulasch');
 console.log('ok', cost.toFixed(2) + ' €', (Date.now() - t) + ' ms');
+
+// Echte Preise: BILLA nutzt reale Packung, HOFER fällt auf Schätzung zurück
+P.setPrices({ stores: { billa: { asOf: '2026-11-22', items: { topfen: { name: 'Clever Topfen 20%', price: 0.99, qty: 500 } } } } });
+const tb = P.weekCost(['ofenerdaepfel'], D.RECIPES, { ...base, adults: 1, store: 'billa' }).items.find(i => i.id === 'topfen');
+assert.deepStrictEqual([tb.packs, tb.cost, tb.pack, tb.product], [1, 0.99, '500 g', 'Clever Topfen 20%']);
+assert.ok(!P.weekCost(['ofenerdaepfel'], D.RECIPES, { ...base, adults: 1 }).items.find(i => i.id === 'topfen').product);
+P.setPrices(require('./prices.json'));
+const real = P.generate({ ...base, store: 'billa' }, D.RECIPES);
+console.log('ok echte Preise BILLA', P.weekCost(real.map(s => s.rid), D.RECIPES, { ...base, store: 'billa' }).total.toFixed(2) + ' €');

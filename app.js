@@ -59,7 +59,7 @@ function kitchenSVG(p) {
 const STEPS = [
   { t: 'Wo kaufst du ein?', s: 'Preise und Gang-Reihenfolge passen sich deinem Markt an.', ok: p => p.store,
     b: p => `<div class="grid">${D.STORES.map(s => `<button class="opt" ${sel(p.store === s.id)} data-a="store" data-id="${s.id}">
-      <span class="logo" style="color:${p.store === s.id ? 'inherit' : s.color}">${s.name}</span>${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small></button>`).join('')}</div>` },
+      <span class="logo" style="color:${p.store === s.id ? 'inherit' : s.color}">${s.name}</span>${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small>${P.realStore({ store: s.id }) ? '<small>✓ echte Preise</small>' : ''}</button>`).join('')}</div>` },
   { t: 'Für wen kochst du?', s: 'Portionen werden automatisch skaliert.', ok: () => true,
     b: p => `${tableSVG(p)}<div class="card"><div class="row between"><b>Erwachsene</b><div class="stepper">
       <button data-a="adults" data-d="-1" aria-label="weniger">−</button><b>${p.adults}</b><button data-a="adults" data-d="1" aria-label="mehr">+</button></div></div>
@@ -102,7 +102,9 @@ function vOnboarding() {
 // ---------- Plan ----------
 const WD = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 const dayLabel = iso => { const d = new Date(iso + 'T12:00'); return `${WD[d.getDay()]}, ${d.getDate()}.${d.getMonth() + 1}.`; };
-const photo = (r, cls = '') => `<div class="photo ${cls}" style="background:linear-gradient(135deg,hsl(${r.hue ?? 30} 70% 88%),hsl(${r.hue ?? 30} 55% 72%))" aria-hidden="true">${esc(r.emoji || '🍽️')}</div>`;
+let CREDITS = {};
+const photo = (r, cls = '') => `<div class="photo ${cls}" style="background:linear-gradient(135deg,hsl(${r.hue ?? 30} 70% 88%),hsl(${r.hue ?? 30} 55% 72%))" aria-hidden="true">${CREDITS[r.id] ? `<img src="img/${r.id}.jpg" alt="" loading="lazy">` : esc(r.emoji || '🍽️')}</div>`;
+const credit = id => { const c = CREDITS[id]; return c ? `<p class="muted" style="font-size:12px;margin-top:-8px">Foto: <a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title)}</a> von ${esc(c.creator || 'unbekannt')}, ${c.licenseUrl ? `<a href="${esc(c.licenseUrl)}" target="_blank" rel="noopener">${esc(c.license)}</a>` : esc(c.license)}</p>` : ''; };
 const cost = () => P.weekCost(S.plan.map(s => s.rid), recipes(), S.profile);
 const itemCount = () => cost().items.filter(i => !i.pantry).length + S.extras.length;
 
@@ -121,7 +123,7 @@ function vPlan() {
   const days = [...new Set(S.plan.map(s => s.date))];
   return `<div class="row between"><h1>Deine Woche</h1><button class="btn small ghost" data-a="regen">↻ Neu planen</button></div>
     <div class="card banner"><span class="badge" style="background:${st.color}">${st.name}</span>
-      <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">Einkaufsliste für ${st.name}</div></div>
+      <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${priceNote(st)}</div></div>
       <button class="btn small" data-a="go" data-id="list">Liste öffnen</button></div>
     <div class="card row">${ring(c.total, p.budget)}<div class="grow">
       <div class="muted">${meals} Mahlzeiten · ${fmtServ(P.servings(p))} Portionen</div>
@@ -186,7 +188,7 @@ function vRecipe() {
   const fav = S.favs.includes(r.id);
   return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="${ui.back}" aria-label="Zurück">←</button>
     <button class="back" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${fav}">${fav ? '♥' : '♡'}</button></div>
-    ${photo(r, 'hero')}<span class="tag">${esc(r.cat)}</span><h1 style="margin-top:8px">${esc(r.title)}</h1>
+    ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span><h1 style="margin-top:8px">${esc(r.title)}</h1>
     <div class="meta" style="font-size:14px;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p))}</span></div>
     ${P.eligible(r, p) ? '' : `<div class="card sand over">Passt nicht zu deinem Profil (Ernährung, Allergie, Abneigung oder Küchengerät).</div>`}
     <div class="card"><h3>Pro Portion</h3>${donut(r.m)}</div>
@@ -217,7 +219,9 @@ function listGroups() {
   return st.aisleOrder.map((a, n) => ({ title: `${n + 1}. ${D.AISLES[a]}`, items: items.filter(i => i.ing.aisle === a).sort((x, y) => x.pantry - y.pantry || x.ing.name.localeCompare(y.ing.name)) }))
     .filter(g => g.items.length);
 }
-const itemLine = i => i.pantry ? `${i.ing.name} (Vorrat prüfen)` : `${i.ing.name} – ${i.packs}× ${i.ing.pack}`;
+const itemLine = i => i.pantry ? `${i.ing.name} (Vorrat prüfen)` : `${i.ing.name} – ${i.packs}× ${i.pack}${i.product ? ` (${i.product})` : ''}`;
+const fmtDate = iso => new Date(iso + 'T12:00').toLocaleDateString('de-AT');
+const priceNote = st => { const rs = P.realStore({ store: st.id }); return rs ? `Echte ${st.name}-Preise · Stand ${fmtDate(rs.asOf)}` : `Geschätzte Preise auf ${st.name}-Niveau`; };
 function vList() {
   const st = P.store(S.profile), groups = listGroups(), all = [...groups.flatMap(g => g.items.map(i => i.id)), ...S.extras.map(e => 'x:' + e)];
   const done = all.filter(id => S.checked[id]).length;
@@ -226,11 +230,11 @@ function vList() {
     <h1>Einkaufsliste</h1><div class="row between muted"><span>${done}/${all.length} erledigt</span><span>${eur(cost().total)}</span></div>
     <div class="progress" style="margin:8px 0 16px"><i style="width:${all.length ? done / all.length * 100 : 0}%;background:var(--sage)"></i></div>
     <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Liste kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button></div>
-    ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.ing.pack)} · ${eur(i.cost)}`)).join('')}`).join('')}
+    ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}`)).join('')}`).join('')}
     <div class="aisle-title">Eigene Einkäufe</div>
     ${S.extras.map((e, n) => `<div class="row">${row('x:' + e, e)}<button class="back" data-a="rmextra" data-i="${n}" aria-label="${esc(e)} entfernen">✕</button></div>`).join('')}
     <form class="row" data-f="extra" style="margin-top:12px"><input name="x" placeholder="z. B. Kaffee, Klopapier" aria-label="Artikel" maxlength="80"><button class="btn small">+ Hinzufügen</button></form>
-    <p class="muted" style="margin-top:16px">Preise sind Schätzungen auf ${st.name}-Niveau für ganze Packungen. Einwegpfand (Getränke) ist nicht enthalten.</p>
+    <p class="muted" style="margin-top:16px">${priceNote(st)}, jeweils ganze Packungen. Echte Preise via heisse-preise.io, ohne Gewähr – Aktionen und Filialpreise können abweichen. Einwegpfand (Getränke) ist nicht enthalten.</p>
     ${done ? `<button class="btn ghost" data-a="uncheck" style="margin-top:8px">Häkchen zurücksetzen</button>` : ''}`;
 }
 function listText() {
@@ -454,5 +458,11 @@ document.addEventListener('submit', e => {
 });
 
 if (ui.view === 'onboarding') ui.draft = structuredClone(S.profile);
-if (S.onboarded && !S.plan.length) regenerate();
-render();
+// Echte Preise laden; ohne Datei (z. B. file://) bleiben die Schätzungen.
+const getJSON = url => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
+Promise.all([getJSON('prices.json'), getJSON('img/credits.json')]).then(([pr, cr]) => {
+  if (pr) P.setPrices(pr);
+  CREDITS = cr || {};
+  if (S.onboarded && !S.plan.length) regenerate();
+  render();
+});

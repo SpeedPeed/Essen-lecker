@@ -30,9 +30,22 @@
     return s;
   }
 
+  // Echte Packung (prices.json von heisse-preise.io) oder Schätzung über den Preisfaktor des Markts.
+  let PRICES = null;
+  const setPrices = j => { PRICES = j; };
+  const realStore = p => PRICES && PRICES.stores[p.store];
+  function packOf(id, p) {
+    const ing = D.INGREDIENTS[id], real = realStore(p) && realStore(p).items[id];
+    if (!real) return { packQty: ing.packQty, price: ing.price * store(p).priceFactor, pack: ing.pack, product: null };
+    const metric = ing.unit === 'g' || ing.unit === 'ml';
+    // Bei Kopf/Bund/Zehe usw. gilt 1 echtes Stück = 1 unserer Packungen.
+    const packQty = metric || ing.unit === 'Stk' ? real.qty : ing.packQty;
+    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : ing.pack), product: real.name };
+  }
+
   // Whole-Pack Costing: Wochenmenge je Zutat → ganze Packungen. Basisvorrat wird nicht gerechnet.
   function weekCost(rids, recipes, p) {
-    const sv = servings(p), fac = store(p).priceFactor, need = {};
+    const sv = servings(p), need = {};
     for (const rid of rids) {
       const r = rid && recipes.find(x => x.id === rid);
       if (!r) continue;
@@ -41,21 +54,22 @@
     let total = 0;
     const items = Object.entries(need).map(([id, qty]) => {
       const ing = D.INGREDIENTS[id];
-      const pantry = ing.flags.includes('pantry');
-      const packs = pantry ? 0 : Math.max(1, Math.ceil(qty / ing.packQty - 1e-9));
-      const cost = packs * ing.price * fac;
+      const pantry = ing.flags.includes('pantry'), pk = packOf(id, p);
+      const packs = pantry ? 0 : Math.max(1, Math.ceil(qty / pk.packQty - 1e-9));
+      const cost = packs * pk.price;
       total += cost;
-      return { id, ing, qty, packs, cost, pantry, leftover: packs * ing.packQty - qty };
+      return { id, ing, qty, packs, cost, pantry, leftover: packs * pk.packQty - qty, pack: pk.pack, product: pk.product };
     });
     return { total, items };
   }
 
   // Anteilspreis eines Gerichts (anteilig nach Menge, nicht nach Packung).
   function shareCost(r, p) {
-    const sv = servings(p), fac = store(p).priceFactor;
+    const sv = servings(p);
     return Object.entries(r.ing).reduce((s, [id, amt]) => {
-      const ing = D.INGREDIENTS[id];
-      return ing.flags.includes('pantry') ? s : s + (amt * sv / ing.packQty) * ing.price * fac;
+      if (D.INGREDIENTS[id].flags.includes('pantry')) return s;
+      const pk = packOf(id, p);
+      return s + (amt * sv / pk.packQty) * pk.price;
     }, 0);
   }
 
@@ -112,6 +126,6 @@
     return generate(p, recipes, null, locked);
   }
 
-  const API = { servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  const API = { setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);
