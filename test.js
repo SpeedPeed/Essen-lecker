@@ -137,4 +137,6 @@ for (const [id, c] of Object.entries(fotos)) {
   assert.ok(require('fs').existsSync(`${__dirname}/img/${id}.jpg`), 'Fotodatei fehlt: ' + id);
   assert.ok(c.source && /^(CC|Public Domain)/.test(c.license) && (c.creator || /^(CC0|Public Domain)/.test(c.license)), 'Nachweis unvollständig: ' + id); // BY/BY-SA brauchen Urheber
 }
+const quellen = Object.values(fotos).map(c => c.source);
+assert.strictEqual(new Set(quellen).size, quellen.length, 'dasselbe Foto bei mehreren Rezepten');
 console.log('ok Rezeptfotos,', Object.keys(fotos).length, 'mit Nachweis');
