@@ -29,8 +29,8 @@ Leitlinien: kein Framework, kein Build, alles lokal; jede Logikänderung mit Tes
 
 | # | Block | Verbesserung | Warum | Status |
 |---|---|---|---|---|
-| 17 | Planer | Favoriten (♥) kommen öfter dran, „Nicht mehr vorschlagen“ schließt ein Gericht aus | ♥ hatte keine Wirkung auf den Plan | offen |
-| 18 | Bedienung | „Rückgängig“ nach Neu planen, Ausgleichen und Aussetzen | Ein Tipp verwirft sonst die ganze Woche | offen |
-| 19 | Liste | Vorratsartikel („Vorrat prüfen“) als eigener Abschnitt am Ende | Stören beim Einkauf zwischen den echten Artikeln | offen |
-| 20 | PWA | PNG-Icons (180/192/512) für Installation auf iOS/Android | iOS ignoriert SVG als Home-Icon | offen |
-| 21 | A11y | Automatische Prüfung mit axe-core über alle Ansichten, Funde beheben | Kontraste, Namen, Rollen systematisch prüfen | offen |
+| 17 | Planer | Favoriten (♥) kommen öfter dran, „Nicht mehr vorschlagen“ schließt ein Gericht aus | ♥ hatte keine Wirkung auf den Plan | ✅ umgesetzt |
+| 18 | Bedienung | „Rückgängig“ nach Neu planen, Ausgleichen und Aussetzen | Ein Tipp verwirft sonst die ganze Woche | ✅ umgesetzt |
+| 19 | Liste | Vorratsartikel („Vorrat prüfen“) als eigener Abschnitt am Ende | Stören beim Einkauf zwischen den echten Artikeln | ✅ umgesetzt |
+| 20 | PWA | PNG-Icons (180/192/512) für Installation auf iOS/Android | iOS ignoriert SVG als Home-Icon | ✅ umgesetzt |
+| 21 | A11y | Automatische Prüfung mit axe-core über alle Ansichten, Funde beheben | Kontraste, Namen, Rollen systematisch prüfen | ✅ umgesetzt: 0 Verstöße hell & dunkel (vorher 7 Regeln: Kontrast Markenlogos/Bring!/Grautext, Formular-Labels, Überschriften-Hierarchie, Fortschrittsbalken, Kochmodus-Scrollbereich); axe läuft jetzt im e2e-Test und in der CI mit |

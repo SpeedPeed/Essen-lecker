@@ -1,6 +1,6 @@
 :root {
   --bg: #FAF8F5; --card: #FFFFFF; --sand: #F3EFEA; --espresso: #3D2C24; --gold: #E8C568; --sage: #4A7C59;
-  --text: #2a1f1a; --muted: #7a6c63; --line: #e7e0d8; --danger: #b54a3a;
+  --text: #2a1f1a; --muted: #6b5d54; --line: #e7e0d8; --danger: #b54a3a;
   --on-espresso: #fff; --offer-text: #8a5a00; --toast: #3D2C24; --toast-text: #fff; --toast-link: #E8C568; --ink: #2a1f1a; color-scheme: light;
   --serif: 'Fraunces', Georgia, serif; --sans: 'Inter', system-ui, sans-serif;
 }
@@ -9,7 +9,7 @@ html, body { margin: 0; background: var(--bg); color: var(--text); font-family: 
 #app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding: 16px 16px 96px; animation: fade .25s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 h1, h2, h3 { font-family: var(--serif); font-weight: 700; margin: 0 0 8px; letter-spacing: -.01em; }
-h1 { font-size: 28px; line-height: 1.15; } h2 { font-size: 22px; } h3 { font-size: 17px; }
+h1 { font-size: 28px; line-height: 1.15; } h2 { font-size: 22px; } h3, .h3 { font-size: 17px; }
 p { line-height: 1.5; }
 .muted { color: var(--muted); font-size: 14px; }
 button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
@@ -68,7 +68,7 @@ a { color: inherit; }
 .day { display: flex; gap: 12px; align-items: stretch; padding: 10px; }
 .photo { width: 84px; height: 84px; overflow: hidden; border-radius: 14px; display: grid; place-items: center; font-size: 40px; flex-shrink: 0; }
 .photo.hero { width: 100%; height: 220px; font-size: 96px; border-radius: 22px; margin-bottom: 16px; }
-.day h3 { font-size: 16px; margin: 2px 0 4px; }
+.day h3, .day .h3 { font-size: 16px; margin: 2px 0 4px; }
 .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
 .tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; background: var(--sand); color: var(--espresso); font-weight: 600; }
 .swap { width: 40px; height: 40px; border-radius: 12px; background: var(--sand); align-self: center; font-size: 18px; flex-shrink: 0; }
@@ -77,7 +77,7 @@ a { color: inherit; }
 .over { color: var(--danger); }
 
 /* Bring! */
-.btn.bring { display: block; width: 100%; margin-top: 8px; background: #E5464B; color: #fff; }
+.btn.bring { display: block; width: 100%; margin-top: 8px; background: #c93a3f; color: #fff; }
 
 /* Angebote */
 .tag.offer { background: var(--gold); color: var(--ink); margin-left: 4px; }
@@ -171,3 +171,4 @@ a { color: inherit; }
   .photo.hero { height: 320px; }
 }
 .btn.small.wide { display: block; width: 100%; }
+.opt .badge { display: inline-block; margin-bottom: 6px; }

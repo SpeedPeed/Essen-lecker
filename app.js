@@ -72,7 +72,7 @@ function kitchenSVG(p) {
 const STEPS = [
   { t: 'Wo kaufst du ein?', s: 'Preise und Gang-Reihenfolge passen sich deinem Markt an.', ok: p => p.store,
     b: p => `<div class="grid">${D.STORES.map(s => `<button class="opt" ${sel(p.store === s.id)} data-a="store" data-id="${s.id}">
-      <span class="logo" style="color:${p.store === s.id ? 'inherit' : s.color}">${s.name}</span>${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small>${P.realStore({ store: s.id }) ? `<small>✓ ${P.realStore({ store: s.id }).offersOnly ? 'echte Aktionen' : 'echte Preise & Aktionen'}</small>` : ''}</button>`).join('')}</div>` },
+      ${badge(s)}${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small>${P.realStore({ store: s.id }) ? `<small>✓ ${P.realStore({ store: s.id }).offersOnly ? 'echte Aktionen' : 'echte Preise & Aktionen'}</small>` : ''}</button>`).join('')}</div>` },
   { t: 'Für wen kochst du?', s: 'Portionen werden automatisch skaliert.', ok: () => true,
     b: p => `${tableSVG(p)}<div class="card"><div class="row between"><b>Erwachsene</b><div class="stepper">
       <button data-a="adults" data-d="-1" aria-label="weniger">−</button><b>${p.adults}</b><button data-a="adults" data-d="1" aria-label="mehr">+</button></div></div>
@@ -107,7 +107,7 @@ const STEPS = [
 function vOnboarding() {
   const st = STEPS[ui.step], p = ui.draft;
   return `<div class="ob-head row">${(ui.step > 0 || ui.editing) ? `<button class="back" data-a="obback" aria-label="Zurück">←</button>` : ''}
-    ${ui.editing ? '' : `<div class="progress" aria-label="Schritt ${ui.step + 1} von ${STEPS.length}"><i style="width:${(ui.step + 1) / STEPS.length * 100}%"></i></div><span class="muted">${ui.step + 1}/${STEPS.length}</span>`}</div>
+    ${ui.editing ? '' : `<div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="${STEPS.length}" aria-valuenow="${ui.step + 1}" aria-label="Schritt ${ui.step + 1} von ${STEPS.length}"><i style="width:${(ui.step + 1) / STEPS.length * 100}%"></i></div><span class="muted">${ui.step + 1}/${STEPS.length}</span>`}</div>
     <h1>${st.t}</h1>${st.s ? `<p class="muted">${st.s}</p>` : ''}${st.b(p)}
     <div class="footer-cta"><button class="btn" data-a="obnext" ${st.ok(p) ? '' : 'disabled'}>${ui.editing ? 'Speichern' : ui.step === STEPS.length - 1 ? 'Meinen Plan erstellen' : 'Weiter'}</button></div>`;
 }
@@ -282,12 +282,12 @@ function vRecipe() {
     ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span>${offerTag(r)}<h1 style="margin-top:8px">${esc(r.title)}</h1>
     <div class="meta" style="font-size:14px;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p) * sv / P.servings(p))}</span><span>${r.m[0]} kcal / Portion</span></div>
     ${p.blocked.includes(r.id) ? `<div class="card sand">🚫 Du hast dieses Gericht ausgeschlossen – es wird nicht mehr vorgeschlagen.</div>` : P.eligible(r, p) ? '' : `<div class="card sand over">Passt nicht zu deinem Profil (Ernährung, Allergie, Abneigung oder Küchengerät).</div>`}
-    <div class="card"><h3>Pro Portion</h3>${donut(r.m)}</div>
-    <div class="card"><div class="row between" style="margin-bottom:4px"><h3 style="margin:0">Zutaten</h3><div class="stepper small">
+    <div class="card"><h2 class="h3">Pro Portion</h2>${donut(r.m)}</div>
+    <div class="card"><div class="row between" style="margin-bottom:4px"><h2 class="h3" style="margin:0">Zutaten</h2><div class="stepper small">
       <button data-a="serv" data-d="-1" aria-label="Weniger Portionen" ${sv <= 1 ? 'disabled' : ''}>−</button><b aria-live="polite">${fmtServ(sv)}</b><button data-a="serv" data-d="1" aria-label="Mehr Portionen">+</button></div></div>
       <div class="muted" style="margin-bottom:6px">Portionen${sv !== P.servings(p) ? ` · <button class="link" data-a="servreset">zurück auf ${fmtServ(P.servings(p))}</button>` : ''}</div>${ingRows(r, sv)}</div>
     ${r.leftovers ? `<div class="card sand">🥡 <b>Gut für Reste:</b> ${p.fridge ? 'Hält 2–3 Tage im Kühlschrank. Aufwärmen mit einem Schuss Wasser bei mittlerer Hitze.' : 'Am besten frisch essen.'}${p.freezer ? ' Lässt sich portionsweise einfrieren.' : ''}</div>` : ''}
-    <div class="card"><h3>Zubereitung</h3><ol style="padding-left:20px;margin:0">${r.steps.map(s => `<li style="margin-bottom:8px">${esc(s.x)}${s.t ? ` <span class="tag">⏱ ${fmtTime(s.t)}</span>` : ''}</li>`).join('')}</ol></div>
+    <div class="card"><h2 class="h3">Zubereitung</h2><ol style="padding-left:20px;margin:0">${r.steps.map(s => `<li style="margin-bottom:8px">${esc(s.x)}${s.t ? ` <span class="tag">⏱ ${fmtTime(s.t)}</span>` : ''}</li>`).join('')}</ol></div>
     <button class="btn small bring" data-a="bringrecipe" style="margin-bottom:8px">Zutaten in Bring! übernehmen</button>
     <button class="btn small ghost wide" data-a="block" data-id="${r.id}" style="margin-bottom:12px">${p.blocked.includes(r.id) ? '↺ Wieder vorschlagen' : '🚫 Nicht mehr vorschlagen'}</button>
     ${r.custom ? `<div class="row" style="margin-bottom:12px"><button class="btn small ghost grow" data-a="editrecipe" data-id="${r.id}">✎ Bearbeiten</button><button class="btn small ghost grow" data-a="delrecipe" data-id="${r.id}">🗑 Löschen</button></div>` : ''}
@@ -303,7 +303,7 @@ function vCook() {
   }
   return `<div class="cook" role="dialog" aria-label="Kochmodus"><div class="row between"><span class="grow">${esc(r.title)}</span>
     <button class="btn small cookbtn" data-a="cooking" aria-expanded="${!!ui.cookIng}">🧺 Zutaten</button><button class="back cookbtn" data-a="exitcook" aria-label="Schließen">✕</button></div>
-    ${ui.cookIng ? `<div class="cooking">${ingRows(r, recipeServ())}</div>` : ''}
+    ${ui.cookIng ? `<div class="cooking" tabindex="0" role="region" aria-label="Zutaten">${ingRows(r, recipeServ())}</div>` : ''}
     <div class="stepbody"><div class="muted" style="color:var(--gold)">Schritt ${i + 1} von ${r.steps.length}</div><p>${esc(s.x)}</p><div>${timer}</div>
     ${last && r.leftovers ? `<p class="muted" style="color:#e9d8bf;font-size:15px;font-family:var(--sans)">🥡 Reste in einer Dose abkühlen lassen und in den Kühlschrank stellen – aufwärmen bis alles dampfend heiß ist.</p>` : ''}</div>
     <div class="dots">${r.steps.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>
@@ -382,7 +382,7 @@ function discoverList() {
   rs = rs.map(r => [key(r), r]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
   const more = rs.length > ui.limit ? `<button class="btn ghost" data-a="more">Mehr anzeigen (${rs.length - ui.limit} weitere)</button>` : '';
   return rs.length ? `<p class="muted" style="margin:0 4px 8px">${rs.length} Rezept${rs.length > 1 ? 'e' : ''}</p><div class="cards">` + rs.slice(0, ui.limit).map(r => `<div class="card day"><button class="open" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow"><div class="tags"><span class="tag">${esc(r.cat)}</span>${offerTag(r)}${inPlan.has(r.id) ? '<span class="tag plan">✓ im Plan</span>' : ''}</div>
-    <h3>${esc(r.title)}</h3><div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span>${r.m[0]} kcal</span><span class="price">${eur(P.shareCost(r, p))}</span></div></div></button>
+    <h2 class="h3">${esc(r.title)}</h2><div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span>${r.m[0]} kcal</span><span class="price">${eur(P.shareCost(r, p))}</span></div></div></button>
     <button class="swap" data-a="fav" data-id="${r.id}" aria-label="${esc(r.title)} als Favorit" aria-pressed="${S.favs.includes(r.id)}">${S.favs.includes(r.id) ? '♥' : '♡'}</button></div>`).join('') + '</div>' + more : '<p class="muted">Keine Rezepte gefunden.</p>';
 }
 function vDiscover() {
@@ -398,20 +398,20 @@ function vDiscover() {
 }
 function vForm() {
   const f = ui.form, opts = Object.values(D.INGREDIENTS).sort((a, b) => a.name.localeCompare(b.name));
-  return `<div class="row" style="margin-bottom:12px"><button class="back" data-a="cancelform" aria-label="Zurück">←</button><h2 style="margin:0">${f.id ? 'Rezept bearbeiten' : 'Eigenes Rezept'}</h2></div>
+  return `<div class="row" style="margin-bottom:12px"><button class="back" data-a="cancelform" aria-label="Zurück">←</button><h1 style="margin:0">${f.id ? 'Rezept bearbeiten' : 'Eigenes Rezept'}</h1></div>
     <form data-f="recipe">
-      <label class="muted">Titel</label><input name="title" required maxlength="60" value="${esc(f.title)}" style="margin-bottom:10px">
-      <div class="row"><div class="grow"><label class="muted">Emoji</label><input name="emoji" maxlength="4" value="${esc(f.emoji)}"></div>
-        <div class="grow"><label class="muted">Zeit (Min.)</label><input name="time" type="number" min="1" max="600" required value="${f.time}"></div></div>
-      <label class="muted" style="display:block;margin-top:10px">Stil</label><select name="tag">${D.STYLES.map(([id, l]) => `<option value="${id}" ${f.tag === id ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <h3 style="margin-top:16px">Zutaten (pro Portion)</h3>
-      ${f.ing.map((x, n) => `<div class="row" style="margin-bottom:8px"><select name="ing${n}" class="grow">${opts.map(o => `<option value="${o.id}" ${x.id === o.id ? 'selected' : ''}>${esc(o.name)} (${o.unit})</option>`).join('')}</select>
-        <input name="amt${n}" type="number" min="0" step="any" value="${x.amt}" style="width:90px" aria-label="Menge"><button type="button" class="back" data-a="rmrow" data-i="${n}" aria-label="Zeile entfernen">✕</button></div>`).join('')}
+      <label class="muted" for="f-title">Titel</label><input id="f-title" name="title" required maxlength="60" value="${esc(f.title)}" style="margin-bottom:10px">
+      <div class="row"><div class="grow"><label class="muted" for="f-emoji">Emoji</label><input id="f-emoji" name="emoji" maxlength="4" value="${esc(f.emoji)}"></div>
+        <div class="grow"><label class="muted" for="f-time">Zeit (Min.)</label><input id="f-time" name="time" type="number" min="1" max="600" required value="${f.time}"></div></div>
+      <label class="muted" for="f-tag" style="display:block;margin-top:10px">Stil</label><select id="f-tag" name="tag">${D.STYLES.map(([id, l]) => `<option value="${id}" ${f.tag === id ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <h2 class="h3" style="margin-top:16px">Zutaten (pro Portion)</h2>
+      ${f.ing.map((x, n) => `<div class="row" style="margin-bottom:8px"><select name="ing${n}" class="grow" aria-label="Zutat ${n + 1}">${opts.map(o => `<option value="${o.id}" ${x.id === o.id ? 'selected' : ''}>${esc(o.name)} (${o.unit})</option>`).join('')}</select>
+        <input name="amt${n}" type="number" min="0" step="any" value="${x.amt}" style="width:90px" aria-label="Menge Zutat ${n + 1}"><button type="button" class="back" data-a="rmrow" data-i="${n}" aria-label="Zeile entfernen">✕</button></div>`).join('')}
       <button type="button" class="btn small ghost" data-a="addrow">+ Zutat</button>
-      <h3 style="margin-top:16px">Schritte</h3><p class="muted">Ein Schritt pro Zeile. „… 10 Min. …“ erzeugt automatisch einen Timer.</p>
-      <textarea name="steps" rows="6" required>${esc(f.steps)}</textarea>
-      <h3 style="margin-top:16px">Nährwerte pro Portion (optional)</h3>
-      <div class="row">${['kcal', 'Eiweiß', 'KH', 'Fett'].map((l, n) => `<div class="grow"><label class="muted">${l}</label><input name="m${n}" type="number" min="0" value="${f.m[n]}"></div>`).join('')}</div>
+      <h2 class="h3" style="margin-top:16px"><label for="f-steps">Schritte</label></h2><p class="muted">Ein Schritt pro Zeile. „… 10 Min. …“ erzeugt automatisch einen Timer.</p>
+      <textarea id="f-steps" name="steps" rows="6" required>${esc(f.steps)}</textarea>
+      <h2 class="h3" style="margin-top:16px">Nährwerte pro Portion (optional)</h2>
+      <div class="row">${['kcal', 'Eiweiß', 'KH', 'Fett'].map((l, n) => `<div class="grow"><label class="muted" for="f-m${n}">${l}</label><input id="f-m${n}" name="m${n}" type="number" min="0" value="${f.m[n]}"></div>`).join('')}</div>
       <button class="btn" style="margin-top:20px">Rezept speichern</button></form>`;
 }
 function readForm(form) {

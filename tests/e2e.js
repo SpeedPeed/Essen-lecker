@@ -3,6 +3,8 @@
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
 const ROOT = path.join(__dirname, '..'), SHOTS = process.argv[2];
+// Barrierefreiheit: axe-core, falls installiert (CI: npm i axe-core) – jede Regelverletzung ist ein Fehler.
+let AXE = null; try { AXE = require.resolve('axe-core/axe.min.js'); } catch { console.log('Hinweis: axe-core nicht installiert – A11y-Prüfung übersprungen'); }
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 const server = http.createServer((req, res) => {
@@ -17,16 +19,22 @@ const server = http.createServer((req, res) => {
   const url = `http://localhost:${server.address().port}/`;
   const browser = await chromium.launch(), errors = [];
   for (const [name, viewport] of [['mobil', { width: 390, height: 844 }], ['desktop', { width: 1280, height: 900 }]]) {
-    const page = await browser.newPage({ viewport });
+    const page = await browser.newPage({ viewport, reducedMotion: 'reduce' }); // ohne Einblend-Animation (sonst misst axe Zwischenfarben)
     page.on('console', m => m.type() === 'error' && !/fonts\.g|ERR_|Failed to load resource/.test(m.text()) && errors.push(`${name}: ${m.text()}`));
     page.on('pageerror', e => errors.push(`${name}: ${e.message}`));
     await page.route(/^https?:\/\/(?!localhost)/, r => r.abort()); // offline gegenüber Dritten
     const shot = async n => SHOTS && page.screenshot({ path: path.join(SHOTS, `${name}-${n}.png`), fullPage: true });
     const click = sel => page.locator(sel).first().click();
+    const axe = async view => {
+      if (!AXE) return;
+      await page.addScriptTag({ path: AXE });
+      const v = await page.evaluate(() => axe.run(document, { resultTypes: ['violations'] }).then(r => r.violations.map(x => `${x.id}: ${x.nodes.map(n => n.target.join(' ')).slice(0, 3).join(', ')}`)));
+      v.forEach(x => errors.push(`${name}/${view} A11y ${x}`));
+    };
     await page.goto(url);
 
     // Onboarding
-    await click('[data-a="store"][data-id="billa"]'); await shot('01-markt'); await click('[data-a="obnext"]');
+    await click('[data-a="store"][data-id="billa"]'); await shot('01-markt'); await axe('onboarding'); await click('[data-a="obnext"]');
     await click('[data-a="kids"]'); await click('[data-a="obnext"]');
     await click('[data-a="meal"][data-id="lunch"]'); await click('[data-a="obnext"]');
     await click('[data-a="obnext"]'); // Budget
@@ -38,13 +46,13 @@ const server = http.createServer((req, res) => {
     await page.waitForSelector('.card.day');
     const slots = await page.locator('.card.day').count();
     if (slots !== 14) errors.push(`${name}: ${slots} statt 14 Slots`);
-    await shot('03-plan');
+    await shot('03-plan'); await axe('plan');
     const before = (await page.locator('.card.day h3').allTextContents()).join();
     await click('[data-a="regen"]'); await click('#toast [data-a="undo"]');
     if ((await page.locator('.card.day h3').allTextContents()).join() !== before) errors.push(`${name}: Rückgängig nach Neu planen`);
 
     // Tauschen (mit Suche) → Gericht wird fixiert
-    await click('[data-a="swap"]'); await page.waitForSelector('.sheet'); await shot('04-tauschen');
+    await click('[data-a="swap"]'); await page.waitForSelector('.sheet'); await shot('04-tauschen'); await axe('tauschen');
     await page.fill('[data-i="sq"]', 'knödel');
     if (!/knödel/i.test(await page.locator('#altlist .alt b').first().textContent())) errors.push(`${name}: Suche im Tausch-Fenster`);
     await click('.sheet [data-a="pick"]');
@@ -55,7 +63,7 @@ const server = http.createServer((req, res) => {
     if (!(await page.textContent('#app')).includes('Omas Gulasch')) errors.push(`${name}: Aussetzen fehlt`);
 
     // Rezept: Portionen, Einplanen, Kochmodus mit Zutaten
-    await click('.card.day [data-a="recipe"]'); await page.waitForSelector('h1'); await shot('05-rezept');
+    await click('.card.day [data-a="recipe"]'); await page.waitForSelector('h1'); await shot('05-rezept'); await axe('rezept');
     await click('[data-a="serv"][data-d="1"]');
     if ((await page.textContent('.stepper.small b')).trim() !== '3') errors.push(`${name}: Portionen anpassen`);
     await click('[data-a="block"]');
@@ -75,7 +83,7 @@ const server = http.createServer((req, res) => {
     if (!(await page.evaluate(() => document.activeElement?.matches('.item[aria-checked="true"]')))) errors.push(`${name}: Fokus nach Abhaken verloren`);
     await page.fill('[name="x"]', 'Kaffee'); await page.keyboard.press('Enter');
     if (!(await page.textContent('#app')).includes('Kaffee')) errors.push(`${name}: eigener Artikel fehlt`);
-    await shot('07-liste');
+    await shot('07-liste'); await axe('liste');
 
     // Entdecken: große Sammlung seitenweise, Suche
     await click('[data-a="go"][data-id="plan"]'); await click('[data-a="go"][data-id="discover"]');
@@ -89,7 +97,7 @@ const server = http.createServer((req, res) => {
 
     // Profil
     await click('[data-a="go"][data-id="profile"]');
-    await page.waitForSelector('[data-a="edit"]'); await shot('08-profil');
+    await page.waitForSelector('[data-a="edit"]'); await shot('08-profil'); await axe('profil');
     await click('[data-a="edit"][data-i="3"]'); await click('[data-a="obnext"]');
     await page.waitForSelector('[data-a="edit"]');
 
