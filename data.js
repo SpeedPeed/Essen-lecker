@@ -132,6 +132,73 @@
     blaetterteig: ['Blätterteig', 'kuehl', 275, 'g', 1.29, '275-g-Rolle', 'gluten dairy'],
     lachs: ['Lachsfilet (TK)', 'tk', 250, 'g', 4.49, '2 Filets à 125 g', 'fish'],
     garnelen: ['Garnelen (TK)', 'tk', 225, 'g', 4.99, '225-g-Packung', 'seafood'],
+
+    // Erweiterung für die große Rezeptsammlung (Preise geschätzt, SPAR-Niveau)
+    rotkraut: ['Rotkraut', 'obst', 1000, 'g', 1.49, '1 Kopf (~1 kg)', ''],
+    kohlrabi: ['Kohlrabi', 'obst', 1, 'Stk', 0.99, '1 Stk', ''],
+    roteRueben: ['Rote Rüben (gekocht, vakuumiert)', 'obst', 500, 'g', 1.49, '500-g-Packung', ''],
+    sellerie: ['Knollensellerie', 'obst', 500, 'g', 1.29, '1 Knolle (~500 g)', 'celery'],
+    fenchel: ['Fenchel', 'obst', 1, 'Stk', 1.29, '1 Knolle', ''],
+    chinakohl: ['Chinakohl', 'obst', 1, 'Kopf', 1.49, '1 Kopf', ''],
+    suesskartoffel: ['Süßkartoffeln', 'obst', 1000, 'g', 2.99, '1-kg-Packung', ''],
+    avocado: ['Avocado', 'obst', 2, 'Stk', 1.99, '2er-Pack', ''],
+    limette: ['Limetten', 'obst', 3, 'Stk', 1.29, '3er-Netz', ''],
+    basilikum: ['Basilikum (Topf)', 'obst', 1, 'Topf', 1.99, '1 Topf', ''],
+    rucola: ['Rucola', 'obst', 125, 'g', 1.49, '125-g-Tasse', ''],
+    aepfel: ['Äpfel', 'obst', 1000, 'g', 1.99, '1-kg-Sackerl', ''],
+    bananen: ['Bananen', 'obst', 1000, 'g', 1.69, '1 kg (~5 Stk)', ''],
+    spinatFrisch: ['Babyspinat (frisch)', 'obst', 150, 'g', 1.79, '150-g-Beutel', ''],
+    rotezwiebel: ['Rote Zwiebeln', 'obst', 500, 'g', 1.29, '500-g-Netz', ''],
+    chilischote: ['Chilischoten (frisch)', 'obst', 50, 'g', 0.99, '50-g-Tasse', 'spicy'],
+
+    frischkaese: ['Frischkäse natur', 'kuehl', 200, 'g', 1.49, '200-g-Packung', 'dairy'],
+    gouda: ['Gouda in Scheiben', 'feinkost', 150, 'g', 1.79, '150-g-Packung', 'dairy'],
+    halloumi: ['Halloumi (Grillkäse)', 'feinkost', 200, 'g', 2.99, '200-g-Packung', 'dairy'],
+    ricotta: ['Ricotta', 'kuehl', 250, 'g', 1.79, '250-g-Becher', 'dairy'],
+    hafermilch: ['Haferdrink', 'kuehl', 1000, 'ml', 1.69, '1-l-Packung', 'gluten'],
+    pizzateig: ['Pizzateig (Kühlregal)', 'kuehl', 400, 'g', 1.79, '400-g-Rolle', 'gluten'],
+    strudelteig: ['Strudelteig', 'kuehl', 250, 'g', 1.99, '250-g-Packung', 'gluten'],
+    tortellini: ['Tortellini mit Käsefüllung (frisch)', 'kuehl', 250, 'g', 2.29, '250-g-Packung', 'gluten egg dairy'],
+    schupfnudeln: ['Schupfnudeln', 'kuehl', 500, 'g', 1.99, '500-g-Packung', 'gluten egg'],
+    raeuchertofu: ['Räuchertofu', 'kuehl', 200, 'g', 2.29, '200-g-Packung', 'soy tofu'],
+
+    schnitzelfleisch: ['Schweinsschnitzel', 'fleisch', 500, 'g', 5.99, '500-g-Tasse', 'meat pork'],
+    hendlkeulen: ['Hühnerkeulen', 'fleisch', 1000, 'g', 4.99, '1-kg-Tasse', 'meat'],
+    putenbrust: ['Putenbrust', 'fleisch', 400, 'g', 5.49, '400-g-Tasse', 'meat'],
+    leberkaese: ['Leberkäse', 'feinkost', 300, 'g', 2.49, '300-g-Stück', 'meat pork'],
+    bratwurst: ['Bratwürstel', 'fleisch', 400, 'g', 3.49, '400-g-Packung', 'meat pork'],
+    seelachs: ['Seelachsfilet (TK)', 'tk', 400, 'g', 3.99, '400-g-Packung', 'fish'],
+
+    haferflocken: ['Haferflocken', 'konserven', 500, 'g', 0.99, '500-g-Packung', 'gluten'],
+    polenta: ['Polenta (Maisgrieß)', 'konserven', 500, 'g', 1.49, '500-g-Packung', ''],
+    griess: ['Weizengrieß', 'konserven', 500, 'g', 0.99, '500-g-Packung', 'gluten'],
+    bulgur: ['Bulgur', 'konserven', 500, 'g', 1.79, '500-g-Packung', 'gluten'],
+    quinoa: ['Quinoa', 'konserven', 400, 'g', 2.99, '400-g-Packung', ''],
+    reisnudeln: ['Reisnudeln', 'konserven', 250, 'g', 1.79, '250-g-Packung', ''],
+    mienudeln: ['Mie-Nudeln', 'konserven', 250, 'g', 1.49, '250-g-Packung', 'gluten egg'],
+    weisseBohnen: ['Weiße Bohnen (Dose)', 'konserven', 400, 'g', 0.89, '400-g-Dose', ''],
+    cashews: ['Cashewkerne', 'konserven', 200, 'g', 2.99, '200-g-Beutel', 'nuts'],
+    walnuesse: ['Walnusskerne', 'konserven', 200, 'g', 2.99, '200-g-Beutel', 'nuts'],
+    erdnuesse: ['Erdnüsse geröstet', 'konserven', 200, 'g', 1.49, '200-g-Beutel', 'peanut'],
+    rosinen: ['Rosinen', 'konserven', 250, 'g', 1.49, '250-g-Beutel', ''],
+    broesel: ['Semmelbrösel', 'konserven', 500, 'g', 1.19, '500-g-Packung', 'gluten'],
+    tahini: ['Tahin (Sesammus)', 'konserven', 250, 'g', 3.49, '250-g-Glas', 'sesame'],
+    getrTomaten: ['Getrocknete Tomaten (Glas)', 'konserven', 280, 'g', 2.49, '280-g-Glas', ''],
+    kapern: ['Kapern', 'konserven', 100, 'g', 1.49, '100-g-Glas', ''],
+    zartbitter: ['Zartbitterschokolade', 'konserven', 100, 'g', 1.29, '100-g-Tafel', ''],
+
+    senf: ['Senf', 'gewuerze', 1, 'Pkg', 0.99, 'Vorrat', 'pantry mustard'],
+    honig: ['Honig', 'gewuerze', 1, 'Pkg', 3.99, 'Vorrat', 'pantry honey'],
+    zimt: ['Zimt', 'gewuerze', 1, 'Pkg', 0.99, 'Vorrat', 'pantry'],
+    muskat: ['Muskatnuss', 'gewuerze', 1, 'Pkg', 1.29, 'Vorrat', 'pantry'],
+    rosmarin: ['Rosmarin & Thymian', 'gewuerze', 1, 'Pkg', 0.99, 'Vorrat', 'pantry'],
+    lorbeer: ['Lorbeerblätter', 'gewuerze', 1, 'Pkg', 0.99, 'Vorrat', 'pantry'],
+    backpulver: ['Backpulver & Vanillezucker', 'gewuerze', 1, 'Pkg', 0.99, 'Vorrat', 'pantry'],
+    kurkuma: ['Kurkuma & Garam Masala', 'gewuerze', 1, 'Pkg', 1.49, 'Vorrat', 'pantry'],
+
+    pommes: ['Pommes frites (TK)', 'tk', 1000, 'g', 2.49, '1-kg-Beutel', ''],
+    beeren: ['Beerenmischung (TK)', 'tk', 300, 'g', 2.49, '300-g-Beutel', ''],
+    kaisergemuese: ['Kaisergemüse (TK)', 'tk', 750, 'g', 1.99, '750-g-Beutel', ''],
   };
   const INGREDIENTS = {};
   for (const [id, [name, aisle, packQty, unit, price, pack, flags]] of Object.entries(I))
@@ -645,7 +712,7 @@
   ];
   const ALLERGENS = [
     ['peanut', 'Erdnüsse'], ['nuts', 'Nüsse'], ['dairy', 'Milchprodukte'], ['egg', 'Eier'], ['gluten', 'Weizen/Gluten'],
-    ['soy', 'Soja'], ['fish', 'Fisch'], ['seafood', 'Schalentiere'], ['sesame', 'Sesam'], ['celery', 'Sellerie'],
+    ['soy', 'Soja'], ['fish', 'Fisch'], ['seafood', 'Schalentiere'], ['sesame', 'Sesam'], ['celery', 'Sellerie'], ['mustard', 'Senf'],
   ];
   const EQUIPMENT = [
     ['mikrowelle', 'Mikrowelle'], ['mixer', 'Mixer'], ['airfryer', 'Heißluftfritteuse'],

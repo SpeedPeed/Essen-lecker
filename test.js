@@ -112,3 +112,8 @@ console.log('ok Datum, Knoblauch, Reste');
 // Flugblatt: Großpackung außerhalb der Regel-Spanne (Faschiertes 400–600 g) zählt nicht als Aktion
 assert.deepStrictEqual(matchOffers([mk('Lidl', 'Faschiertes gemischt', 6.49, 6.49, 8.49)], RULES, 'bio', reg, '2026-11-22'), {});
 console.log('ok Aktions-Packungsgröße');
+
+// Rezeptdaten: Zutaten vorhanden, Nährwerte plausibel, Felder gültig, keine Doppelten
+const recipeErrs = require('./scripts/check-recipes.js').check(D.RECIPES);
+assert.deepStrictEqual(recipeErrs, [], recipeErrs.join('\n'));
+console.log('ok Rezeptdaten,', D.RECIPES.length, 'Rezepte');

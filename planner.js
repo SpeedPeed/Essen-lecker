@@ -11,7 +11,7 @@
   const flagsOf = r => new Set(Object.keys(r.ing).flatMap(id => (D.INGREDIENTS[id] || { flags: [] }).flags));
 
   function dietOk(flags, diet) {
-    if (diet === 'vegan') return !['meat', 'fish', 'seafood', 'dairy', 'egg'].some(f => flags.has(f));
+    if (diet === 'vegan') return !['meat', 'fish', 'seafood', 'dairy', 'egg', 'honey'].some(f => flags.has(f));
     if (diet === 'vegetarisch') return !['meat', 'fish', 'seafood'].some(f => flags.has(f));
     if (diet === 'pescetarisch') return !flags.has('meat');
     return true;
