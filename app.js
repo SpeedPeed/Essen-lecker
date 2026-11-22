@@ -47,7 +47,8 @@ function normalize(x) {
         ...(sl.pinned ? { pinned: true } : {}), ...(sl.leftover ? { leftover: true } : {}) })) };
 }
 S = normalize(S);
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { toast('Speichern nicht möglich (Speicher voll oder blockiert).'); } };
+let saveWarned = false; // Hinweis nur einmal, nicht bei jedem Tippen
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { if (!saveWarned) { saveWarned = true; toast('Speichern nicht möglich (privates Fenster oder Speicher voll) – Änderungen gehen beim Schließen verloren.'); } } };
 
 const ui = { view: S.onboarded ? 'plan' : 'onboarding', step: 0, editing: false, draft: null, recipe: null, back: 'plan',
   cookStep: 0, timers: {}, sheet: null, q: '', filter: 'alle', cat: 'alle', quick: false, sort: 'empf', form: null, limit: 40 };
@@ -75,7 +76,7 @@ function tableSVG(p) {
 }
 
 const APPL = {
-  mikrowelle: [20, 18, 92, 54, '#cfd6d4', '📻'], mixer: [126, 26, 40, 46, '#e8c568', '🫙'], airfryer: [180, 22, 54, 50, '#3D2C24', '🍟'],
+  mikrowelle: [20, 18, 92, 54, '#cfd6d4', '⏲️'], mixer: [126, 26, 40, 46, '#e8c568', '🫙'], airfryer: [180, 22, 54, 50, '#3D2C24', '🍟'],
   slowcooker: [246, 28, 58, 44, '#a8553a', '🍲'], kochfeld: [40, 104, 110, 22, '#2a1f1a', '🔥'], ofen: [40, 134, 110, 72, '#6d5a4f', '♨️'],
 };
 function kitchenSVG(p) {
@@ -161,7 +162,7 @@ function vPlan() {
   const rs = S.plan.map(s => s.rid && R(s.rid)).filter(Boolean), avg = k => Math.round(rs.reduce((t, r) => t + r.m[k], 0) / (rs.length || 1));
   return `<div class="row between"><h1>Deine Woche</h1><button class="btn small ghost" data-a="regen">↻ Neu planen</button></div>
     <div class="plan-top"><div class="card banner">${badge(st)}
-      <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${priceNote(st)}</div></div>
+      <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${shortNote(st)}</div></div>
       <button class="btn small" data-a="go" data-id="list">Liste öffnen</button></div>
     <div class="card row">${ring(c.total, p.budget)}<div class="grow">
       <div class="muted">${meals} Mahlzeiten · ${fmtServ(P.servings(p))} Portionen</div>
@@ -250,7 +251,7 @@ function altList() {
 function vPlanAt() {
   const r = R(ui.sheet.plan), p = S.profile, rids = S.plan.map(s => s.rid), cur = cost().total, today = P.isoDay(), both = p.meals.lunch && p.meals.dinner;
   const where = S.plan.filter(s => s.rid === r.id).map(s => dayLabel(s.date).split(',')[0]);
-  return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-label="Gericht einplanen" data-stop>
+  return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="Gericht einplanen" data-stop>
     <div class="row between"><h2>Einplanen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
     <p class="muted">${esc(r.title)} ersetzt das gewählte Gericht und wird fixiert.${where.length ? ` Schon eingeplant: ${esc(where.join(', '))}.` : ''}</p>
     ${S.plan.map((s, i) => { if (s.date < today) return ''; const o = s.rid && R(s.rid), d = P.weekCost(rids.map((x, j) => j === i ? r.id : x), recipes(), p).total - cur;
@@ -261,7 +262,7 @@ function vPlanAt() {
 function vSwapSheet() {
   if (ui.sheet.plan) return vPlanAt();
   const i = ui.sheet.i, slot = S.plan[i], p = S.profile, rids = S.plan.map(s => s.rid), cur = cost().total;
-  return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-label="Gericht tauschen" data-stop>
+  return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="Gericht tauschen" data-stop>
     <div class="row between"><h2>Tauschen oder aussetzen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
     <p class="muted">${dayLabel(slot.date)} · sortiert nach Wochenpreis. Aktuell ${eur(cur)}.</p>
     ${slot.pinned ? `<div class="card sand row" style="padding:12px"><span class="grow">📌 Fixiert – bleibt beim Neuplanen und Ausgleichen.</span><button class="btn small ghost" data-a="unpin">Lösen</button></div>` : ''}
@@ -327,7 +328,7 @@ function vCook() {
     const rem = !tm ? s.t * 60 : tm.paused != null ? tm.paused / 1000 : Math.max(0, (tm.end - Date.now()) / 1000);
     timer = `<button class="timer ${tm ? (rem ? 'run' : 'done') : ''}" data-a="timer" data-id="${key}" data-t="${s.t}">${!tm || tm.paused != null ? '▶' : rem ? '⏸' : '✓'} ${tm && !rem ? 'Fertig!' : mmss(rem)}</button>`;
   }
-  return `<div class="cook" role="dialog" aria-label="Kochmodus"><div class="row between"><span class="grow">${esc(r.title)}</span>
+  return `<div class="cook" role="dialog" aria-modal="true" aria-label="Kochmodus"><div class="row between"><span class="grow">${esc(r.title)}</span>
     <button class="btn small cookbtn" data-a="cooking" aria-expanded="${!!ui.cookIng}">🧺 Zutaten</button><button class="back cookbtn" data-a="exitcook" aria-label="Schließen">✕</button></div>
     ${ui.cookIng ? `<div class="cooking" tabindex="0" role="region" aria-label="Zutaten">${ingRows(r, recipeServ())}</div>` : ''}
     <div class="stepbody"><div class="muted" style="color:var(--gold)">Schritt ${i + 1} von ${r.steps.length}</div><p>${esc(s.x)}</p><div>${timer}</div>
@@ -345,6 +346,8 @@ function listGroups() {
 }
 const itemLine = i => i.pantry ? `${i.ing.name} (Vorrat prüfen)` : `${i.ing.name} – ${i.packs}× ${i.pack}${i.product ? ` (${i.product})` : ''}${i.saved ? ` – AKTION${i.offer ? ' ' + offerWhen(i.offer) : ''}` : ''}`;
 const fmtDate = iso => new Date(iso + 'T12:00').toLocaleDateString('de-AT');
+const shortNote = st => { const rs = P.realStore({ store: st.id }), n = P.offers({ store: st.id }).length;
+  return [rs && !rs.offersOnly ? `Echte Preise vom ${fmtDate(rs.asOf).replace(/\d{4}$/, '')}` : 'Preise geschätzt', n ? `${n} Aktionen` : ''].filter(Boolean).join(' · '); };
 const priceNote = st => {
   const rs = P.realStore({ store: st.id }), n = P.offers({ store: st.id }).length, akt = n ? ` · ${n} Aktionen` : '';
   if (!rs) return `Geschätzte Preise auf ${st.name}-Niveau`;
@@ -481,7 +484,16 @@ function render() {
   app.dataset.view = v === 'cook' ? 'recipe' : v;
   app.innerHTML = body + tabs + (ui.sheet ? vSwapSheet() : '') + (v === 'cook' ? vCook() : '');
   if (key) app.querySelector(key)?.focus({ preventScroll: true });
+  dialogFocus(f, key);
   syncHistory();
+}
+// Fenster (Tauschen, Einplanen, Kochmodus): Fokus beim Öffnen hinein, beim Schließen zurück zum auslösenden Knopf.
+let openDlg = null, dlgFrom = null;
+function dialogFocus(prev, prevKey) {
+  const dlg = document.querySelector('.sheet, .cook'), kind = dlg ? dlg.className : null;
+  if (kind && kind !== openDlg) { dlgFrom = prevKey; (dlg.querySelector('.back, button') || dlg).focus({ preventScroll: true }); }
+  else if (!kind && openDlg && dlgFrom) document.querySelector(dlgFrom)?.focus({ preventScroll: true });
+  openDlg = kind;
 }
 
 // Verlauf: Zurück-Geste/-Taste schließt Fenster, verlässt Kochmodus und Rezept statt die App.
@@ -713,6 +725,14 @@ document.addEventListener('click', async e => {
   rerender(r === 'top' || ['go', 'obnext', 'obback', 'edit', 'newrecipe'].includes(el.dataset.a));
 });
 document.addEventListener('keydown', e => {
+  // Tab bleibt im offenen Fenster
+  const dlg = e.key === 'Tab' && document.querySelector('.sheet, .cook');
+  if (dlg) {
+    const els = [...dlg.querySelectorAll('button:not([disabled]), input, select, textarea, a[href], [tabindex="0"]')], first = els[0], last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    else if (!dlg.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  }
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('svg [data-a]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
   if (e.key === 'Escape' && ui.sheet) { ui.sheet = null; render(); }
   if (ui.view === 'cook' && !e.target.matches('input, textarea')) {

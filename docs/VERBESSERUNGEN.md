@@ -64,3 +64,13 @@ Eine zweite, unabhängige Durchsicht des Diffs fand 6 reproduzierbare Fehler und
 | Ausgleichen mit Reste-Option schwächer | Nur selbst gewählte Reste-Paare bleiben fest, erzeugte dürfen neu entstehen |
 | Unerreichbares Budget: Planung langsam | Sparphase kürzer, bei aussichtslosem Budget nur ein Entwurf nachgebessert (376 → 236 ms) |
 | e2e gelegentlich instabil nach Reload | Adresse vor dem Reload zurückgesetzt |
+
+## Runde 5
+
+| # | Block | Verbesserung | Warum | Status |
+|---|---|---|---|---|
+| 29 | Datenschutz | Schriften selbst gehostet (SIL OFL), keine Anfragen an Google mehr | Google Fonts übertragen die IP-Adresse (in AT/DE rechtlich heikel), „alles lokal“ stimmt jetzt; offline und schneller | ✅ umgesetzt |
+| 30 | Sicherheit | Content-Security-Policy: nur eigene Skripte, keine Fremdquellen | Zweite Verteidigungslinie gegen eingeschleustes HTML | ✅ umgesetzt |
+| 31 | A11y | Fenster als `aria-modal`: Fokus beim Öffnen hinein, Tab bleibt drin, beim Schließen zurück zum Auslöser | Tastatur/Screenreader landeten hinter dem Fenster | ✅ umgesetzt |
+| 32 | Robustheit | Speicher blockiert (privates Fenster): Hinweis nur einmal und verständlich | Toast bei jedem Tippen | ✅ umgesetzt |
+| 33 | Optik | Banner kürzer („Echte Preise vom 22.11. · 11 Aktionen“), Mikrowellen-Symbol statt Radio | Vier Zeilen Kleingedrucktes, falsches Symbol | ✅ umgesetzt |
