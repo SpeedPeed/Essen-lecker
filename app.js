@@ -12,17 +12,39 @@ const DEFAULT_PROFILE = {
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch { S = null; }
 // Alte oder beschädigte Stände reparieren statt abzustürzen: fehlende Felder mit Defaults auffüllen, kaputte Slots verwerfen.
+// Auch importierte Sicherungen laufen hier durch: Werte, die ungeprüft in HTML/Styles landen (Rezept-Id, Farbton, Zahlen),
+// werden auf erlaubte Formen gebracht – eine präparierte Datei darf kein Markup einschleusen.
+const obj = v => v && typeof v === 'object' && !Array.isArray(v), arr = v => Array.isArray(v) ? v : [];
+const num = (v, lo, hi, dflt) => Number.isFinite(+v) && v !== null && v !== '' ? Math.min(hi, Math.max(lo, +v)) : dflt;
+const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
+const strs = v => arr(v).filter(t => typeof t === 'string');
+function cleanRecipe(r) {
+  if (!obj(r) || typeof r.id !== 'string' || !/^[\w-]{1,40}$/.test(r.id) || !obj(r.ing) || !Array.isArray(r.steps)) return null;
+  const ing = {};
+  for (const [id, a] of Object.entries(r.ing)) if (D.INGREDIENTS[id]) ing[id] = num(a, 0, 5000, 0);
+  const steps = r.steps.filter(obj).map(x => ({ x: str(x.x, 500), t: x.t == null ? undefined : num(x.t, 1, 600, undefined) })).filter(x => x.x);
+  if (!Object.keys(ing).length || !steps.length) return null;
+  return { id: r.id, custom: true, title: str(r.title, 60) || 'Eigenes Rezept', emoji: str(r.emoji, 8) || '🍽️', hue: Math.round(num(r.hue, 0, 360, 30)),
+    cat: str(r.cat, 40) || 'Eigene', time: num(r.time, 1, 600, 30), tags: strs(r.tags).slice(0, 5), needs: strs(r.needs).filter(n => D.EQUIPMENT.some(e => e[0] === n)),
+    m: [0, 1, 2, 3].map(i => num(arr(r.m)[i], 0, 5000, 0)), ing, steps, leftovers: !!r.leftovers, sweet: !!r.sweet };
+}
 function normalize(x) {
-  const obj = v => v && typeof v === 'object' && !Array.isArray(v), arr = v => Array.isArray(v) ? v : [];
   x = obj(x) ? x : {};
   const p = obj(x.profile) ? x.profile : {}, d = DEFAULT_PROFILE;
   const profile = { ...structuredClone(d), ...p, kids: { ...d.kids, ...(obj(p.kids) ? p.kids : {}) }, meals: { ...d.meals, ...(obj(p.meals) ? p.meals : {}) } };
-  for (const k of ['styles', 'dislikes', 'allergies', 'equipment', 'blocked']) profile[k] = arr(p[k] ?? d[k]);
+  for (const k of ['styles', 'dislikes', 'allergies', 'equipment', 'blocked']) profile[k] = strs(p[k] ?? d[k]);
   if (!D.STORES.some(st => st.id === profile.store)) profile.store = x.onboarded ? 'spar' : null;
-  if (!(profile.budget > 0)) profile.budget = d.budget;
-  return { ...x, profile, onboarded: !!x.onboarded, checked: obj(x.checked) ? x.checked : {}, extras: arr(x.extras).filter(e => typeof e === 'string'),
-    favs: arr(x.favs), custom: arr(x.custom).filter(r => obj(r) && r.id && obj(r.ing) && Array.isArray(r.steps)),
-    plan: arr(x.plan).filter(sl => obj(sl) && /^\d{4}-\d\d-\d\d$/.test(sl.date) && (sl.meal === 'lunch' || sl.meal === 'dinner')) };
+  profile.budget = num(p.budget, 1, 2000, d.budget); profile.adults = Math.round(num(p.adults, 1, 8, d.adults));
+  profile.kids.count = Math.round(num(profile.kids.count, 1, 6, 1)); if (!['1-3', '4-10', '11-17'].includes(profile.kids.age)) profile.kids.age = '4-10';
+  profile.kids.on = !!profile.kids.on; profile.meals = { lunch: !!profile.meals.lunch, dinner: !!profile.meals.dinner };
+  profile.skipDays = arr(p.skipDays).filter(n => Number.isInteger(n) && n >= 0 && n <= 6);
+  if (!['soft', 'strict'].includes(profile.allergyMode)) profile.allergyMode = 'soft';
+  if (!D.DIETS.some(([id]) => id === profile.diet)) profile.diet = 'none';
+  return { ...x, profile, onboarded: !!x.onboarded, checked: obj(x.checked) ? x.checked : {}, extras: strs(x.extras).map(e => e.slice(0, 80)),
+    favs: strs(x.favs), custom: arr(x.custom).map(cleanRecipe).filter(Boolean),
+    plan: arr(x.plan).filter(sl => obj(sl) && /^\d{4}-\d\d-\d\d$/.test(sl.date) && (sl.meal === 'lunch' || sl.meal === 'dinner'))
+      .map(sl => ({ date: sl.date, meal: sl.meal, rid: typeof sl.rid === 'string' ? sl.rid : null, ...(sl.skip === 'self' || sl.skip === 'free' ? { skip: sl.skip, note: str(sl.note, 60) } : {}),
+        ...(sl.pinned ? { pinned: true } : {}), ...(sl.leftover ? { leftover: true } : {}) })) };
 }
 S = normalize(S);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { toast('Speichern nicht möglich (Speicher voll oder blockiert).'); } };
@@ -493,7 +515,7 @@ function toast(msg, action, label) {
 // Für die Planung zählen auch Favoriten (öfter) – sie liegen außerhalb des Profils.
 const PP = () => ({ ...S.profile, favs: S.favs });
 function regenerate() { S.plan = P.planWeek(PP(), recipes(), S.plan); save(); }
-const keepUndo = () => { ui.undo = { plan: structuredClone(S.plan), checked: { ...S.checked } }; };
+const keepUndo = () => { ui.undo = { plan: structuredClone(S.plan), checked: { ...S.checked }, favs: [...S.favs] }; };
 // Selbst gewähltes Gericht: fixieren (bleibt beim Neuplanen), bei Budgetüberschreitung Ausgleich anbieten.
 function setSlot(i, rid, msg) {
   S.plan[i] = { date: S.plan[i].date, meal: S.plan[i].meal, rid, pinned: true }; ui.sheet = null; save();
@@ -565,7 +587,7 @@ const A = {
   },
   go: d => { ui.view = d.id; ui.sheet = null; ui.form = null; },
   regen: () => { keepUndo(); regenerate(); const n = S.plan.filter(s => s.pinned).length; toast(`Neuer Wochenplan${n ? ` · ${n} fixierte${n > 1 ? '' : 's'} behalten` : ''}`, 'undo', 'Rückgängig'); },
-  undo: () => { if (!ui.undo) return; ({ plan: S.plan, checked: S.checked } = ui.undo); ui.undo = null; save(); document.getElementById('toast').classList.remove('show'); toast('Rückgängig gemacht'); },
+  undo: () => { if (!ui.undo) return; ({ plan: S.plan, checked: S.checked, favs: S.favs } = ui.undo); ui.undo = null; save(); document.getElementById('toast').classList.remove('show'); toast('Rückgängig gemacht'); },
   newweek: () => {
     // Heutige Gerichte bleiben (sind meist schon eingekauft), ab morgen wird neu geplant; neue Woche = neue Liste.
     const today = P.isoDay(); keepUndo();
@@ -592,7 +614,10 @@ const A = {
   },
   leftover: () => {
     const i = ui.sheet.i, pd = prevDinner(S.plan[i]);
-    S.plan[i] = { date: S.plan[i].date, meal: 'lunch', rid: pd.id, leftover: true, pinned: true }; ui.sheet = null; save();
+    S.plan[i] = { date: S.plan[i].date, meal: 'lunch', rid: pd.id, leftover: true, pinned: true };
+    const eve = P.isoDay(new Date(new Date(S.plan[i].date + 'T12:00').getTime() - 864e5)), src = S.plan.find(o => o.meal === 'dinner' && o.date === eve && o.rid === pd.id);
+    if (src) src.pinned = true; // das Abendessen, von dem die Reste stammen, gehört dazu
+    ui.sheet = null; save();
     toast(`Mittag = Reste: am Vorabend ${pd.title} doppelt kochen`);
   },
   pick: d => setSlot(ui.sheet.i, d.id, 'Getauscht'),
@@ -651,7 +676,7 @@ const A = {
   quick: () => { ui.quick = !ui.quick; ui.limit = 40; },
   more: () => { ui.limit += 40; },
   sheetall: () => { ui.sheet.all = true; },
-  offer: d => { ui.q = D.INGREDIENTS[d.id].name.replace(/ \(.*\)/, ''); ui.filter = 'passt'; ui.view = 'discover'; return 'top'; },
+  offer: d => { ui.q = D.INGREDIENTS[d.id].name.replace(/ \(.*\)/, ''); ui.filter = 'passt'; ui.cat = 'alle'; ui.quick = false; ui.limit = 40; ui.view = 'discover'; return 'top'; },
   newrecipe: () => { ui.form = { title: '', emoji: '🍽️', time: 30, tag: 'schnell', ing: [{ id: 'zwiebel', amt: 50 }], steps: '', m: [500, 20, 60, 15] }; },
   cancelform: () => { if (ui.form.id) { ui.view = 'recipe'; ui.recipe = ui.form.id; } ui.form = null; },
   editrecipe: d => {

@@ -173,9 +173,11 @@ a { color: inherit; }
 .btn.small.wide { display: block; width: 100%; }
 .opt .badge { display: inline-block; margin-bottom: 6px; }
 .footer-cta .skipob { margin: 0 auto 8px; background: var(--bg); }
+#app[data-view="onboarding"] { padding-bottom: 180px; } /* Platz für zwei Knöpfe im Fuß */
 
 /* Drucken: Plan bzw. Einkaufsliste ohne Bedienelemente */
 @media print {
+  :root { --bg: #fff; --card: #fff; --sand: #eee; --espresso: #3D2C24; --text: #000; --muted: #555; --line: #ccc; --sage: #4A7C59; --danger: #b54a3a; --offer-text: #8a5a00; }
   body, #app { background: #fff; color: #000; }
   #app { max-width: none; padding: 0; }
   .tabs, .footer-cta, .swap, .btn, .back, .offers, #toast, .noprint, .sheet-bg, .progress { display: none !important; }

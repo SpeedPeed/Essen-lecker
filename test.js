@@ -100,11 +100,11 @@ P.setPrices({ stores: { spar: { asOf: '2026-09-10', items: { knoblauch: { name: 
 const kn = P.packOf('knoblauch', { ...base, store: 'spar' });
 assert.deepStrictEqual([kn.packQty, kn.pack], [10, '1 Knolle']);
 
-// Reste-Slot und sein Vorabend-Gericht bleiben beim Ausgleichen stehen
+// Selbst gewählter Reste-Slot (fixiert) und sein Vorabend-Gericht bleiben beim Ausgleichen stehen
 P.setPrices(require('./prices.json'));
 const lb = { ...base, meals: { lunch: true, dinner: true }, budget: 30 };
 const wl = P.planWeek(lb, D.RECIPES, [], new Date('2026-11-23T12:00'));
-wl[1] = { ...wl[1], rid: 'linseneintopf' }; wl[2] = { date: wl[2].date, meal: 'lunch', rid: 'linseneintopf', leftover: true };
+wl[1] = { ...wl[1], rid: 'linseneintopf' }; wl[2] = { date: wl[2].date, meal: 'lunch', rid: 'linseneintopf', leftover: true, pinned: true };
 const rl = P.rebalance(wl, -1, lb, D.RECIPES);
 assert.deepStrictEqual([rl[1].rid, rl[2].rid, rl[2].leftover], ['linseneintopf', 'linseneintopf', true]);
 console.log('ok Datum, Knoblauch, Reste');
@@ -208,3 +208,16 @@ for (let k = 1; k <= 4; k++) {
 }
 assert.ok(leftovers >= 4 * 4, 'zu wenige Reste-Mittage: ' + leftovers);
 console.log(`ok Reste-Mittage (${leftovers} in 4 Wochen, Ø ${(costLo / 4).toFixed(2)} € statt ${(costNo / 4).toFixed(2)} €)`);
+
+// Fixierter Reste-Mittag behält sein Abendessen; feste Kochpause schlägt Fixiertes
+const lw = P.planWeek({ ...base, meals: { lunch: true, dinner: true }, budget: 70 }, D.RECIPES, [], new Date('2026-11-23T12:00')); // [Mo M, Mo A, Di M, …]
+lw[1] = { ...lw[1], rid: 'linseneintopf', pinned: true }; lw[2] = { ...lw[2], rid: 'linseneintopf', leftover: true, pinned: true };
+for (let k = 0; k < 5; k++) {
+  const lw2 = P.planWeek({ ...base, meals: { lunch: true, dinner: true }, budget: 70 }, D.RECIPES, lw, new Date('2026-11-23T12:00'));
+  assert.deepStrictEqual([lw2[1].rid, lw2[2].rid, !!lw2[2].leftover], ['linseneintopf', 'linseneintopf', true]);
+}
+const fr = P.planWeek(base, D.RECIPES, [], new Date('2026-11-23T12:00'));
+fr[4] = { ...fr[4], rid: 'lasagne', pinned: true }; // Freitag
+const fr2 = P.planWeek({ ...base, skipDays: [5] }, D.RECIPES, fr, new Date('2026-11-23T12:00'));
+assert.deepStrictEqual([fr2[4].rid, fr2[4].skip], [null, 'self']);
+console.log('ok Reste-Paar & Kochpause vor Fixiertem');

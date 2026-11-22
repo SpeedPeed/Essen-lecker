@@ -107,7 +107,7 @@ const server = http.createServer((req, res) => {
 
     // Kaputter localStorage-Stand darf die App nicht leeren
     await page.evaluate(() => localStorage.setItem('piatto.v1', JSON.stringify({ onboarded: true, profile: { store: 'spar' }, plan: [null, { date: 'x' }] })));
-    await page.goto(url); await page.waitForSelector('.card.day');
+    await page.evaluate(() => history.replaceState(null, '', '/')); await page.reload(); await page.waitForSelector('.card.day');
     await page.close();
   }
   await browser.close(); server.close();

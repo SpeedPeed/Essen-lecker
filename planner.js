@@ -127,9 +127,9 @@
     const nextLunchFree = (plan, slot) => { const d = new Date(slot.date + 'T12:00'); d.setDate(d.getDate() + 1); const n = plan.find(o => o.meal === 'lunch' && o.date === isoDay(d)); return !!n && !n.locked; };
     let best = null;
     const tried = [];
-    // Passt nach 60 Läufen nichts ins Budget, folgen bis zu 60 sparsamere Läufe (hohes Kostengewicht).
-    for (let iter = 0; iter < 60 || (iter < 120 && !best.fits); iter++) {
-      const costW = iter < 60 ? 0.5 + (iter / 60) * 4 : 6 + (iter - 60) / 6;
+    // Passt nach 60 Läufen nichts ins Budget, folgen bis zu 20 sparsame Läufe (hohes Kostengewicht, ganzer Pool).
+    for (let iter = 0; iter < 60 || (iter < 80 && !best.fits); iter++) {
+      const costW = iter < 60 ? 0.5 + (iter / 60) * 4 : 6 + (iter - 60) / 2;
       const plan = base.map(s => ({ ...s, rid: s.locked ? s.rid : null, leftover: s.locked ? s.leftover : undefined }));
       const need = {}, uses = {}, cats = {};
       let sweets = 0;
@@ -187,8 +187,10 @@
       if (!fits) tried.push({ plan, cost });
     }
     if (!best.fits) {
-      // Nachbessern ab den 6 günstigsten Entwürfen (Einzeltausch bleibt sonst oft in einem lokalen Minimum hängen).
-      const outs = tried.sort((a, b) => a.cost - b.cost).slice(0, 6).map(t => ({ plan: t.plan, cost: fitBudget(t.plan, t.cost) }));
+      // Nachbessern ab den günstigsten Entwürfen (Einzeltausch bleibt sonst oft in einem lokalen Minimum hängen);
+      // ist das Budget ohnehin unerreichbar weit weg, reicht der günstigste – spart auf schwachen Handys Sekunden.
+      tried.sort((a, b) => a.cost - b.cost);
+      const outs = tried.slice(0, tried[0].cost > p.budget * 1.3 ? 1 : 5).map(t => ({ plan: t.plan, cost: fitBudget(t.plan, t.cost) }));
       const ok = outs.filter(o => o.cost <= p.budget + 1e-9);
       best = { plan: (ok.length ? ok.sort((a, b) => planPref(b.plan) - planPref(a.plan))[0] : outs.sort((a, b) => a.cost - b.cost)[0]).plan };
     }
@@ -236,19 +238,26 @@
     const base = slotsFor(p, start).map(s => {
       const o = old.find(x => x.date === s.date && x.meal === s.meal && x.skip);
       if (o) return { ...s, skip: o.skip, note: o.note, locked: true };
+      if ((p.skipDays || []).includes(new Date(s.date + 'T12:00').getDay())) return { ...s, skip: 'self', note: '', locked: true }; // vor Fixiertem
       const pin = old.find(x => x.date === s.date && x.meal === s.meal && x.pinned && x.rid);
       const r = pin && recipes.find(x => x.id === pin.rid);
       if (r && eligible(r, p)) return { ...s, rid: r.id, pinned: true, ...(pin.leftover ? { leftover: true } : {}), locked: true };
-      if ((p.skipDays || []).includes(new Date(s.date + 'T12:00').getDay())) return { ...s, skip: 'self', note: '', locked: true };
       return s;
     });
+    // Fixierter Reste-Mittag braucht sein Abendessen vom Vortag – das bleibt mit stehen.
+    for (const s of base) if (s.leftover && s.pinned) {
+      const d = base.find(o => o.meal === 'dinner' && o.date === isoDay(new Date(new Date(s.date + 'T12:00').getTime() - 864e5)));
+      if (d && !d.locked) Object.assign(d, { rid: s.rid, locked: true });
+      else if (!d || d.rid !== s.rid) delete s.leftover; // Vorabend ausgesetzt/anders fixiert → normales Gericht
+    }
     return generate(p, recipes, null, base);
   }
 
   // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren. Fixierte Gerichte, Reste-Slots und das
   // Gericht, von dem sie stammen, bleiben ebenfalls stehen.
   function rebalance(plan, keepIdx, p, recipes) {
-    const locked = plan.map((s, i) => ({ ...s, locked: i === keepIdx || !s.rid || s.pinned || plan.some(o => o.leftover && o.rid === s.rid) }));
+    // Vom Planer erzeugte Reste-Paare (Option „Mittag = Reste“) dürfen neu entstehen, selbst gewählte bleiben.
+    const locked = plan.map((s, i) => ({ ...s, locked: i === keepIdx || !s.rid || s.pinned || plan.some(o => o.leftover && o.pinned && o.rid === s.rid) }));
     return generate(p, recipes, null, locked);
   }
 

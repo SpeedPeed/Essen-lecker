@@ -46,3 +46,21 @@ Leitlinien: kein Framework, kein Build, alles lokal; jede Logikänderung mit Tes
 | 26 | Tempo | Packungen je Markt gemerkt, Rezept-Index für Wochenpreise, Suche wartet kurz aufs Tippen | 6× gedrosselte CPU: Tausch-Fenster 519 → 364 ms, Suche 778 → 231 ms, Neu planen 588 → 447 ms | ✅ umgesetzt |
 | 27 | Bedienung | Zurück-Geste/-Taste: schließt Fenster, verlässt Kochmodus und Rezept; Direktlinks `#list`, `#discover`, App-Verknüpfungen | Android-Zurück schloss bisher die ganze App | ✅ umgesetzt |
 | 28 | Plan | „Neue Woche“, sobald nur noch heute/morgen geplant ist: heutige Gerichte bleiben, neue Einkaufsliste, Rückgängig möglich | Bisher erst nach Ablauf aller Tage automatisch | ✅ umgesetzt |
+
+## Unabhängige Fehlerprüfung der Runden 2–4
+
+Eine zweite, unabhängige Durchsicht des Diffs fand 6 reproduzierbare Fehler und einige Verdachtsfälle – alle behoben:
+
+| Fund | Behebung |
+|---|---|
+| „Nicht mehr vorschlagen“ → Rückgängig löschte den Favoriten | Rückgängig sichert und stellt auch Favoriten wieder her |
+| Fixierter Reste-Mittag verlor beim Neuplanen sein Abendessen | Abendessen wird mit fixiert; `planWeek` hält das Paar zusammen (Test) |
+| Neuer Kochpause-Tag ließ fixierte Gerichte an dem Tag stehen | Kochpause hat Vorrang vor Fixiertem (Test) |
+| „Rest überspringen“ verdeckte auf 320 px Inhalt | Mehr Abstand unten im Onboarding |
+| Drucken im Dark Mode: Summe fast unsichtbar | Druck setzt helle Farb-Token |
+| Angebotskarte behielt Kategorie-/Zeitfilter in Entdecken | Filter werden zurückgesetzt |
+| Präparierte Sicherungsdatei konnte HTML einschleusen (Rezept-Id, Farbton, Zahlen) | `normalize()` prüft alle Felder streng (Ids, Zahlenbereiche, bekannte Werte) |
+| Fotos im Service Worker wurden nie aktualisiert | Cache sofort, im Hintergrund still erneuern |
+| Ausgleichen mit Reste-Option schwächer | Nur selbst gewählte Reste-Paare bleiben fest, erzeugte dürfen neu entstehen |
+| Unerreichbares Budget: Planung langsam | Sparphase kürzer, bei aussichtslosem Budget nur ein Entwurf nachgebessert (376 → 236 ms) |
+| e2e gelegentlich instabil nach Reload | Adresse vor dem Reload zurückgesetzt |
