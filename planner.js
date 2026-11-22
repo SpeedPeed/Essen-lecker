@@ -41,7 +41,7 @@
     const metric = ing.unit === 'g' || ing.unit === 'ml';
     // Bei Kopf/Bund/Zehe usw. gilt 1 echtes Stück = 1 unserer Packungen.
     const packQty = metric || ing.unit === 'Stk' ? real.qty : ing.packQty;
-    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : ing.pack), product: real.name, was: real.was || null };
+    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : ing.pack), product: real.name, was: real.was || null, offer: real.offer || null };
   }
 
   // Zutaten eines Rezepts, die im gewählten Markt gerade in Aktion sind.
@@ -63,7 +63,7 @@
       const packs = pantry ? 0 : Math.max(1, Math.ceil(qty / pk.packQty - 1e-9));
       const cost = packs * pk.price;
       total += cost;
-      return { id, ing, qty, packs, cost, pantry, leftover: packs * pk.packQty - qty, pack: pk.pack, product: pk.product, saved: pk.was && !pantry ? packs * (pk.was - pk.price) : 0 };
+      return { id, ing, qty, packs, cost, pantry, leftover: packs * pk.packQty - qty, pack: pk.pack, product: pk.product, saved: pk.was && !pantry ? packs * (pk.was - pk.price) : 0, offer: pk.offer };
     });
     return { total, items };
   }

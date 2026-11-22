@@ -1,5 +1,5 @@
 {
- "source": "heisse-preise.io",
+ "source": "heisse-preise.io + marktguru.at",
  "fetched": "2026-11-22",
  "stores": {
   "billa": {
@@ -44,11 +44,17 @@
      "date": "2026-09-24"
     },
     "weisskraut": {
-     "name": "Da komm ich her! Weißkraut",
-     "price": 0.99,
+     "name": "Da komm' ich her Weißkraut",
+     "price": 0.79,
      "qty": 1000,
-     "date": "2026-11-10",
-     "was": 1.13
+     "was": 0.99,
+     "offer": {
+      "adv": "BILLA",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "Kl. I, per Kilo"
+     }
     },
     "salat": {
      "name": "Häuptelsalat",
@@ -142,10 +148,17 @@
      "date": "2026-07-01"
     },
     "butter": {
-     "name": "Clever Österreichische Teebutter",
-     "price": 1.59,
+     "name": "Schärdinger Teebutter",
+     "price": 1.42,
      "qty": 250,
-     "date": "2026-10-01"
+     "was": 2.56,
+     "offer": {
+      "adv": "BILLA PLUS",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "österreichische 250 g"
+     }
     },
     "eier": {
      "name": "BILLA Freilandeier M",
@@ -329,10 +342,17 @@
      "date": "2026-11-22"
     },
     "lachs": {
-     "name": "Clever Wildlachsfilet ohne Haut",
-     "price": 4.49,
-     "qty": 250,
-     "date": "2026-11-22"
+     "name": "Clever Lachsfilet",
+     "price": 4.99,
+     "qty": 300,
+     "was": 6.59,
+     "offer": {
+      "adv": "BILLA",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "300 g Packung"
+     }
     },
     "garnelen": {
      "name": "Clever Riesengarnelen geschält",
@@ -472,10 +492,17 @@
      "date": "2026-09-08"
     },
     "parmesan": {
-     "name": "DESPAR Grana Padano gehobelt",
-     "price": 2.39,
-     "qty": 100,
-     "date": "2024-11-20"
+     "name": "Despar Premium Grana Padano Riserva",
+     "price": 7.99,
+     "qty": 350,
+     "was": 9.99,
+     "offer": {
+      "adv": "SPAR",
+      "from": "2026-11-18",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "D.O.P. ca. 19% Fett absolut, aus past. Kuhmilch aus den Regionen Lombardei, Piemont, Veneto und der Provinz Trento hergestellter und mind. 20 Monate gereifter, würziger Hartkäse (herkunftsgeschützt), 350 g"
+     }
     },
     "frankfurter": {
      "name": "TANN Frankfurter 2 Paar per 250g-Packung",
@@ -502,10 +529,17 @@
      "date": "2023-04-14"
     },
     "milch": {
-     "name": "S-BUDGET Vollmilch 3,5% Fett länger frisch",
-     "price": 1.32,
+     "name": "Salzburg Milch Premium Bergbauern H-Milch",
+     "price": 0.89,
      "qty": 1000,
-     "date": "2026-07-01"
+     "was": 1.42,
+     "offer": {
+      "adv": "EUROSPAR",
+      "from": "2026-11-18",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "3,5% Fett oder 0,5% Fett aus Österreich, 1 Liter"
+     }
     },
     "butter": {
      "name": "S-BUDGET Butter",
@@ -538,10 +572,17 @@
      "date": "2023-04-21"
     },
     "faschiertes": {
-     "name": "TANN Faschiertes gemischt per Packung",
-     "price": 6.99,
+     "name": "Tann Gemischt Faschiertes",
+     "price": 4.99,
      "qty": 500,
-     "date": "2025-09-08"
+     "was": 6.99,
+     "offer": {
+      "adv": "SPAR",
+      "from": "2026-11-18",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "aus Österreich, Rind- und Schweinefleisch, in Selbstbedienung, 500-g-Packung"
+     }
     },
     "rindsgulasch": {
      "name": "S-BUDGET Rindsgulasch",
@@ -550,10 +591,17 @@
      "date": "2026-04-14"
     },
     "huhn": {
-     "name": "SPAR Feinstes Geflügel Hendlfilet 2 Stück",
-     "price": 16.19,
-     "qty": 1000,
-     "date": "2026-07-30"
+     "name": "S Budget Hendlfilet",
+     "price": 7.59,
+     "qty": 700,
+     "was": 9.09,
+     "offer": {
+      "adv": "EUROSPAR",
+      "from": "2026-11-18",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "aus Österreich, in Selbstbedienung, 700-g-Packung"
+     }
     },
     "penne": {
      "name": "DESPAR Penne Rigate",
@@ -698,6 +746,271 @@
      "price": 3.99,
      "qty": 225,
      "date": "2026-02-12"
+    }
+   }
+  },
+  "lidl": {
+   "asOf": "2026-11-22",
+   "offersOnly": true,
+   "items": {
+    "garnelen": {
+     "name": "Deluxe White Tiger Garnelen",
+     "price": 8.99,
+     "qty": 720,
+     "was": 14.21,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-12-24",
+      "loyalty": false,
+      "note": "ASC Roh, leicht zu schälen 720 g"
+     }
+    },
+    "champignons": {
+     "name": "Champignons",
+     "price": 1.39,
+     "qty": 500,
+     "was": 1.99,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-22",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "braun  Klasse I  Je 500 g"
+     }
+    },
+    "brokkoli": {
+     "name": "Broccoli",
+     "price": 1.29,
+     "qty": 500,
+     "was": 1.89,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-22",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "Klasse I  Je 500 g"
+     }
+    },
+    "topfen": {
+     "name": "Alpengut Speisetopfen",
+     "price": 0.79,
+     "qty": 250,
+     "was": 0.99,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-22",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "Mager oder 20 % Fett 250 g"
+     }
+    },
+    "faschiertes": {
+     "name": "Faschiertes gemischt",
+     "price": 6.49,
+     "qty": 1000,
+     "was": 8.49,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-11-28",
+      "loyalty": false,
+      "note": "1 kg"
+     }
+    },
+    "weisskraut": {
+     "name": "Weißkraut",
+     "price": 0.79,
+     "qty": 1000,
+     "was": 0.99,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": true,
+      "note": "HINWEIS: MIT LIDL PLUS APP aus Österreich Klasse I per kg"
+     }
+    },
+    "paradeiser": {
+     "name": "Romatomaten",
+     "price": 1.49,
+     "qty": 500,
+     "was": 1.99,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": true,
+      "note": "HINWEIS: MIT LIDL PLUS APP Klasse I 500 g"
+     }
+    },
+    "melanzani": {
+     "name": "Melanzani",
+     "price": 0.89,
+     "qty": 1,
+     "was": 1.29,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": true,
+      "note": "HINWEIS: MIT LIDL PLUS APP Klasse I per Stk."
+     }
+    },
+    "karfiol": {
+     "name": "Karfiol",
+     "price": 1.69,
+     "qty": 1,
+     "was": 2.29,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": true,
+      "note": "HINWEIS: MIT LIDL PLUS APP Klasse I per Stk."
+     }
+    },
+    "eier": {
+     "name": "Eier",
+     "price": 4.28,
+     "qty": 18,
+     "was": 4.79,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-25",
+      "to": "2026-11-28",
+      "loyalty": false,
+      "note": "Güteklasse A Je 18 Stk."
+     }
+    }
+   }
+  },
+  "penny": {
+   "asOf": "2026-11-22",
+   "offersOnly": true,
+   "items": {
+    "milch": {
+     "name": "Schärdinger Formil H-Vollmilch",
+     "price": 0.89,
+     "qty": 1000,
+     "was": 1.61,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "3,5 % Fett, 1 l"
+     }
+    },
+    "schlagobers": {
+     "name": "Schärdinger Schlagobers",
+     "price": 1.09,
+     "qty": 250,
+     "was": 1.19,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "länger frisch 250 ml"
+     }
+    },
+    "erdaepfel": {
+     "name": "Wunderlinge Erdäpfel",
+     "price": 2.07,
+     "qty": 2494,
+     "was": 2.86,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "Kl. II,  2,5 kg"
+     }
+    },
+    "butter": {
+     "name": "Heidi Butter",
+     "price": 1.19,
+     "qty": 250,
+     "was": 1.59,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "250 g"
+     }
+    },
+    "eier": {
+     "name": "Ich bin Österreich Eier",
+     "price": 1.99,
+     "qty": 10,
+     "was": 2.66,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "Gewichtsklasse L 10 Stk."
+     }
+    },
+    "joghurt": {
+     "name": "Gazi Naturjoghurt",
+     "price": 1.89,
+     "qty": 1000,
+     "was": 2.19,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "loyalty": false,
+      "note": "3,5 % Fett 1 kg"
+     }
+    }
+   }
+  },
+  "hofer": {
+   "asOf": "2026-11-22",
+   "offersOnly": true,
+   "items": {
+    "spaghetti": {
+     "name": "Cucina nobile Spaghetti",
+     "price": 0.79,
+     "qty": 1000,
+     "was": 1.28,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-22",
+      "to": "2026-11-26",
+      "loyalty": false,
+      "note": "1 kg"
+     }
+    },
+    "sauerrahm": {
+     "name": "Milsani Sauerrahm",
+     "price": 1.29,
+     "qty": 500,
+     "was": 1.79,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-22",
+      "to": "2026-11-26",
+      "loyalty": false,
+      "note": "500 g"
+     }
+    },
+    "paradeiser": {
+     "name": "Pflaumentomaten",
+     "price": 1.29,
+     "qty": 500,
+     "was": 1.99,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-22",
+      "to": "2026-11-26",
+      "loyalty": false,
+      "note": "Klasse I 500 g"
+     }
     }
    }
   }

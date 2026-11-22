@@ -1,4 +1,4 @@
-name: Preise aktualisieren
+name: Preise & Aktionen aktualisieren
 on:
   schedule:
     - cron: '17 5 * * *' # täglich ~06:17 Wiener Zeit
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/prices.js
+      - run: node scripts/prices.js # Regalpreise (heisse-preise.io) + Flugblatt-Aktionen (marktguru.at)
       - run: node test.js
       - name: Commit, falls sich Preise geändert haben
         run: |

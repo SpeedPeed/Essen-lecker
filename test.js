@@ -57,3 +57,15 @@ const fi = P.weekCost(['bolognese'], D.RECIPES, bp).items.find(i => i.id === 'fa
 assert.ok(Math.abs(fi.saved - 1) < 1e-9 && P.offersIn(D.RECIPES.find(r => r.id === 'bolognese'), bp).length === 1);
 assert.ok(P.prefScore(D.RECIPES.find(r => r.id === 'bolognese'), bp) > P.prefScore(D.RECIPES.find(r => r.id === 'bolognese'), base));
 console.log('ok Aktionen');
+
+// Flugblatt-Aktionen (marktguru): Packung über Grundpreis, Zuordnung, nur echte Ersparnis
+const { matchOffers, packOfOffer } = require('./scripts/offers.js');
+const { RULES } = require('./scripts/prices.js');
+assert.deepStrictEqual(packOfOffer({ price: 4.99, referencePrice: 9.98, unit: { shortName: 'kg' } }), { unit: 'g', q: 500 });
+const mk = (adv, name, price, ref, old, to = '2026-12-02') => ({ advertisers: [{ name: adv }], product: { name }, brand: { name: 'thisisnobrand123' }, price, referencePrice: ref, oldPrice: old, unit: { shortName: 'kg' }, validityDates: [{ from: '2026-11-18T00:00:00Z', to: to + 'T00:00:00Z' }] });
+const reg = () => 6.99 / 500;
+const m = matchOffers([mk('EUROSPAR', 'Gemischt Faschiertes', 4.99, 9.98, null), mk('HOFER', 'Faschiertes gemischt', 4.99, 9.98, null, '2026-11-20'),
+  mk('Lidl', 'Gemischt Faschiertes', 7.99, 15.98, 8.49), mk('PENNY', 'Faschierte Laibchen gemischt', 2.99, 9.98, 3.99)], RULES, 'bio', reg, '2026-11-22');
+assert.deepStrictEqual(Object.keys(m), ['spar'], 'abgelaufen (HOFER), teurer als Regal (Lidl), Laibchen (PENNY) ignoriert');
+assert.strictEqual(m.spar.faschiertes.was, 6.99);
+console.log('ok Flugblatt-Aktionen');

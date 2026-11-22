@@ -59,7 +59,7 @@ function kitchenSVG(p) {
 const STEPS = [
   { t: 'Wo kaufst du ein?', s: 'Preise und Gang-Reihenfolge passen sich deinem Markt an.', ok: p => p.store,
     b: p => `<div class="grid">${D.STORES.map(s => `<button class="opt" ${sel(p.store === s.id)} data-a="store" data-id="${s.id}">
-      <span class="logo" style="color:${p.store === s.id ? 'inherit' : s.color}">${s.name}</span>${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small>${P.realStore({ store: s.id }) ? '<small>✓ echte Preise</small>' : ''}</button>`).join('')}</div>` },
+      <span class="logo" style="color:${p.store === s.id ? 'inherit' : s.color}">${s.name}</span>${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small>${P.realStore({ store: s.id }) ? `<small>✓ ${P.realStore({ store: s.id }).offersOnly ? 'echte Aktionen' : 'echte Preise & Aktionen'}</small>` : ''}</button>`).join('')}</div>` },
   { t: 'Für wen kochst du?', s: 'Portionen werden automatisch skaliert.', ok: () => true,
     b: p => `${tableSVG(p)}<div class="card"><div class="row between"><b>Erwachsene</b><div class="stepper">
       <button data-a="adults" data-d="-1" aria-label="weniger">−</button><b>${p.adults}</b><button data-a="adults" data-d="1" aria-label="mehr">+</button></div></div>
@@ -139,13 +139,14 @@ const offerTag = r => P.offersIn(r, S.profile).length ? '<span class="tag offer"
 function vOffers() {
   const p = S.profile, st = P.store(p), list = P.offers(p), rs = recipes().filter(r => P.eligible(r, p)), planned = S.plan.map(s => s.rid);
   if (!P.realStore(p)) return '';
-  if (!list.length) return `<p class="muted" style="margin:4px">${P.realStore(p).asOf < new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10) ? `Für ${st.name} gibt es keine tagesaktuellen Daten – Angebote derzeit nur bei BILLA.` : 'Gerade keine Aktionen auf deine Zutaten.'}</p>`;
+  if (!list.length) return `<p class="muted" style="margin:4px">Gerade keine ${st.name}-Aktionen auf Zutaten deiner Rezepte.</p>`;
   return `<div class="row between" style="margin:16px 4px 6px"><h3 style="margin:0">Angebote diese Woche</h3><span class="muted">${st.name}</span></div>
     <div class="offers">${list.sort((a, b) => b.was / b.price - a.was / a.price).map(o => {
       const uses = rs.filter(r => r.ing[o.id]), inPlan = uses.filter(r => planned.includes(r.id));
       return `<button class="card offer-card" data-a="offer" data-id="${o.id}"><span class="tag offer">−${Math.round((1 - o.price / o.was) * 100)} %</span>
         <b>${esc(o.ing.name)}</b><div class="muted">${esc(o.name)}</div>
         <div><b class="price">${eur(o.price)}</b> <s class="muted">${eur(o.was)}</s></div>
+        ${o.offer ? `<div class="muted" style="font-size:12px">${offerWhen(o.offer)}</div>` : ''}
         <div class="muted" style="font-size:12px">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : uses.length ? `${uses.length} Rezept${uses.length > 1 ? 'e' : ''} passen` : 'in keinem Rezept'}</div></button>`;
     }).join('')}</div>`;
 }
@@ -235,9 +236,18 @@ function listGroups() {
   return st.aisleOrder.map((a, n) => ({ title: `${n + 1}. ${D.AISLES[a]}`, items: items.filter(i => i.ing.aisle === a).sort((x, y) => x.pantry - y.pantry || x.ing.name.localeCompare(y.ing.name)) }))
     .filter(g => g.items.length);
 }
-const itemLine = i => i.pantry ? `${i.ing.name} (Vorrat prüfen)` : `${i.ing.name} – ${i.packs}× ${i.pack}${i.product ? ` (${i.product})` : ''}`;
+const itemLine = i => i.pantry ? `${i.ing.name} (Vorrat prüfen)` : `${i.ing.name} – ${i.packs}× ${i.pack}${i.product ? ` (${i.product})` : ''}${i.saved ? ` – AKTION${i.offer ? ' ' + offerWhen(i.offer) : ''}` : ''}`;
 const fmtDate = iso => new Date(iso + 'T12:00').toLocaleDateString('de-AT');
-const priceNote = st => { const rs = P.realStore({ store: st.id }); return rs ? `Echte ${st.name}-Preise · Stand ${fmtDate(rs.asOf)}` : `Geschätzte Preise auf ${st.name}-Niveau`; };
+const priceNote = st => {
+  const rs = P.realStore({ store: st.id }), n = P.offers({ store: st.id }).length, akt = n ? ` · ${n} Aktionen` : '';
+  if (!rs) return `Geschätzte Preise auf ${st.name}-Niveau`;
+  return rs.offersOnly ? `Geschätzte Preise${akt}` : `Echte ${st.name}-Preise · Stand ${fmtDate(rs.asOf)}${akt}`;
+};
+// Aktions-Zeitraum, Händlerformat (z. B. INTERSPAR) und Kundenkarten-Hinweis
+const offerWhen = o => {
+  const d = iso => { const x = new Date(iso + 'T12:00'); return `${x.getDate()}.${x.getMonth() + 1}.`; }, today = new Date().toISOString().slice(0, 10);
+  return [o.from > today ? `ab ${d(o.from)}` : '', `bis ${d(o.to)}`, o.adv, o.loyalty ? (/lidl/i.test(o.adv) ? 'nur mit Lidl Plus' : 'nur mit Kundenkarte/App') : ''].filter(Boolean).join(' · ');
+};
 function vList() {
   const st = P.store(S.profile), groups = listGroups(), all = [...groups.flatMap(g => g.items.map(i => i.id)), ...S.extras.map(e => 'x:' + e)];
   const done = all.filter(id => S.checked[id]).length;
@@ -246,7 +256,7 @@ function vList() {
     <h1>Einkaufsliste</h1><div class="row between muted"><span>${done}/${all.length} erledigt</span><span>${eur(cost().total)}</span></div>
     <div class="progress" style="margin:8px 0 16px"><i style="width:${all.length ? done / all.length * 100 : 0}%;background:var(--sage)"></i></div>
     <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Liste kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button></div>
-    ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.saved ? ` · <span class="offer-text">🏷 Aktion statt ${eur(i.cost + i.saved)}</span>` : ''}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}`)).join('')}`).join('')}
+    ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? 'Vorrat prüfen · nicht im Preis' : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.saved ? ` · <span class="offer-text">🏷 Aktion statt ${eur(i.cost + i.saved)}${i.offer ? ` (${esc(offerWhen(i.offer))})` : ''}</span>` : ''}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}`)).join('')}`).join('')}
     <div class="aisle-title">Eigene Einkäufe</div>
     ${S.extras.map((e, n) => `<div class="row">${row('x:' + e, e)}<button class="back" data-a="rmextra" data-i="${n}" aria-label="${esc(e)} entfernen">✕</button></div>`).join('')}
     <form class="row" data-f="extra" style="margin-top:12px"><input name="x" placeholder="z. B. Kaffee, Klopapier" aria-label="Artikel" maxlength="80"><button class="btn small">+ Hinzufügen</button></form>

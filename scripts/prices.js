@@ -2,6 +2,7 @@
 // Aufruf: node scripts/prices.js [lokale-datei.json]
 const fs = require('fs');
 const D = require('../data.js');
+const { fetchAll, matchOffers } = require('./offers.js');
 const SRC = 'https://heisse-preise.io/data/latest-canonical.json';
 const STORES = ['billa', 'spar'];
 // shortcut: nur BILLA wird bei heisse-preise.io täglich aktualisiert (SPAR zuletzt 09/2026, HOFER/MPREIS/UNIMARKT älter) – weitere Märkte ergänzen, sobald deren Daten wieder aktuell sind.
@@ -43,14 +44,14 @@ const RULES = {
   topfen: ['topfen', 'mager|strudel|golatsch|creme|knödel|kuchen|torte|tasche|schnitte|kräuter|vanille|aufstrich|palatschinke|dessert|nockerl|mousse|bällchen|plunder|zitrone|schoko|frucht|erdbeer|marille|schlagobers|sauer|cheesecake|laktose|bröselig|ziege|schaf|polster|stern|kipferl|zopf|oster|mohn|nuss|kokos|beere|kirsche|mango|himbeer|heidelbeer|pfirsich|banane|joghurt|protein|high|skyr|quark|ohne', 250, 250],
   schlagobers: ['schlagobers|schlagrahm', 'sprüh|spray|dose|ersatz|pflanz|vegan|zum kochen|kochobers|haltbar|uht|sahne(?!.*obers)|torte|kuchen|creme|dessert|eis|kaffee|steif|haf|soja|kokos|mandel', 200, 250],
   sauerrahm: ['sauerrahm', 'dip|kräuter|knoblauch|creme|leicht|light|sauce|chips|zwiebel|schnittlauch', 200, 250],
-  milch: ['vollmilch|frischmilch|heumilch|^(\\S+ )?milch \\d', 'schoko|kakao|kaffee|reis|hafer|soja|mandel|kokos|laktose|haltbar|esl|h-milch|mager|leicht|drink|shake|eis|kondens|pulver|butter|vanille|erdbeer|bio|ziegen|schaf|latte|creme|joghurt|schnitte|brötchen|riegel|semmel|kipferl|zopf|brot|ohne gentechnik.*h|tee|reis', 1000, 1000],
-  butter: ['butter', 'schmalz|milch|keks|kekse|croissant|kipferl|brioche|creme|kräuter|knoblauch|streich|vegan|aufstrich|cookies|toffee|caramel|karamell|schoko|brezel|zopf|nuss|erdnuss|mandel|cashew|sauce|reis|blätterteig|teig|kuchen|light|pflanz|gesalzen|salz|bohnen|huhn|chicken|popcorn|fisch|lachs|schnitten|waffel|tropf|kokos|honig|zimt|vanille|pistazie|muffin|scheiben|gebäck|alpen|würfel|portion|mini|keks', 250, 250],
+  milch: ['h-milch|vollmilch|frischmilch|heumilch|^(\\S+ )?milch \\d', 'schoko|kakao|kaffee|reis|hafer|soja|mandel|kokos|laktose|haltbar|esl|mager|leicht|drink|shake|eis|kondens|pulver|butter|vanille|erdbeer|bio|ziegen|schaf|latte|creme|joghurt|schnitte|brötchen|riegel|semmel|kipferl|zopf|brot|ohne gentechnik.*h|tee|reis', 1000, 1000],
+  butter: ['butter', 'toast|stollen|schmalz|milch|keks|kekse|croissant|kipferl|brioche|creme|kräuter|knoblauch|streich|vegan|aufstrich|cookies|toffee|caramel|karamell|schoko|brezel|zopf|nuss|erdnuss|mandel|cashew|sauce|reis|blätterteig|teig|kuchen|light|pflanz|gesalzen|salz|bohnen|huhn|chicken|popcorn|fisch|lachs|schnitten|waffel|tropf|kokos|honig|zimt|vanille|pistazie|muffin|scheiben|gebäck|alpen|würfel|portion|mini|keks', 250, 250],
   eier: ['eier', 'nudel|nockerl|likör|bio|bodenhaltung|mais|schoko|ostern|oster|gefärbt|bunt|gekocht|wachtel|salat|spätzle|teigwaren|pasta|kekse|aufstrich|kinder|überraschung|tagliatelle|fleckerl|spaghetti|makkaroni|hörnchen|band|suppe|flecken|spiral|farfalle|penne|lasagne|fusilli|nester|tortellini|ravioli|zwieback|biskuit|gnocchi|creme|tiefkühl|mayon|omelett|pulver|gebäck|kuchen', 10, 10],
   joghurt: ['naturjoghurt|joghurt natur', '0\\.1|griechisch|stich|drink|trink|frucht|erdbeer|vanille|0,1|mager|laktose|soja|kokos|hafer|bio|schaf|ziege|griech|protein|skyr|mango|heidel|pfirsich|kirsch|himbeer|marille|müsli|honig|zitrone|banane|kaffee|schoko|pistazie|nuss|mandel|cracker|dressing|dip|sauce|knoblauch|kräuter|gurke|creme', 400, 500],
   tofu: ['tofu', 'suppe|kichererbse|smoked|spice|omami|geräuchert|räucher|mariniert|seiden|würstel|wurst|burger|aufstrich|curry|basilikum|kräuter|paprika|bratling|nuggets|sticks|schnitzel|balls|bällchen|sesam|mandel|nuss|chili|teriyaki|knoblauch|oliven|tomate|pesto|bio', 150, 400],
   spaetzle: ['spätzle|nockerl', 'trocken|getrocknet|käse|vegan|spinat|kräuter|bärlauch|zwiebel|speck|pfanne|mehl|knödel|schupf|grieß|leber|topfen|marillen|dinkel|vollkorn|fertig', 400, 600],
   gnocchi: ['gnocchi', 'kartoffel.*mehl|füll|gefüllt|tomate|käse|spinat|pesto|kürbis|bärlauch|süßkartoffel|dinkel|vollkorn|vegan|sugo|sauce|pfanne|fertig|mini', 400, 600],
-  faschiertes: ['faschiertes.*gemischt|gemischtes faschiert|faschiertes rind.*schwein|faschiertes vom (rind|schwein) (und|&)', 'bio|laibchen|ćevap|cevap|burger|bällchen|knödel|lasagne|sauce|sugo|vegan|pute|huhn', 400, 600],
+  faschiertes: ['gemischt(es)? faschiert|faschiertes.*gemischt|gemischtes faschiert|faschiertes rind.*schwein|faschiertes vom (rind|schwein) (und|&)', 'bio|laibchen|ćevap|cevap|burger|bällchen|knödel|lasagne|sauce|sugo|vegan|pute|huhn', 400, 600],
   rindsgulasch: ['rind.*gulasch|gulasch.*rind|rindsgulasch|gulaschfleisch', 'dose|glas|suppe|fertig|konserve|sauce|gewürz|würfel|pulver|bio|kalb|schwein|pute|huhn|kessel|eintopf|pfanne|knödel|nockerl|nudeln|spätzle|tiefkühl|tk|vegan|veggie', 400, 1000],
   huhn: ['hühnerbrust|hühnerfilet|hendlbrust|hendlfilet|hähnchenbrust|hühnerbrustfilet', 'iglo|pfanne|inzersdorfer|wellness|bio|wurst|schinken|aufschnitt|scheiben|gegrillt|gebraten|paniert|nuggets|sticks|streifen.*(knusp|panier)|knusp|curry|teriyaki|mariniert|gewürzt|chili|paprika|kräuter|tandoori|bbq|gyros|kebab|wraps|salat|suppe|dose|konserve|tiefkühl|tk|vegan|veggie|innen|mini|cordon|gefüllt|schnitzel|spieße|spiess|aufstrich|pastete|katze|hund|futter|sous', 300, 1000],
   penne: ['penne', 'vollkorn|dinkel|bio|gluten|linsen|kichererbsen|erbsen|bohnen|protein|mini|rigate.*(bio|vollkorn)|sauce|sugo|fertig|pfanne|tiefkühl|tk|salat|gefüllt|lasagne|arrabbiata|carbonara|bolognese|pesto|tomate|käse', 500, 500],
@@ -79,7 +80,7 @@ const RULES = {
   erbsen: ['erbsen', 'zucker|kicher|mais|karotten|gemüse|mix|dose|glas|getrocknet|trocken|schäl|split|gelb|grün.*bio|bio|nudel|pasta|chips|snack|wasabi|protein|mehl|suppe|eintopf|püree|creme|risotto|pfanne|knödel|reis|crunchy|geröstet|snap|zuckerschoten|schoten|edamame', 400, 1000],
   spinat: ['blattspinat|spinat', 'rahm|cremespinat|stangen|frisch|baby|salat|knödel|nockerl|nudel|pasta|ravioli|tortellini|lasagne|gnocchi|pizza|strudel|lachs|tasche|creme|suppe|feta|schafkäse|käse|ricotta|topfen|kroketten|laibchen|burger|bratling|wrap|tortilla|blätterteig|pide|börek|burek|knusper|mix|gemüse|pfanne|smoothie|saft|spätzle|chips|kräuter|zwiebel|pesto|aufstrich|quiche|dip|sauce|omelett|eier|wildspinat|junger|portionen|portion|gehackt|passiert|püree', 400, 1000],
   wokgemuese: ['wok', 'pfanne|sauce|soße|nudel|noodle|reis|huhn|hühner|hendl|garnele|shrimp|rind|schwein|ente|tofu|teriyaki|curry|sweet|chili|kit|box|set|öl|würz|gewürz|marinade|paste|bio|asia|frisch|kühl|fertig|thai|mie|udon|ramen|instant|becher|cup|topf|wokpfanne|wender|löffel|spatel', 500, 1000],
-  lachs: ['lachsfilet|lachs filet|lachsportion', 'räucher|geräuchert|graved|gebeizt|kalt|aufstrich|creme|dip|filet.*(frisch|natur.*frisch)|frisch|kühl|bio|wildlachs.*(dose|glas)|dose|glas|forelle|ersatz|vegan|lachsersatz|lachsschinken|schinken|wurst|katze|hund|futter|sushi|wrap|salat|nudel|pasta|lasagne|pizza|quiche|tasche|strudel|bagel|sandwich|brötchen|toast|burger|bratling|laibchen|stäbchen|nuggets|panier|knusper|backfisch|sauce|soße|pesto|kaviar|rogen|chips|snack|happen|carpaccio|tatar|tartar|terrine|pastete|mousse|rillettes|cracker|kroketten|frikadellen|fischstäbchen|spieße|spiess|würfel|stücke|streifen|scheiben|kräuter|zitrone|pfeffer|teriyaki|honig|senf|dill|spinat|gemüse|reis|nudeln|gratin|ofen|grill|tasche|rolle|roll', 200, 500],
+  lachs: ['lachsfilet|lachs filet|lachsportion', 'deluxe|forelle|räucher|geräuchert|graved|gebeizt|kalt|aufstrich|creme|dip|filet.*(frisch|natur.*frisch)|frisch|kühl|bio|wildlachs.*(dose|glas)|dose|glas|forelle|ersatz|vegan|lachsersatz|lachsschinken|schinken|wurst|katze|hund|futter|sushi|wrap|salat|nudel|pasta|lasagne|pizza|quiche|tasche|strudel|bagel|sandwich|brötchen|toast|burger|bratling|laibchen|stäbchen|nuggets|panier|knusper|backfisch|sauce|soße|pesto|kaviar|rogen|chips|snack|happen|carpaccio|tatar|tartar|terrine|pastete|mousse|rillettes|cracker|kroketten|frikadellen|fischstäbchen|spieße|spiess|würfel|stücke|streifen|scheiben|kräuter|zitrone|pfeffer|teriyaki|honig|senf|dill|spinat|gemüse|reis|nudeln|gratin|ofen|grill|tasche|rolle|roll', 200, 500],
   garnelen: ['garnelen|shrimps|crevetten|riesengarnelen|king prawns|prawns', 'provencale|chips|cracker|snack|salat|sauce|soße|cocktail|paste|nudel|pasta|reis|pfanne|pizza|sushi|wrap|suppe|dim sum|frühlingsrolle|spring roll|tempura|panier|knusper|chili|knoblauch|kräuter|mariniert|gegrillt|spieße|spiess|bio|vegan|frisch|kühl|glas|dose|lake|getrocknet|curry|teriyaki|gemüse|tasche|ravioli|tortellini|dumpling|gyoza|wan tan|wonton|krabben|nordsee|cocktailgarnelen', 150, 500],
 };
 
@@ -124,6 +125,23 @@ async function main() {
     out.stores[store] = { asOf: store === 'billa' ? out.fetched : latest, items };
     console.error(store, Object.keys(items).length + '/' + Object.keys(RULES).length, 'Stand', out.stores[store].asOf);
   }
+  // Flugblatt-Aktionen (marktguru) drüberlegen; scheitert das, bleiben die Regalpreise.
+  try {
+    const mg = process.argv[3] ? JSON.parse(fs.readFileSync(process.argv[3])) : await fetchAll();
+    const regular = (store, id) => {
+      const real = out.stores[store] && out.stores[store].items[id], ing = D.INGREDIENTS[id];
+      if (real) return real.price / real.qty;
+      const st = D.STORES.find(s => s.id === store);
+      return ing.price * st.priceFactor / ing.packQty;
+    };
+    const offers = matchOffers(mg, RULES, X, regular, out.fetched);
+    for (const [store, items] of Object.entries(offers)) {
+      out.stores[store] ||= { asOf: out.fetched, offersOnly: true, items: {} };
+      Object.assign(out.stores[store].items, items);
+      console.error(store, Object.keys(items).length, 'Aktionen:', Object.keys(items).join(', '));
+    }
+    out.source += ' + marktguru.at';
+  } catch (e) { console.error('Aktionen übersprungen:', e.message); }
   fs.writeFileSync(__dirname + '/../prices.json', JSON.stringify(out, null, 1));
 }
 module.exports = { RULES, pick, offerWas };
