@@ -11,7 +11,20 @@ const DEFAULT_PROFILE = {
 };
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch { S = null; }
-S = Object.assign({ profile: structuredClone(DEFAULT_PROFILE), onboarded: false, plan: [], checked: {}, extras: [], favs: [], custom: [] }, S || {});
+// Alte oder beschädigte Stände reparieren statt abzustürzen: fehlende Felder mit Defaults auffüllen, kaputte Slots verwerfen.
+function normalize(x) {
+  const obj = v => v && typeof v === 'object' && !Array.isArray(v), arr = v => Array.isArray(v) ? v : [];
+  x = obj(x) ? x : {};
+  const p = obj(x.profile) ? x.profile : {}, d = DEFAULT_PROFILE;
+  const profile = { ...structuredClone(d), ...p, kids: { ...d.kids, ...(obj(p.kids) ? p.kids : {}) }, meals: { ...d.meals, ...(obj(p.meals) ? p.meals : {}) } };
+  for (const k of ['styles', 'dislikes', 'allergies', 'equipment']) profile[k] = arr(p[k] ?? d[k]);
+  if (!D.STORES.some(st => st.id === profile.store)) profile.store = x.onboarded ? 'spar' : null;
+  if (!(profile.budget > 0)) profile.budget = d.budget;
+  return { ...x, profile, onboarded: !!x.onboarded, checked: obj(x.checked) ? x.checked : {}, extras: arr(x.extras).filter(e => typeof e === 'string'),
+    favs: arr(x.favs), custom: arr(x.custom).filter(r => obj(r) && r.id && obj(r.ing) && Array.isArray(r.steps)),
+    plan: arr(x.plan).filter(sl => obj(sl) && /^\d{4}-\d\d-\d\d$/.test(sl.date) && (sl.meal === 'lunch' || sl.meal === 'dinner')) };
+}
+S = normalize(S);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { toast('Speichern nicht möglich (Speicher voll oder blockiert).'); } };
 
 const ui = { view: S.onboarded ? 'plan' : 'onboarding', step: 0, editing: false, draft: null, recipe: null, back: 'plan',
@@ -68,7 +81,7 @@ const STEPS = [
         <button data-a="kidcount" data-d="-1" aria-label="weniger">−</button><b>${p.kids.count}</b><button data-a="kidcount" data-d="1" aria-label="mehr">+</button></div></div>
         <div class="seg">${['1-3', '4-10', '11-17'].map(a => `<button ${sel(p.kids.age === a)} data-a="kidage" data-id="${a}">${a} J.</button>`).join('')}</div>` : ''}</div>` },
   { t: 'Welche Mahlzeiten?', s: 'Wir planen 7 Tage.', ok: p => p.meals.lunch || p.meals.dinner,
-    b: p => `<div class="card"><div class="toggle"><div><b>Mittagessen</b><div class="muted">Gut mit Resten</div></div>${sw('meal', p.meals.lunch, 'data-id="lunch" aria-label="Mittagessen"')}</div>
+    b: p => `<div class="card"><div class="toggle"><div><b>Mittagessen</b><div class="muted">Auch als Reste vom Vorabend möglich</div></div>${sw('meal', p.meals.lunch, 'data-id="lunch" aria-label="Mittagessen"')}</div>
       <div class="toggle"><div><b>Abendessen</b><div class="muted">Die Hauptmahlzeit</div></div>${sw('meal', p.meals.dinner, 'data-id="dinner" aria-label="Abendessen"')}</div></div>` },
   { t: 'Wie hoch ist dein Wochenbudget?', s: 'Wir rechnen mit ganzen Supermarkt-Packungen.', ok: () => true,
     b: p => `<div class="card"><div class="big-amount" id="budgetval">${eur(p.budget, 0)}</div><div class="muted" style="text-align:center;margin-bottom:16px">pro Woche · ca. <span id="perserv">${eur(p.budget / (7 * ((+p.meals.lunch) + (+p.meals.dinner)) * P.servings(p)))}</span> pro Portion</div>
@@ -122,7 +135,7 @@ function vPlan() {
   const p = S.profile, st = P.store(p), c = cost(), meals = S.plan.filter(s => s.rid).length, left = p.budget - c.total;
   const days = [...new Set(S.plan.map(s => s.date))], saved = c.items.reduce((t, i) => t + i.saved, 0);
   return `<div class="row between"><h1>Deine Woche</h1><button class="btn small ghost" data-a="regen">↻ Neu planen</button></div>
-    <div class="card banner"><span class="badge" style="background:${st.color}">${st.name}</span>
+    <div class="card banner">${badge(st)}
       <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${priceNote(st)}</div></div>
       <button class="btn small" data-a="go" data-id="list">Liste öffnen</button></div>
     <div class="card row">${ring(c.total, p.budget)}<div class="grow">
@@ -132,9 +145,19 @@ function vPlan() {
       ${saved ? `<div class="offer-text">🏷 Aktionen sparen dir ${eur(saved)}</div>` : ''}
       ${left < 0 ? `<button class="btn small" style="margin-top:8px" data-a="rebalance">Automatisch ausgleichen</button>` : ''}</div></div>
     ${vOffers()}
-    ${!S.plan.length ? `<div class="card"><p>Keine passenden Rezepte für deine Filter gefunden. Passe dein Profil an.</p></div>` : ''}
+    ${poolHint()}
     ${days.map(d => `<div class="daylabel">${dayLabel(d)}</div>${S.plan.map((s, i) => s.date !== d ? '' : slotCard(s, i)).join('')}`).join('')}`;
 }
+function poolHint() {
+  const p = S.profile, n = recipes().filter(r => P.eligible(r, p)).length, slots = S.plan.length;
+  const strict = p.allergyMode === 'strict' && p.allergies.length ? `<p class="muted" style="margin:6px 0 0">Bei strengen Allergien bitte trotzdem die Etiketten prüfen – Suppenwürfel, Currypaste &amp; Co. können versteckte Allergene enthalten.</p>` : '';
+  if (!n) return `<div class="card sand"><b>Keine Rezepte passen zu deinem Profil.</b><p class="muted">Ernährung, strenge Allergien, Abneigungen und Küchengeräte schließen alle Gerichte aus. Lockere einen Filter im Profil oder lege ein eigenes Rezept an.</p>
+    <button class="btn small" data-a="go" data-id="profile">Profil anpassen</button></div>`;
+  if (n < slots / 2) return `<div class="card sand"><b>Nur ${n} Rezept${n > 1 ? 'e' : ''} passen zu deinem Profil</b> – deshalb wiederholen sich Gerichte. Mehr Auswahl gibt's mit weniger Filtern oder eigenen Rezepten.${strict}</div>`;
+  return strict ? `<div class="card sand">${strict}</div>` : '';
+}
+// Helle Markenfarben (BILLA-Gelb) brauchen dunkle Schrift für ausreichenden Kontrast.
+const badge = st => { const [r, g, b] = st.color.match(/\w\w/g).map(h => parseInt(h, 16)); return `<span class="badge" style="background:${st.color};color:${r * .299 + g * .587 + b * .114 > 150 ? 'var(--espresso)' : '#fff'}">${st.name}</span>`; };
 const offerTag = r => P.offersIn(r, S.profile).length ? '<span class="tag offer">🏷 Aktion</span>' : '';
 function vOffers() {
   const p = S.profile, st = P.store(p), list = P.offers(p), rs = recipes().filter(r => P.eligible(r, p)), planned = S.plan.map(s => s.rid);
@@ -146,13 +169,20 @@ function vOffers() {
       return `<button class="card offer-card" data-a="offer" data-id="${o.id}"><span class="tag offer">−${Math.round((1 - o.price / o.was) * 100)} %</span>
         <b>${esc(o.ing.name)}</b><div class="muted">${esc(o.name)}</div>
         <div><b class="price">${eur(o.price)}</b> <s class="muted">${eur(o.was)}</s></div>
-        ${o.offer ? `<div class="muted" style="font-size:12px">${offerWhen(o.offer)}</div>` : ''}
+        ${o.offer ? `<div class="muted" style="font-size:12px">${esc(offerWhen(o.offer))}</div>` : ''}
         <div class="muted" style="font-size:12px">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : uses.length ? `${uses.length} Rezept${uses.length > 1 ? 'e' : ''} passen` : 'in keinem Rezept'}</div></button>`;
     }).join('')}</div>`;
 }
 const fmtServ = n => (Math.round(n * 10) / 10).toLocaleString('de-AT');
 const MEAL = { lunch: 'Mittag', dinner: 'Abend' };
 
+// Reste: Abendessen vom Vortag, sofern das Rezept sich zum Aufwärmen eignet.
+const prevDinner = slot => {
+  if (slot.meal !== 'lunch') return null;
+  const d = new Date(slot.date + 'T12:00'); d.setDate(d.getDate() - 1);
+  const o = S.plan.find(x => x.date === P.isoDay(d) && x.meal === 'dinner' && x.rid), r = o && R(o.rid);
+  return r && r.leftovers ? r : null;
+};
 function slotCard(s, i) {
   const both = S.profile.meals.lunch && S.profile.meals.dinner;
   if (!s.rid) {
@@ -164,9 +194,10 @@ function slotCard(s, i) {
   }
   const r = R(s.rid);
   if (!r) return '';
+  s = { ...s, leftover: s.leftover && prevDinner(s)?.id === s.rid }; // Vorabend getauscht → wieder normales Gericht
   return `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left">
-    <span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${esc(r.cat)}</span>${offerTag(r)}<h3>${esc(r.title)}</h3>
-    <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(P.servings(S.profile))}</span><span class="price">${eur(P.shareCost(r, S.profile), 0)}</span></div></div></button>
+    <span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${s.leftover ? '🥡 Reste vom Vorabend' : esc(r.cat)}</span>${s.leftover ? '' : offerTag(r)}<h3>${esc(r.title)}</h3>
+    <div class="meta">${s.leftover ? '<span>Am Vorabend doppelte Menge kochen</span>' : `<span>⏱ ${fmtTime(r.time)}</span>`}<span>👥 ${fmtServ(P.servings(S.profile))}</span><span class="price">${eur(P.shareCost(r, S.profile), 0)}</span></div></div></button>
     <button class="swap" data-a="swap" data-i="${i}" aria-label="Gericht tauschen">⇄</button></div>`;
 }
 const fmtTime = m => m >= 60 ? `${Math.floor(m / 60)} Std.${m % 60 ? ' ' + m % 60 + ' Min.' : ''}` : `${m} Min.`;
@@ -185,6 +216,7 @@ function vSwapSheet() {
       <input id="selfnote" placeholder="Was kochst du? (optional, z. B. Omas Gulasch)" maxlength="60" value="${esc(slot.skip === 'self' ? slot.note || '' : '')}" style="margin:8px 0">
       <div class="row"><button class="btn small grow" data-a="skip" data-id="self">🧑‍🍳 Ich koche selbst</button><button class="btn small ghost grow" data-a="skip" data-id="free">🛋️ Frei / Reste</button></div>
       ${slot.rid ? `<div class="muted" style="margin-top:6px;font-size:13px">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''}</div>
+    ${(() => { const pd = prevDinner(slot); return pd && !(slot.leftover && slot.rid === pd.id) ? `<button class="alt" data-a="leftover">${photo(pd)}<div class="grow"><b>🥡 Reste vom Vorabend</b><div class="meta"><span>${esc(pd.title)} – am Abend davor doppelt kochen</span><span class="price">${eur(P.weekCost(rids.map((x, j) => j === i ? pd.id : x), recipes(), p).total - cur)} Woche</span></div></div></button>` : ''; })()}
     <h3 style="margin-top:16px">Anderes Gericht</h3>
     ${alts.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
       return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b> ${offerTag(r)}
@@ -222,6 +254,7 @@ function vRecipe() {
     ${r.leftovers ? `<div class="card sand">🥡 <b>Gut für Reste:</b> ${p.fridge ? 'Hält 2–3 Tage im Kühlschrank. Aufwärmen mit einem Schuss Wasser bei mittlerer Hitze.' : 'Am besten frisch essen.'}${p.freezer ? ' Lässt sich portionsweise einfrieren.' : ''}</div>` : ''}
     <div class="card"><h3>Zubereitung</h3><ol style="padding-left:20px;margin:0">${r.steps.map(s => `<li style="margin-bottom:8px">${esc(s.x)}${s.t ? ` <span class="tag">⏱ ${fmtTime(s.t)}</span>` : ''}</li>`).join('')}</ol></div>
     <button class="btn small bring" data-a="bringrecipe" style="margin-bottom:12px">Zutaten in Bring! übernehmen</button>
+    ${r.custom ? `<div class="row" style="margin-bottom:12px"><button class="btn small ghost grow" data-a="editrecipe" data-id="${r.id}">✎ Bearbeiten</button><button class="btn small ghost grow" data-a="delrecipe" data-id="${r.id}">🗑 Löschen</button></div>` : ''}
     <div class="footer-cta"><button class="btn" data-a="cook">Loslegen</button></div>`;
 }
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -254,14 +287,14 @@ const priceNote = st => {
 };
 // Aktions-Zeitraum, Händlerformat (z. B. INTERSPAR) und Kundenkarten-Hinweis
 const offerWhen = o => {
-  const d = iso => { const x = new Date(iso + 'T12:00'); return `${x.getDate()}.${x.getMonth() + 1}.`; }, today = new Date().toISOString().slice(0, 10);
+  const d = iso => { const x = new Date(iso + 'T12:00'); return `${x.getDate()}.${x.getMonth() + 1}.`; }, today = P.isoDay();
   return [o.from > today ? `ab ${d(o.from)}` : '', `bis ${d(o.to)}`, o.adv, o.loyalty ? (/lidl/i.test(o.adv) ? 'nur mit Lidl Plus' : 'nur mit Kundenkarte/App') : ''].filter(Boolean).join(' · ');
 };
 function vList() {
   const st = P.store(S.profile), groups = listGroups(), all = [...groups.flatMap(g => g.items.map(i => i.id)), ...S.extras.map(e => 'x:' + e)];
   const done = all.filter(id => S.checked[id]).length;
   const row = (id, name, sub) => `<button class="item" role="checkbox" aria-checked="${!!S.checked[id]}" data-a="check" data-id="${esc(id)}"><span class="box">${S.checked[id] ? '✓' : ''}</span><span class="grow"><span class="name">${esc(name)}</span>${sub ? `<div class="muted">${sub}</div>` : ''}</span></button>`;
-  return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="plan" aria-label="Zurück">←</button><span class="badge" style="background:${st.color}">${st.name}</span></div>
+  return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="plan" aria-label="Zurück">←</button>${badge(st)}</div>
     <h1>Einkaufsliste</h1><div class="row between muted"><span>${done}/${all.length} erledigt</span><span>${eur(cost().total)}</span></div>
     <div class="progress" style="margin:8px 0 16px"><i style="width:${all.length ? done / all.length * 100 : 0}%;background:var(--sage)"></i></div>
     <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Liste kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button></div>
@@ -270,7 +303,7 @@ function vList() {
     <div class="aisle-title">Eigene Einkäufe</div>
     ${S.extras.map((e, n) => `<div class="row">${row('x:' + e, e)}<button class="back" data-a="rmextra" data-i="${n}" aria-label="${esc(e)} entfernen">✕</button></div>`).join('')}
     <form class="row" data-f="extra" style="margin-top:12px"><input name="x" placeholder="z. B. Kaffee, Klopapier" aria-label="Artikel" maxlength="80"><button class="btn small">+ Hinzufügen</button></form>
-    <p class="muted" style="margin-top:16px">${priceNote(st)}, jeweils ganze Packungen. Echte Preise via heisse-preise.io, ohne Gewähr – Aktionen und Filialpreise können abweichen. Einwegpfand (Getränke) ist nicht enthalten.</p>
+    <p class="muted" style="margin-top:16px">${priceNote(st)}, jeweils ganze Packungen. Echte Preise via heisse-preise.io, ohne Gewähr – Aktionen und Filialpreise können abweichen. Einwegpfand (Getränke) ist nicht enthalten. „In Bring! übernehmen“ übergibt die offenen Artikel über httpbin.org an Bring!.</p>
     ${done ? `<button class="btn ghost" data-a="uncheck" style="margin-top:8px">Häkchen zurücksetzen</button>` : ''}`;
 }
 // Bring! liest nur serverseitiges schema.org-Rezept-Markup (kein JS). Die Seite wird daher als Base64 in einer
@@ -311,7 +344,7 @@ function vDiscover() {
 }
 function vForm() {
   const f = ui.form, opts = Object.values(D.INGREDIENTS).sort((a, b) => a.name.localeCompare(b.name));
-  return `<div class="row" style="margin-bottom:12px"><button class="back" data-a="cancelform" aria-label="Zurück">←</button><h2 style="margin:0">Eigenes Rezept</h2></div>
+  return `<div class="row" style="margin-bottom:12px"><button class="back" data-a="cancelform" aria-label="Zurück">←</button><h2 style="margin:0">${f.id ? 'Rezept bearbeiten' : 'Eigenes Rezept'}</h2></div>
     <form data-f="recipe">
       <label class="muted">Titel</label><input name="title" required maxlength="60" value="${esc(f.title)}" style="margin-bottom:10px">
       <div class="row"><div class="grow"><label class="muted">Emoji</label><input name="emoji" maxlength="4" value="${esc(f.emoji)}"></div>
@@ -348,6 +381,9 @@ function vProfile() {
     <div class="card">${rows.map(([n, l, v]) => `<button class="toggle" style="width:100%;text-align:left" data-a="edit" data-i="${n}"><div><b>${l}</b><div class="muted">${esc(v)}</div></div><span aria-hidden="true">›</span></button>`).join('')}</div>
     <div class="card"><b>Feste Kochpause-Tage</b><div class="muted" style="margin-bottom:10px">An diesen Wochentagen kochst du immer selbst – sie werden nicht verplant.</div>
       <div class="chips">${[1, 2, 3, 4, 5, 6, 0].map(n => `<button class="chip" ${sel((p.skipDays || []).includes(n))} data-a="skipday" data-id="${n}">${WD[n].slice(0, 2)}</button>`).join('')}</div></div>
+    <div class="card"><b>Sicherung</b><div class="muted" style="margin-bottom:10px">Profil, Plan, Liste, Favoriten und eigene Rezepte als Datei sichern oder auf einem anderen Gerät einspielen.</div>
+      <div class="row"><button class="btn small ghost grow" data-a="exportdata">⤓ Exportieren</button><button class="btn small ghost grow" data-a="importdata">⤒ Importieren</button></div>
+      <input type="file" id="importfile" accept="application/json,.json" hidden aria-label="Sicherung importieren"></div>
     <button class="btn ghost" data-a="reset">Alle Daten löschen</button>`;
 }
 
@@ -357,7 +393,11 @@ function render() {
   const v = ui.view, app = document.getElementById('app');
   const body = { onboarding: vOnboarding, plan: vPlan, list: vList, recipe: vRecipe, discover: vDiscover, profile: vProfile }[v === 'cook' ? 'recipe' : v]();
   const tabs = ['plan', 'discover', 'profile'].includes(v) ? `<nav class="tabs">${TABS.map(([id, ic, l]) => `<button data-a="go" data-id="${id}" ${v === id ? 'aria-current="page"' : ''}><span>${ic}</span>${l}</button>`).join('')}</nav>` : '';
+  // Fokus über das Neurendern retten (sonst landen Tastatur/Screenreader nach jedem Klick am Seitenanfang).
+  const f = document.activeElement, key = f && f !== document.body && app.contains(f) && f.dataset.a
+    ? ['a', 'id', 'i', 'd'].filter(k => f.dataset[k] != null).map(k => `[data-${k}="${CSS.escape(f.dataset[k])}"]`).join('') : null;
   app.innerHTML = body + tabs + (ui.sheet ? vSwapSheet() : '') + (v === 'cook' ? vCook() : '');
+  if (key) app.querySelector(key)?.focus({ preventScroll: true });
 }
 function rerender(scrollTop) { render(); if (scrollTop) scrollTo(0, 0); }
 
@@ -368,7 +408,7 @@ function toast(msg, action, label) {
   t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), action ? 7000 : 3000);
 }
 
-function regenerate() { S.plan = P.planWeek(S.profile, recipes(), S.plan); S.checked = {}; save(); }
+function regenerate() { S.plan = P.planWeek(S.profile, recipes(), S.plan); save(); }
 
 // ---------- Kochmodus: Wake Lock & Timer ----------
 let wake = null, tick = null, audio;
@@ -440,6 +480,11 @@ const A = {
     if (!S.profile.skipDays.includes(n)) S.plan = S.plan.map(s => s.skip === 'self' && !s.note && new Date(s.date + 'T12:00').getDay() === n ? { date: s.date, meal: s.meal, rid: null } : s);
     regenerate(); toast(S.profile.skipDays.includes(n) ? `${WD[n]}s kochst du ab jetzt selbst` : `${WD[n]} wird wieder eingeplant`);
   },
+  leftover: () => {
+    const i = ui.sheet.i, pd = prevDinner(S.plan[i]);
+    S.plan[i] = { date: S.plan[i].date, meal: 'lunch', rid: pd.id, leftover: true }; ui.sheet = null; save();
+    toast(`Mittag = Reste: am Vorabend ${pd.title} doppelt kochen`);
+  },
   pick: d => {
     const i = ui.sheet.i; S.plan[i] = { date: S.plan[i].date, meal: S.plan[i].meal, rid: d.id || null, ...(d.id ? {} : { skip: 'free' }) }; ui.sheet = null; save();
     const t = cost().total;
@@ -483,7 +528,26 @@ const A = {
   filter: d => { ui.filter = d.id; },
   offer: d => { ui.q = D.INGREDIENTS[d.id].name.replace(/ \(.*\)/, ''); ui.filter = 'passt'; ui.view = 'discover'; return 'top'; },
   newrecipe: () => { ui.form = { title: '', emoji: '🍽️', time: 30, tag: 'schnell', ing: [{ id: 'zwiebel', amt: 50 }], steps: '', m: [500, 20, 60, 15] }; },
-  cancelform: () => { ui.form = null; },
+  cancelform: () => { if (ui.form.id) { ui.view = 'recipe'; ui.recipe = ui.form.id; } ui.form = null; },
+  editrecipe: d => {
+    const r = R(d.id);
+    ui.form = { id: r.id, title: r.title, emoji: r.emoji, time: r.time, tag: r.tags[0], ing: Object.entries(r.ing).map(([id, amt]) => ({ id, amt })),
+      steps: r.steps.map(x => x.x).join('\n'), m: [...r.m] };
+    ui.view = 'discover'; return 'top';
+  },
+  delrecipe: d => {
+    if (!confirm('Dieses Rezept wirklich löschen?')) return false;
+    S.custom = S.custom.filter(r => r.id !== d.id); S.favs = S.favs.filter(x => x !== d.id);
+    if (S.plan.some(s => s.rid === d.id)) S.plan = P.generate(S.profile, recipes(), null, S.plan.map(s => s.rid === d.id ? { date: s.date, meal: s.meal, rid: null } : { ...s, locked: true })); // nur betroffene Slots neu füllen
+    save(); ui.view = 'discover'; ui.filter = 'eigene'; toast('Rezept gelöscht'); return 'top';
+  },
+  exportdata: () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' }));
+    a.download = `piatto-backup-${P.isoDay()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Sicherung heruntergeladen'); return false;
+  },
+  importdata: () => { document.getElementById('importfile').click(); return false; },
   addrow: () => { readForm(document.querySelector('[data-f="recipe"]')); ui.form.ing.push({ id: 'erdaepfel', amt: 100 }); },
   rmrow: d => { readForm(document.querySelector('[data-f="recipe"]')); ui.form.ing.splice(+d.i, 1); },
   edit: d => { ui.draft = structuredClone(S.profile); ui.step = +d.i; ui.editing = true; ui.view = 'onboarding'; },
@@ -511,6 +575,16 @@ document.addEventListener('input', e => {
   }
   if (k === 'q') { ui.q = e.target.value; document.getElementById('dlist').innerHTML = discoverList(); }
 });
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'importfile' || !e.target.files[0]) return;
+  try {
+    const x = JSON.parse(await e.target.files[0].text());
+    if (!x || typeof x !== 'object' || !x.profile) throw new Error();
+    if (!confirm('Aktuelle Daten durch die Sicherung ersetzen?')) return;
+    S = normalize(x); save(); ui.view = S.onboarded ? 'plan' : 'onboarding'; if (!S.onboarded) ui.draft = structuredClone(S.profile);
+    toast('Sicherung eingespielt'); rerender(true);
+  } catch { toast('Datei ist keine gültige Piatto-Sicherung'); }
+});
 document.addEventListener('submit', e => {
   e.preventDefault();
   const f = e.target;
@@ -525,14 +599,18 @@ document.addEventListener('submit', e => {
     if (!Object.keys(ing).length) { toast('Mindestens eine Zutat angeben'); return; }
     const steps = v.steps.split('\n').map(s => s.trim()).filter(Boolean).map(x => { const m = x.match(/(\d+)\s*(Min|Std)/i); return { x, t: m ? +m[1] * (/std/i.test(m[2]) ? 60 : 1) : undefined }; });
     const tags = [v.tag]; if (v.time <= 25) tags.push('schnell');
-    S.custom.push({ id: 'c' + Date.now(), custom: true, title: v.title.trim(), emoji: v.emoji || '🍽️', hue: Math.floor(Math.random() * 360), cat: D.STYLES.find(s => s[0] === v.tag)[1],
-      time: v.time, tags, needs: [], m: v.m, ing, steps });
-    ui.form = null; ui.filter = 'eigene'; save(); toast('Rezept gespeichert – wird ab jetzt mitgeplant');
+    const old = v.id && S.custom.find(r => r.id === v.id);
+    const rec = { id: v.id || 'c' + Date.now(), custom: true, title: v.title.trim(), emoji: v.emoji || '🍽️', hue: old ? old.hue : Math.floor(Math.random() * 360), cat: D.STYLES.find(s => s[0] === v.tag)[1],
+      time: v.time, tags, needs: [], m: v.m, ing, steps };
+    if (old) S.custom[S.custom.indexOf(old)] = rec; else S.custom.push(rec);
+    if (old) { ui.recipe = rec.id; ui.view = 'recipe'; }
+    ui.form = null; ui.filter = 'eigene'; save(); toast(old ? 'Rezept aktualisiert' : 'Rezept gespeichert – wird ab jetzt mitgeplant');
   }
   render();
 });
 
 if (ui.view === 'onboarding') ui.draft = structuredClone(S.profile);
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 // Echte Preise laden; ohne Datei (z. B. file://) bleiben die Schätzungen.
 const getJSON = url => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
 Promise.all([getJSON('prices.json'), getJSON('img/credits.json')]).then(([pr, cr]) => {
@@ -540,5 +618,7 @@ Promise.all([getJSON('prices.json'), getJSON('img/credits.json')]).then(([pr, cr
   CREDITS = cr || {};
   // planVersion 2: alte Pläne mit doppelten Rezepten einmalig neu erstellen
   if (S.onboarded && (!S.plan.length || S.planVersion !== 2)) { regenerate(); S.planVersion = 2; save(); }
+  // Neue Woche: Ist der letzte Plantag vorbei, automatisch weiterplanen (Kochpause-Tage bleiben), Häkchen zurücksetzen.
+  else if (S.onboarded && S.plan.every(s => s.date < P.isoDay())) { regenerate(); S.checked = {}; save(); setTimeout(() => toast('Neue Woche – dein Plan wurde neu erstellt'), 300); }
   render();
 });

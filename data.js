@@ -33,7 +33,7 @@
   const I = {
     erdaepfel: ['Erdäpfel (Kartoffeln)', 'obst', 2000, 'g', 2.49, '2-kg-Sack', ''],
     zwiebel: ['Zwiebeln', 'obst', 1000, 'g', 1.49, '1-kg-Netz', ''],
-    knoblauch: ['Knoblauch', 'obst', 3, 'Zehe', 0.99, '3er-Netz Knollen', ''],
+    knoblauch: ['Knoblauch', 'obst', 30, 'Zehe', 0.99, '3er-Netz Knollen (~30 Zehen)', ''],
     karotten: ['Karotten', 'obst', 1000, 'g', 1.29, '1-kg-Beutel', ''],
     paradeiser: ['Paradeiser (Tomaten)', 'obst', 500, 'g', 1.99, '500-g-Tasse', ''],
     paprika: ['Paprika', 'obst', 3, 'Stk', 2.29, '3er-Pack', ''],
@@ -109,7 +109,7 @@
     apfelmus: ['Apfelmus', 'konserven', 720, 'g', 1.49, '720-g-Glas', ''],
     lasagne: ['Lasagneblätter', 'konserven', 500, 'g', 1.29, '500-g-Packung', 'gluten egg'],
     suppennudeln: ['Suppennudeln', 'konserven', 250, 'g', 0.99, '250-g-Packung', 'gluten egg'],
-    bruehe: ['Gemüsesuppenwürfel', 'konserven', 8, 'Würfel', 1.29, '8er-Packung', ''],
+    bruehe: ['Gemüsesuppenwürfel', 'konserven', 8, 'Würfel', 1.29, '8er-Packung', 'celery'],
 
     mehl: ['Mehl glatt', 'gewuerze', 1000, 'g', 0.89, '1-kg-Packung', 'gluten pantry'],
     oel: ['Rapsöl', 'gewuerze', 1000, 'ml', 2.49, '1-l-Flasche', 'pantry'],
@@ -645,7 +645,7 @@
   ];
   const ALLERGENS = [
     ['peanut', 'Erdnüsse'], ['nuts', 'Nüsse'], ['dairy', 'Milchprodukte'], ['egg', 'Eier'], ['gluten', 'Weizen/Gluten'],
-    ['soy', 'Soja'], ['fish', 'Fisch'], ['seafood', 'Schalentiere'], ['sesame', 'Sesam'],
+    ['soy', 'Soja'], ['fish', 'Fisch'], ['seafood', 'Schalentiere'], ['sesame', 'Sesam'], ['celery', 'Sellerie'],
   ];
   const EQUIPMENT = [
     ['mikrowelle', 'Mikrowelle'], ['mixer', 'Mixer'], ['airfryer', 'Heißluftfritteuse'],

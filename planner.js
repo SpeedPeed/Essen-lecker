@@ -5,6 +5,9 @@
 
   const servings = p => p.adults + (p.kids.on ? p.kids.count * KID_FACTOR[p.kids.age] : 0);
   const store = p => D.STORES.find(s => s.id === p.store) || D.STORES[1];
+  // Lokales Datum als JJJJ-MM-TT (toISOString wäre UTC → kurz nach Mitternacht „gestern“).
+  const isoDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const ZEHEN_PRO_KNOLLE = 10;
   const flagsOf = r => new Set(Object.keys(r.ing).flatMap(id => (D.INGREDIENTS[id] || { flags: [] }).flags));
 
   function dietOk(flags, diet) {
@@ -39,9 +42,10 @@
     const ing = D.INGREDIENTS[id], real = realStore(p) && realStore(p).items[id];
     if (!real) return { packQty: ing.packQty, price: ing.price * store(p).priceFactor, pack: ing.pack, product: null };
     const metric = ing.unit === 'g' || ing.unit === 'ml';
-    // Bei Kopf/Bund/Zehe usw. gilt 1 echtes Stück = 1 unserer Packungen.
-    const packQty = metric || ing.unit === 'Stk' ? real.qty : ing.packQty;
-    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : ing.pack), product: real.name, was: real.was || null, offer: real.offer || null };
+    // Bei Kopf/Bund usw. gilt 1 echtes Stück = 1 unserer Packungen; Knoblauch wird in Knollen verkauft, aber in Zehen gekocht.
+    const zehe = ing.unit === 'Zehe';
+    const packQty = metric || ing.unit === 'Stk' ? real.qty : zehe ? real.qty * ZEHEN_PRO_KNOLLE : ing.packQty;
+    return { packQty, price: real.price, pack: metric ? (real.qty >= 1000 ? (real.qty / 1000).toLocaleString('de-AT') + (ing.unit === 'g' ? ' kg' : ' l') : real.qty + ' ' + ing.unit) : (ing.unit === 'Stk' ? real.qty + ' Stk' : zehe ? real.qty + (real.qty > 1 ? ' Knollen' : ' Knolle') : ing.pack), product: real.name, was: real.was || null, offer: real.offer || null };
   }
 
   // Zutaten eines Rezepts, die im gewählten Markt gerade in Aktion sind.
@@ -82,7 +86,7 @@
     const out = [];
     for (let d = 0; d < 7; d++) {
       const date = new Date(start); date.setDate(date.getDate() + d);
-      const iso = date.toISOString().slice(0, 10);
+      const iso = isoDay(date);
       if (p.meals.lunch) out.push({ date: iso, meal: 'lunch', rid: null });
       if (p.meals.dinner) out.push({ date: iso, meal: 'dinner', rid: null });
     }
@@ -158,12 +162,13 @@
     return generate(p, recipes, null, base);
   }
 
-  // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren.
+  // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren. Reste-Slots und das Gericht,
+  // von dem sie stammen, bleiben ebenfalls stehen.
   function rebalance(plan, keepIdx, p, recipes) {
-    const locked = plan.map((s, i) => ({ ...s, locked: i === keepIdx || !s.rid }));
+    const locked = plan.map((s, i) => ({ ...s, locked: i === keepIdx || !s.rid || plan.some(o => o.leftover && o.rid === s.rid) }));
     return generate(p, recipes, null, locked);
   }
 
-  const API = { planWeek, offers, offersIn, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  const API = { isoDay, planWeek, offers, offersIn, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);

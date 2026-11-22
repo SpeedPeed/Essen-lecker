@@ -87,3 +87,28 @@ for (let k = 0; k < 5; k++) {
   assert.ok(w.filter(s => D.RECIPES.find(r => r.id === s.rid).sweet).length <= 1, 'zu viel Süßes');
 }
 const t0 = Date.now(); P.generate({ ...base, meals: { lunch: true, dinner: true } }, D.RECIPES); console.log('ok Süßspeisen, 14 Slots in', Date.now() - t0, 'ms');
+
+// Lokales Datum statt UTC: 0:30 Uhr Wiener Zeit ist noch derselbe Tag
+assert.strictEqual(P.isoDay(new Date(2026, 10, 23, 0, 30)), '2026-11-23');
+assert.strictEqual(P.planWeek(base, D.RECIPES, [], new Date(2026, 10, 23, 0, 30))[0].date, '2026-11-23');
+
+// Knoblauch: 4 Zehen passen in ein 3er-Netz (~30 Zehen); echte Einzelknolle = 10 Zehen
+P.setPrices({ stores: {} });
+const garlic = { ...base, adults: 8 };
+assert.strictEqual(P.weekCost(['ofenerdaepfel'], D.RECIPES, garlic).items.find(i => i.id === 'knoblauch').packs, 1);
+P.setPrices({ stores: { spar: { asOf: '2026-09-10', items: { knoblauch: { name: 'Knoblauch frisch 1 STK', price: 1.23, qty: 1 } } } } });
+const kn = P.packOf('knoblauch', { ...base, store: 'spar' });
+assert.deepStrictEqual([kn.packQty, kn.pack], [10, '1 Knolle']);
+
+// Reste-Slot und sein Vorabend-Gericht bleiben beim Ausgleichen stehen
+P.setPrices(require('./prices.json'));
+const lb = { ...base, meals: { lunch: true, dinner: true }, budget: 30 };
+const wl = P.planWeek(lb, D.RECIPES, [], new Date('2026-11-23T12:00'));
+wl[1] = { ...wl[1], rid: 'linseneintopf' }; wl[2] = { date: wl[2].date, meal: 'lunch', rid: 'linseneintopf', leftover: true };
+const rl = P.rebalance(wl, -1, lb, D.RECIPES);
+assert.deepStrictEqual([rl[1].rid, rl[2].rid, rl[2].leftover], ['linseneintopf', 'linseneintopf', true]);
+console.log('ok Datum, Knoblauch, Reste');
+
+// Flugblatt: Großpackung außerhalb der Regel-Spanne (Faschiertes 400–600 g) zählt nicht als Aktion
+assert.deepStrictEqual(matchOffers([mk('Lidl', 'Faschiertes gemischt', 6.49, 6.49, 8.49)], RULES, 'bio', reg, '2026-11-22'), {});
+console.log('ok Aktions-Packungsgröße');

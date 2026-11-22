@@ -41,7 +41,7 @@ function matchOffers(all, RULES, X, regular, today) {
     if (!pk) continue;
     for (const [id, [re, ex, min, max]] of Object.entries(RULES)) {
       const ing = D.INGREDIENTS[id], want = ing.unit === 'g' || ing.unit === 'ml' ? ing.unit : 'stk';
-      if (pk.unit !== want || pk.q < min / 2 || pk.q > max * 2) continue;
+      if (pk.unit !== want || pk.q < min || pk.q > max) continue; // gleiche Spanne wie Regal: keine teure Großpackung als „Aktion“
       if (!new RegExp(re, 'i').test(name) || new RegExp([ex, X].filter(Boolean).join('|'), 'i').test(name)) continue;
       const unitPrice = o.price / pk.q, reg = regular(store, id);
       const was = o.oldPrice || (reg ? +(reg * pk.q).toFixed(2) : null);
