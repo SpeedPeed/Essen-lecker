@@ -129,3 +129,12 @@ for (let k = 0; k < 5; k++) {
 }
 assert.ok(shared <= 10, 'zu viele gleiche Hauptzutaten am selben Tag: ' + shared);
 console.log('ok Abwechslung am Tag (' + shared + ' geteilte Zutaten in 35 Tagen)');
+
+// Rezeptfotos: jedes Foto gehört zu einem Rezept, liegt als Datei vor und hat einen Lizenznachweis
+const fotos = JSON.parse(require('fs').readFileSync(__dirname + '/img/credits.json'));
+for (const [id, c] of Object.entries(fotos)) {
+  assert.ok(D.RECIPES.some(r => r.id === id), 'Foto ohne Rezept: ' + id);
+  assert.ok(require('fs').existsSync(`${__dirname}/img/${id}.jpg`), 'Fotodatei fehlt: ' + id);
+  assert.ok(c.source && /^(CC|Public Domain)/.test(c.license) && (c.creator || /^(CC0|Public Domain)/.test(c.license)), 'Nachweis unvollständig: ' + id); // BY/BY-SA brauchen Urheber
+}
+console.log('ok Rezeptfotos,', Object.keys(fotos).length, 'mit Nachweis');
