@@ -62,8 +62,15 @@ const server = http.createServer((req, res) => {
     if (!(await page.textContent('#app')).includes('Kaffee')) errors.push(`${name}: eigener Artikel fehlt`);
     await shot('07-liste');
 
+    // Entdecken: große Sammlung seitenweise, Suche
+    await click('[data-a="go"][data-id="plan"]'); await click('[data-a="go"][data-id="discover"]');
+    const first = await page.locator('#dlist .card').count(); await click('[data-a="more"]');
+    if (first !== 40 || (await page.locator('#dlist .card').count()) !== 80) errors.push(`${name}: „Mehr anzeigen“ kaputt (${first})`);
+    await page.fill('[data-i="q"]', 'linsen');
+    if (!(await page.locator('#dlist .card').count())) errors.push(`${name}: Suche ohne Treffer`);
+
     // Profil
-    await click('[data-a="go"][data-id="plan"]'); await click('[data-a="go"][data-id="profile"]');
+    await click('[data-a="go"][data-id="profile"]');
     await page.waitForSelector('[data-a="edit"]'); await shot('08-profil');
     await click('[data-a="edit"][data-i="3"]'); await click('[data-a="obnext"]');
     await page.waitForSelector('[data-a="edit"]');

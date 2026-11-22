@@ -28,7 +28,7 @@ S = normalize(S);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { toast('Speichern nicht möglich (Speicher voll oder blockiert).'); } };
 
 const ui = { view: S.onboarded ? 'plan' : 'onboarding', step: 0, editing: false, draft: null, recipe: null, back: 'plan',
-  cookStep: 0, timers: {}, sheet: null, q: '', filter: 'alle', form: null };
+  cookStep: 0, timers: {}, sheet: null, q: '', filter: 'alle', form: null, limit: 40 };
 
 const recipes = () => D.RECIPES.concat(S.custom);
 const R = id => recipes().find(r => r.id === id);
@@ -203,11 +203,12 @@ function slotCard(s, i) {
 const fmtTime = m => m >= 60 ? `${Math.floor(m / 60)} Std.${m % 60 ? ' ' + m % 60 + ' Min.' : ''}` : `${m} Min.`;
 
 function vSwapSheet() {
-  const i = ui.sheet.i, slot = S.plan[i], p = S.profile, rids = S.plan.map(s => s.rid);
-  const alts = recipes().filter(r => P.eligible(r, p) && r.id !== slot.rid).map(r => {
-    const t = P.weekCost(rids.map((x, j) => j === i ? r.id : x), recipes(), p).total;
+  const i = ui.sheet.i, slot = S.plan[i], p = S.profile, rids = S.plan.map(s => s.rid), all = recipes();
+  const alts = all.filter(r => P.eligible(r, p) && r.id !== slot.rid).map(r => {
+    const t = P.weekCost(rids.map((x, j) => j === i ? r.id : x), all, p).total;
     return { r, t };
   }).sort((a, b) => rids.includes(a.r.id) - rids.includes(b.r.id) || a.t - b.t);
+  const shown = ui.sheet.all ? alts : alts.slice(0, 40);
   const cur = cost().total;
   return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-label="Gericht tauschen" data-stop>
     <div class="row between"><h2>Tauschen oder aussetzen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
@@ -218,9 +219,10 @@ function vSwapSheet() {
       ${slot.rid ? `<div class="muted" style="margin-top:6px;font-size:13px">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''}</div>
     ${(() => { const pd = prevDinner(slot); return pd && !(slot.leftover && slot.rid === pd.id) ? `<button class="alt" data-a="leftover">${photo(pd)}<div class="grow"><b>🥡 Reste vom Vorabend</b><div class="meta"><span>${esc(pd.title)} – am Abend davor doppelt kochen</span><span class="price">${eur(P.weekCost(rids.map((x, j) => j === i ? pd.id : x), recipes(), p).total - cur)} Woche</span></div></div></button>` : ''; })()}
     <h3 style="margin-top:16px">Anderes Gericht</h3>
-    ${alts.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
+    ${shown.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
       return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b> ${offerTag(r)}
       <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}${rids.includes(r.id) ? '<span>· schon in dieser Woche</span>' : ''}</div></div></button>`; }).join('')}
+    ${shown.length < alts.length ? `<button class="btn ghost" data-a="sheetall">Alle ${alts.length} Gerichte anzeigen</button>` : ''}
   </div></div>`;
 }
 
@@ -331,9 +333,10 @@ function discoverList() {
   const q = ui.q.trim().toLowerCase(), p = S.profile;
   const rs = recipes().filter(r => (ui.filter === 'alle' || (ui.filter === 'fav' && S.favs.includes(r.id)) || (ui.filter === 'passt' && P.eligible(r, p)) || (ui.filter === 'eigene' && r.custom))
     && (!q || (r.title + ' ' + r.cat + ' ' + Object.keys(r.ing).map(i => D.INGREDIENTS[i].name).join(' ')).toLowerCase().includes(q)));
-  return rs.length ? rs.map(r => `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left"><span class="tag">${esc(r.cat)}</span>${offerTag(r)}
+  const more = rs.length > ui.limit ? `<button class="btn ghost" data-a="more">Mehr anzeigen (${rs.length - ui.limit} weitere)</button>` : '';
+  return rs.length ? `<p class="muted" style="margin:0 4px 8px">${rs.length} Rezepte</p>` + rs.slice(0, ui.limit).map(r => `<div class="card day"><button style="display:contents" data-a="recipe" data-id="${r.id}">${photo(r)}<div class="grow" style="text-align:left"><span class="tag">${esc(r.cat)}</span>${offerTag(r)}
     <h3>${esc(r.title)}</h3><div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span>${r.m[0]} kcal</span><span class="price">${eur(P.shareCost(r, p))}</span></div></div></button>
-    <button class="swap" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${S.favs.includes(r.id)}">${S.favs.includes(r.id) ? '♥' : '♡'}</button></div>`).join('') : '<p class="muted">Keine Rezepte gefunden.</p>';
+    <button class="swap" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${S.favs.includes(r.id)}">${S.favs.includes(r.id) ? '♥' : '♡'}</button></div>`).join('') + more : '<p class="muted">Keine Rezepte gefunden.</p>';
 }
 function vDiscover() {
   if (ui.form) return vForm();
@@ -525,7 +528,9 @@ const A = {
     else await A.copy();
     return false;
   },
-  filter: d => { ui.filter = d.id; },
+  filter: d => { ui.filter = d.id; ui.limit = 40; },
+  more: () => { ui.limit += 40; },
+  sheetall: () => { ui.sheet.all = true; },
   offer: d => { ui.q = D.INGREDIENTS[d.id].name.replace(/ \(.*\)/, ''); ui.filter = 'passt'; ui.view = 'discover'; return 'top'; },
   newrecipe: () => { ui.form = { title: '', emoji: '🍽️', time: 30, tag: 'schnell', ing: [{ id: 'zwiebel', amt: 50 }], steps: '', m: [500, 20, 60, 15] }; },
   cancelform: () => { if (ui.form.id) { ui.view = 'recipe'; ui.recipe = ui.form.id; } ui.form = null; },
@@ -573,7 +578,7 @@ document.addEventListener('input', e => {
     document.getElementById('budgetval').textContent = eur(p.budget, 0);
     document.getElementById('perserv').textContent = eur(p.budget / (7 * ((+p.meals.lunch) + (+p.meals.dinner)) * P.servings(p)));
   }
-  if (k === 'q') { ui.q = e.target.value; document.getElementById('dlist').innerHTML = discoverList(); }
+  if (k === 'q') { ui.q = e.target.value; ui.limit = 40; document.getElementById('dlist').innerHTML = discoverList(); }
 });
 document.addEventListener('change', async e => {
   if (e.target.id !== 'importfile' || !e.target.files[0]) return;

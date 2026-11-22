@@ -8,10 +8,11 @@
   // Lokales Datum als JJJJ-MM-TT (toISOString wäre UTC → kurz nach Mitternacht „gestern“).
   const isoDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const ZEHEN_PRO_KNOLLE = 10;
+  const WIN = 60, BASICS = new Set(['zwiebel', 'knoblauch', 'karotten', 'zitrone', 'petersilie', 'schnittlauch']);
   const flagsOf = r => new Set(Object.keys(r.ing).flatMap(id => (D.INGREDIENTS[id] || { flags: [] }).flags));
 
   function dietOk(flags, diet) {
-    if (diet === 'vegan') return !['meat', 'fish', 'seafood', 'dairy', 'egg'].some(f => flags.has(f));
+    if (diet === 'vegan') return !['meat', 'fish', 'seafood', 'dairy', 'egg', 'honey'].some(f => flags.has(f));
     if (diet === 'vegetarisch') return !['meat', 'fish', 'seafood'].some(f => flags.has(f));
     if (diet === 'pescetarisch') return !flags.has('meat');
     return true;
@@ -54,11 +55,11 @@
 
   // Whole-Pack Costing: Wochenmenge je Zutat → ganze Packungen. Basisvorrat wird nicht gerechnet.
   function weekCost(rids, recipes, p) {
-    const sv = servings(p), need = {};
-    for (const rid of rids) {
-      const r = rid && recipes.find(x => x.id === rid);
-      if (!r) continue;
-      for (const [id, amt] of Object.entries(r.ing)) need[id] = (need[id] || 0) + amt * sv;
+    const sv = servings(p), need = {}, n = {};
+    for (const rid of rids) if (rid) n[rid] = (n[rid] || 0) + 1;
+    for (const r of recipes) { // ein Durchlauf statt find() je Slot – wird im Tausch-Sheet hunderte Male aufgerufen
+      if (!n[r.id]) continue;
+      for (const [id, amt] of Object.entries(r.ing)) need[id] = (need[id] || 0) + amt * sv * n[r.id];
     }
     let total = 0;
     const items = Object.entries(need).map(([id, qty]) => {
@@ -100,8 +101,10 @@
     if (!pool.length) return base.map(s => ({ ...s, rid: s.locked ? s.rid : null }));
     const byId = new Map(recipes.map(r => [r.id, r])), sv = servings(p), pk = {};
     const pack = id => pk[id] || (pk[id] = packOf(id, p));
-    const pantry = id => D.INGREDIENTS[id].flags.includes('pantry');
+    const pantry = id => D.INGREDIENTS[id].flags.includes('pantry'), fridge = p.fridge !== false;
     const score = new Map(pool.map(r => [r.id, prefScore(r, p)]));
+    // Einmal vorberechnen: Packung + Wochenmenge je bezahlter Zutat (die innere Schleife läuft Zehntausende Male).
+    const ings = new Map(recipes.map(r => [r.id, Object.entries(r.ing).filter(([id]) => D.INGREDIENTS[id] && !pantry(id)).map(([id, a]) => [id, a * sv, pack(id)])]));
     // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
     const maxUses = Math.ceil(base.length / pool.length);
     let best = null;
@@ -111,25 +114,34 @@
       const need = {}, uses = {}, cats = {};
       let sweets = 0;
       const add = r => {
-        for (const [id, a] of Object.entries(r.ing)) need[id] = (need[id] || 0) + a * sv;
+        for (const [id, q] of ings.get(r.id)) need[id] = (need[id] || 0) + q;
         uses[r.id] = (uses[r.id] || 0) + 1; cats[r.cat] = (cats[r.cat] || 0) + 1; if (r.sweet) sweets++;
       };
       plan.forEach(s => s.rid && byId.has(s.rid) && add(byId.get(s.rid)));
+      // Großer Pool: je Slot nur ein Fenster von WIN Kandidaten aus einer pro Durchlauf neu gemischten Reihenfolge.
+      const order = pool.slice();
+      for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+      let off = 0;
       for (const slot of plan) {
         if (slot.locked) continue;
         let pick = null, pickScore = -Infinity;
-        for (const r of pool) {
+        const cands = order.length <= WIN ? order : order.slice(off, off + WIN).concat(order.slice(0, Math.max(0, off + WIN - order.length)));
+        off = (off + WIN) % order.length;
+        // Abwechslung am selben Tag: keine zwei Gerichte mit derselben Hauptzutat (z. B. 2× Knödelbrot)
+        const today = new Set(plan.filter(o => o.date === slot.date && o.rid && o !== slot && ings.has(o.rid)).flatMap(o => ings.get(o.rid).map(x => x[0])).filter(id => !BASICS.has(id)));
+        for (const r of cands) {
           const u = uses[r.id] || 0;
           if (u >= maxUses) continue;
           // Grenzkosten über ganze Packungen + Synergie mit bereits geöffneten Packungen
           let marginal = 0, synergy = 0;
-          for (const [id, a] of Object.entries(r.ing)) {
-            if (pantry(id)) continue;
-            const k = pack(id), have = need[id] || 0;
-            marginal += (Math.ceil((have + a * sv) / k.packQty - 1e-9) - Math.ceil(have / k.packQty - 1e-9)) * k.price;
-            if (p.fridge !== false && have > 0 && Math.ceil(have / k.packQty - 1e-9) * k.packQty - have > 1e-9) synergy++;
+          let sameDay = 0;
+          for (const [id, q, k] of ings.get(r.id)) {
+            if (today.has(id)) sameDay++;
+            const have = need[id] || 0, open = Math.ceil(have / k.packQty - 1e-9);
+            marginal += (Math.ceil((have + q) / k.packQty - 1e-9) - open) * k.price;
+            if (fridge && have > 0 && open * k.packQty - have > 1e-9) synergy++;
           }
-          const sc = score.get(r.id) + synergy * 1.5 - marginal * costW - u * 10
+          const sc = score.get(r.id) + synergy * 1.5 - marginal * costW - u * 10 - sameDay * 6
             - (plan.some(o => o.date === slot.date && o.rid === r.id) ? 50 : 0)
             - (r.sweet && sweets >= 1 ? 30 : 0) - (cats[r.cat] || 0) * 1.5 // Abwechslung: max. 1 Süßspeise, Kategorien mischen
             + (slot.meal === 'lunch' && r.leftovers ? 1 : 0) + rand() * 2;

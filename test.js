@@ -112,3 +112,31 @@ console.log('ok Datum, Knoblauch, Reste');
 // Flugblatt: Großpackung außerhalb der Regel-Spanne (Faschiertes 400–600 g) zählt nicht als Aktion
 assert.deepStrictEqual(matchOffers([mk('Lidl', 'Faschiertes gemischt', 6.49, 6.49, 8.49)], RULES, 'bio', reg, '2026-11-22'), {});
 console.log('ok Aktions-Packungsgröße');
+
+// Rezeptdaten: Zutaten vorhanden, Nährwerte plausibel, Felder gültig, keine Doppelten
+const recipeErrs = require('./scripts/check-recipes.js').check(D.RECIPES);
+assert.deepStrictEqual(recipeErrs, [], recipeErrs.join('\n'));
+console.log('ok Rezeptdaten,', D.RECIPES.length, 'Rezepte');
+
+// Abwechslung am Tag: Mittag und Abend teilen selten eine Hauptzutat
+let shared = 0;
+for (let k = 0; k < 5; k++) {
+  const w = P.generate({ ...base, store: 'billa', meals: { lunch: true, dinner: true }, budget: 80 }, D.RECIPES, new Date('2026-11-23T12:00'));
+  for (let d = 0; d < w.length; d += 2) {
+    const a = Object.keys(D.RECIPES.find(r => r.id === w[d].rid).ing), b = Object.keys(D.RECIPES.find(r => r.id === w[d + 1].rid).ing);
+    shared += a.filter(id => b.includes(id) && !D.INGREDIENTS[id].flags.includes('pantry') && !['zwiebel', 'knoblauch', 'karotten', 'zitrone', 'petersilie', 'schnittlauch'].includes(id)).length;
+  }
+}
+assert.ok(shared <= 10, 'zu viele gleiche Hauptzutaten am selben Tag: ' + shared);
+console.log('ok Abwechslung am Tag (' + shared + ' geteilte Zutaten in 35 Tagen)');
+
+// Rezeptfotos: jedes Foto gehört zu einem Rezept, liegt als Datei vor und hat einen Lizenznachweis
+const fotos = JSON.parse(require('fs').readFileSync(__dirname + '/img/credits.json'));
+for (const [id, c] of Object.entries(fotos)) {
+  assert.ok(D.RECIPES.some(r => r.id === id), 'Foto ohne Rezept: ' + id);
+  assert.ok(require('fs').existsSync(`${__dirname}/img/${id}.jpg`), 'Fotodatei fehlt: ' + id);
+  assert.ok(c.source && /^(CC|Public Domain)/.test(c.license) && (c.creator || /^(CC0|Public Domain)/.test(c.license)), 'Nachweis unvollständig: ' + id); // BY/BY-SA brauchen Urheber
+}
+const quellen = Object.values(fotos).map(c => c.source);
+assert.strictEqual(new Set(quellen).size, quellen.length, 'dasselbe Foto bei mehreren Rezepten');
+console.log('ok Rezeptfotos,', Object.keys(fotos).length, 'mit Nachweis');
