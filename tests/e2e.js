@@ -40,17 +40,25 @@ const server = http.createServer((req, res) => {
     if (slots !== 14) errors.push(`${name}: ${slots} statt 14 Slots`);
     await shot('03-plan');
 
-    // Tauschen
+    // Tauschen (mit Suche) → Gericht wird fixiert
     await click('[data-a="swap"]'); await page.waitForSelector('.sheet'); await shot('04-tauschen');
+    await page.fill('[data-i="sq"]', 'knödel');
+    if (!/knödel/i.test(await page.locator('#altlist .alt b').first().textContent())) errors.push(`${name}: Suche im Tausch-Fenster`);
     await click('.sheet [data-a="pick"]');
+    if (!(await page.locator('.card.day .tag.pin').count())) errors.push(`${name}: getauschtes Gericht nicht fixiert`);
     // Aussetzen
     await page.locator('[data-a="swap"]').nth(1).click(); await page.fill('#selfnote', 'Omas Gulasch');
     await click('[data-a="skip"][data-id="self"]');
     if (!(await page.textContent('#app')).includes('Omas Gulasch')) errors.push(`${name}: Aussetzen fehlt`);
 
-    // Rezept & Kochmodus
+    // Rezept: Portionen, Einplanen, Kochmodus mit Zutaten
     await click('.card.day [data-a="recipe"]'); await page.waitForSelector('h1'); await shot('05-rezept');
+    await click('[data-a="serv"][data-d="1"]');
+    if ((await page.textContent('.stepper.small b')).trim() !== '3') errors.push(`${name}: Portionen anpassen`);
+    await click('[data-a="planrecipe"]'); await click('.sheet [data-a="planat"]');
+    if (await page.locator('.sheet').count()) errors.push(`${name}: Einplanen schließt nicht`);
     await click('[data-a="cook"]'); await page.waitForSelector('.cook');
+    await click('[data-a="cooking"]'); if (!(await page.locator('.cooking .ing').count())) errors.push(`${name}: Zutaten im Kochmodus`);
     await click('.cook [data-a="cstep"][data-d="1"]'); await shot('06-kochmodus');
     await click('.cook [data-a="exitcook"]'); await click('[data-a="go"][data-id="plan"]');
 
@@ -68,6 +76,9 @@ const server = http.createServer((req, res) => {
     if (first !== 40 || (await page.locator('#dlist .card').count()) !== 80) errors.push(`${name}: „Mehr anzeigen“ kaputt (${first})`);
     await page.fill('[data-i="q"]', 'linsen');
     if (!(await page.locator('#dlist .card').count())) errors.push(`${name}: Suche ohne Treffer`);
+    await page.fill('[data-i="q"]', ''); await click('[data-a="cat"][data-id="Indisch"]'); await page.selectOption('[data-i="sort"]', 'zeit');
+    const tags = await page.locator('#dlist .card .tag:not(.offer):not(.plan)').allTextContents();
+    if (!tags.length || tags.some(t => t !== 'Indisch')) errors.push(`${name}: Kategorie-Filter (${tags.slice(0, 3)})`);
 
     // Profil
     await click('[data-a="go"][data-id="profile"]');

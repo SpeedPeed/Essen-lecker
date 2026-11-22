@@ -140,3 +140,32 @@ for (const [id, c] of Object.entries(fotos)) {
 const quellen = Object.values(fotos).map(c => c.source);
 assert.strictEqual(new Set(quellen).size, quellen.length, 'dasselbe Foto bei mehreren Rezepten');
 console.log('ok Rezeptfotos,', Object.keys(fotos).length, 'mit Nachweis');
+
+// Knappes Budget (Review N5): Planer tauscht nach, bis es passt – reproduzierbar mit festem Zufall
+P.setPrices(require('./prices.json'));
+const seeded = s => () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
+const single = { ...base, adults: 1, store: 'spar', styles: [], budget: 17.5 };
+for (let k = 1; k <= 5; k++) {
+  const c = P.weekCost(P.generate(single, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).map(s => s.rid), D.RECIPES, single).total;
+  assert.ok(c <= single.budget, `Single ${single.budget} € überschritten: ${c.toFixed(2)} (Seed ${k})`);
+}
+console.log('ok knappes Budget');
+
+// Fixierte Gerichte (Review N10): Neu planen und Ausgleichen behalten sie, unpassende werden freigegeben
+const pw = P.planWeek(base, D.RECIPES, [], new Date('2026-11-23T12:00'));
+pw[4] = { ...pw[4], rid: 'lasagne', pinned: true };
+const pw2 = P.planWeek(base, D.RECIPES, pw, new Date('2026-11-23T12:00'));
+assert.deepStrictEqual([pw2[4].rid, pw2[4].pinned], ['lasagne', true]);
+const rbp = P.rebalance(pw2.map((s, i) => i === 1 ? { ...s, rid: 'slowgulasch' } : s), 1, { ...base, equipment: [...base.equipment, 'slowcooker'], budget: 20 }, D.RECIPES);
+assert.deepStrictEqual([rbp[1].rid, rbp[4].rid], ['slowgulasch', 'lasagne']);
+assert.ok(!P.planWeek({ ...base, diet: 'vegan' }, D.RECIPES, pw, new Date('2026-11-23T12:00'))[4].pinned, 'Lasagne passt nicht mehr zu vegan');
+console.log('ok fixierte Gerichte');
+
+// „Aktion“ nur bei spürbarer Ersparnis (Review N3)
+P.setPrices({ stores: { billa: { asOf: '2026-11-22', items: { faschiertes: { name: 'Faschiertes', price: 3.99, qty: 500, was: 5.99 }, karotten: { name: 'Karotten', price: 0.99, qty: 1000, was: 1.19 } } } } });
+const bil = { ...base, store: 'billa' }, rec = id => D.RECIPES.find(r => r.id === id);
+assert.ok(P.hasDeal(rec('bolognese'), bil), 'Faschiertes −2 € lohnt sich');
+const karottenOnly = D.RECIPES.find(r => r.ing.karotten && !r.ing.faschiertes && P.offersIn(r, bil).length === 1);
+assert.ok(!P.hasDeal(karottenOnly, bil), 'ein paar Cent bei Karotten sind keine Aktion: ' + karottenOnly.id);
+P.setPrices(require('./prices.json'));
+console.log('ok Aktions-Badge');

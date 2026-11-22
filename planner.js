@@ -31,7 +31,7 @@
     const f = flagsOf(r);
     let s = r.tags.filter(t => p.styles.includes(t)).length * 2;
     if (p.allergyMode !== 'strict') s -= p.allergies.filter(a => f.has(a)).length * 4; // Soft-Filter
-    s += offersIn(r, p).length * 1.5; // Supermarkt-Aktionen bevorzugen
+    s += Math.min(3, offerSaving(r, p) * 1.5); // Aktionen nach gesparten Euro bevorzugen, nicht nach Anzahl
     return s;
   }
 
@@ -51,6 +51,10 @@
 
   // Zutaten eines Rezepts, die im gewählten Markt gerade in Aktion sind.
   const offersIn = (r, p) => Object.keys(r.ing).filter(id => !D.INGREDIENTS[id].flags.includes('pantry') && packOf(id, p).was);
+  // Anteilige Ersparnis eines Gerichts durch Aktionen (wie shareCost: nach Menge, nicht nach Packung).
+  const offerSaving = (r, p) => offersIn(r, p).reduce((s, id) => { const pk = packOf(id, p); return s + r.ing[id] * servings(p) / pk.packQty * (pk.was - pk.price); }, 0);
+  // „Aktion“-Badge nur, wenn es sich fürs Gericht lohnt – sonst trägt jedes Gericht mit Aktions-Karotten eins.
+  const hasDeal = (r, p) => { const s = offerSaving(r, p); return s >= 0.5 || (s >= 0.2 && s >= 0.15 * shareCost(r, p)); };
   const offers = p => Object.entries((realStore(p) || { items: {} }).items).filter(([, x]) => x.was).map(([id, x]) => ({ id, ...x, ing: D.INGREDIENTS[id] }));
 
   // Whole-Pack Costing: Wochenmenge je Zutat → ganze Packungen. Basisvorrat wird nicht gerechnet.
@@ -108,8 +112,10 @@
     // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
     const maxUses = Math.ceil(base.length / pool.length);
     let best = null;
-    for (let iter = 0; iter < 60; iter++) {
-      const costW = 0.5 + (iter / 60) * 4;
+    const tried = [];
+    // Passt nach 60 Läufen nichts ins Budget, folgen bis zu 60 sparsamere Läufe (hohes Kostengewicht).
+    for (let iter = 0; iter < 60 || (iter < 120 && !best.fits); iter++) {
+      const costW = iter < 60 ? 0.5 + (iter / 60) * 4 : 6 + (iter - 60) / 6;
       const plan = base.map(s => ({ ...s, rid: s.locked ? s.rid : null }));
       const need = {}, uses = {}, cats = {};
       let sweets = 0;
@@ -125,7 +131,7 @@
       for (const slot of plan) {
         if (slot.locked) continue;
         let pick = null, pickScore = -Infinity;
-        const cands = order.length <= WIN ? order : order.slice(off, off + WIN).concat(order.slice(0, Math.max(0, off + WIN - order.length)));
+        const cands = order.length <= WIN || iter >= 60 ? order : order.slice(off, off + WIN).concat(order.slice(0, Math.max(0, off + WIN - order.length)));
         off = (off + WIN) % order.length;
         // Abwechslung am selben Tag: keine zwei Gerichte mit derselben Hauptzutat (z. B. 2× Knödelbrot)
         const today = new Set(plan.filter(o => o.date === slot.date && o.rid && o !== slot && ings.has(o.rid)).flatMap(o => ings.get(o.rid).map(x => x[0])).filter(id => !BASICS.has(id)));
@@ -157,30 +163,74 @@
       const fits = cost <= p.budget;
       const better = !best || (fits && !best.fits) || (fits === best.fits && (fits ? pref > best.pref || (pref === best.pref && cost < best.cost) : cost < best.cost));
       if (better) best = { plan, cost, pref, fits };
+      if (!fits) tried.push({ plan, cost });
+    }
+    if (!best.fits) {
+      // Nachbessern ab den 6 günstigsten Entwürfen (Einzeltausch bleibt sonst oft in einem lokalen Minimum hängen).
+      const outs = tried.sort((a, b) => a.cost - b.cost).slice(0, 6).map(t => ({ plan: t.plan, cost: fitBudget(t.plan, t.cost) }));
+      const ok = outs.filter(o => o.cost <= p.budget + 1e-9);
+      best = { plan: (ok.length ? ok.sort((a, b) => planPref(b.plan) - planPref(a.plan))[0] : outs.sort((a, b) => a.cost - b.cost)[0]).plan };
     }
     return best.plan.map(({ locked, ...s }) => s);
+
+    function planPref(plan) { return plan.reduce((s, x) => s + (x.rid ? score.get(x.rid) ?? 0 : 0), 0); }
+
+    // Knapp über Budget: einzelne Gerichte gegen günstigere tauschen. Bevorzugt den Tausch, der ins Budget führt und
+    // am besten zum Profil passt; sonst den, der am meisten spart. Kosten inkrementell über ganze Packungen.
+    function fitBudget(plan, total) {
+      const need = {}, put = (rid, f) => { for (const [id, q] of ings.get(rid)) need[id] = (need[id] || 0) + f * q; };
+      const packs = id => { const q = need[id] || 0, k = pack(id); return q > 1e-9 ? Math.ceil(q / k.packQty - 1e-9) * k.price : 0; };
+      plan.forEach(s => s.rid && ings.has(s.rid) && put(s.rid, 1));
+      for (let round = 0; round < plan.length && total > p.budget + 1e-9; round++) {
+        const used = new Set(plan.map(s => s.rid));
+        let fit = null, cut = null;
+        plan.forEach((s, i) => {
+          if (s.locked || !s.rid || !ings.has(s.rid)) return;
+          for (const r of pool) {
+            if (used.has(r.id)) continue;
+            const ids = new Set([...ings.get(s.rid), ...ings.get(r.id)].map(x => x[0]));
+            let d = 0;
+            for (const id of ids) d -= packs(id);
+            put(s.rid, -1); put(r.id, 1);
+            for (const id of ids) d += packs(id);
+            put(r.id, -1); put(s.rid, 1);
+            if (d > -0.005) continue;
+            const sc = score.get(r.id) - (score.get(s.rid) ?? 0);
+            if (total + d <= p.budget) { if (!fit || sc > fit.sc || (sc === fit.sc && d < fit.d)) fit = { i, rid: r.id, d, sc }; }
+            else if (!cut || d < cut.d) cut = { i, rid: r.id, d, sc };
+          }
+        });
+        const mv = fit || cut;
+        if (!mv) break;
+        put(plan[mv.i].rid, -1); put(mv.rid, 1); plan[mv.i].rid = mv.rid; total += mv.d;
+      }
+      return total;
+    }
   }
 
 
-  // Neue Woche: ausgesetzte Slots (skip: 'self' = selbst kochen, 'free' = frei/Reste) bleiben,
+  // Neue Woche: ausgesetzte Slots (skip: 'self' = selbst kochen, 'free' = frei/Reste) und fixierte Gerichte (pinned) bleiben,
   // feste Kochpause-Wochentage aus dem Profil (p.skipDays, 0 = Sonntag) werden automatisch ausgesetzt.
   function planWeek(p, recipes, old = [], start = new Date()) {
     const base = slotsFor(p, start).map(s => {
       const o = old.find(x => x.date === s.date && x.meal === s.meal && x.skip);
       if (o) return { ...s, skip: o.skip, note: o.note, locked: true };
+      const pin = old.find(x => x.date === s.date && x.meal === s.meal && x.pinned && x.rid);
+      const r = pin && recipes.find(x => x.id === pin.rid);
+      if (r && eligible(r, p)) return { ...s, rid: r.id, pinned: true, ...(pin.leftover ? { leftover: true } : {}), locked: true };
       if ((p.skipDays || []).includes(new Date(s.date + 'T12:00').getDay())) return { ...s, skip: 'self', note: '', locked: true };
       return s;
     });
     return generate(p, recipes, null, base);
   }
 
-  // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren. Reste-Slots und das Gericht,
-  // von dem sie stammen, bleiben ebenfalls stehen.
+  // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren. Fixierte Gerichte, Reste-Slots und das
+  // Gericht, von dem sie stammen, bleiben ebenfalls stehen.
   function rebalance(plan, keepIdx, p, recipes) {
-    const locked = plan.map((s, i) => ({ ...s, locked: i === keepIdx || !s.rid || plan.some(o => o.leftover && o.rid === s.rid) }));
+    const locked = plan.map((s, i) => ({ ...s, locked: i === keepIdx || !s.rid || s.pinned || plan.some(o => o.leftover && o.rid === s.rid) }));
     return generate(p, recipes, null, locked);
   }
 
-  const API = { isoDay, planWeek, offers, offersIn, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  const API = { isoDay, planWeek, offers, offersIn, offerSaving, hasDeal, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);
