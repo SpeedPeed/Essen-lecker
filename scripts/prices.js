@@ -8,7 +8,7 @@ const STORES = ['billa', 'spar'];
 // shortcut: nur BILLA wird bei heisse-preise.io täglich aktualisiert (SPAR zuletzt 09/2026, HOFER/MPREIS/UNIMARKT älter) – weitere Märkte ergänzen, sobald deren Daten wieder aktuell sind.
 
 // Zutat → [Muss-Regex, Ausschluss-Regex, min, max] (Menge in der Einheit aus data.js)
-const X = 'bio|demeter|zurück zum ursprung|ja! natürlich|natur\\*pur|vegan|laktosefrei|baby|kotányi|purina|hund|katze';
+const X = 'bio|alnatura|demeter|zurück zum ursprung|ja! natürlich|natur\\*pur|vegan|laktosefrei|baby|kotányi|purina|hund|katze';
 const RULES = {
   erdaepfel: ['erdäpfel|kartoffel', 'süß|chips|püree|knödel|teig|pommes|rösti|wedges|puffer|salat|gnocchi|kroketten', 1500, 2500],
   zwiebel: ['^(\\S+ )?zwiebel', '\\d+ ?kg|rot|frühling|röst|gemüse|suppe|chips|würfel|perl|gewürz|creme', 500, 3000],
@@ -37,7 +37,7 @@ const RULES = {
   schwarzbrot: ['bauernbrot|hausbrot|mischbrot', 'toast|vollkorn|dinkel|bio|knödel|chips|scheiben|knäcke|mini', 400, 1000],
   feta: ['schafkäse|feta|hirtenkäse', 'oliven|kräuter|würfel|creme|aufstrich|mariniert|pikant|knoblauch|chili|paprika|tomate|salat|spinat|gefüllt|getrocknet|pfeffer|teig', 150, 250],
   emmentaler: ['emmentaler.*gerieben|gerieben.*emmentaler', '', 150, 250],
-  bergkaese: ['bergkäse.*gerieben|gerieben.*bergkäse|reibkäse|käse.*gerieben', 'parmesan|grana|pecorino|mozzarella|vegan|pizza', 150, 250],
+  bergkaese: ['bergkäse.*gerieben|gerieben.*bergkäse|reibkäse|käse.*gerieben', 'parmesan|grana|pecorino|mozzarella|vegan|pizza|cheddar|gouda|edamer|tilsiter|mix', 150, 250],
   mozzarella: ['mozzarella', 'mini|perle|kugeln|gerieben|light|di bufala|büffel|sticks|pizza|tomate|sticks|snack|burrata|stracciatella|gerieben|scheiben|panier|aufstrich|baguette|kleine|maxi|block|stange|sticks', 100, 130],
   parmesan: ['parmesan|grana padano|parmigiano|hartkäse', 'alami|knorr|spaghetteria|gerieben|chips|dressing|sauce|creme|pesto|ravioli|gnocchi|cracker|kekse|riegel|snack|streu|frico|crisps|risotto|knödel', 80, 200],
   frankfurter: ['frankfurter|wiener würstel|würstel', 'hähnchen|huhn|geflügel|pute|gulasch|kartoffel|berner|senf|käse|dose|glas|grill|debreziner|bratw|hühner|pute|kalb|vegan|veggie|vegetar|mini|cocktail|kabanos|knacker|bärlauch|chili|scharf|ohne', 250, 400],
