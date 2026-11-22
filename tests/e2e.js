@@ -53,7 +53,7 @@ const server = http.createServer((req, res) => {
 
     // Tauschen (mit Suche) → Gericht wird fixiert
     await click('[data-a="swap"]'); await page.waitForSelector('.sheet'); await shot('04-tauschen'); await axe('tauschen');
-    await page.fill('[data-i="sq"]', 'knödel');
+    await page.fill('[data-i="sq"]', 'knödel'); await page.waitForTimeout(300); // Suche wartet kurz aufs Tippen
     if (!/knödel/i.test(await page.locator('#altlist .alt b').first().textContent())) errors.push(`${name}: Suche im Tausch-Fenster`);
     await click('.sheet [data-a="pick"]');
     if (!(await page.locator('.card.day .tag.pin').count())) errors.push(`${name}: getauschtes Gericht nicht fixiert`);
@@ -89,9 +89,9 @@ const server = http.createServer((req, res) => {
     await click('[data-a="go"][data-id="plan"]'); await click('[data-a="go"][data-id="discover"]');
     const first = await page.locator('#dlist .card').count(); await click('[data-a="more"]');
     if (first !== 40 || (await page.locator('#dlist .card').count()) !== 80) errors.push(`${name}: „Mehr anzeigen“ kaputt (${first})`);
-    await page.fill('[data-i="q"]', 'linsen');
+    await page.fill('[data-i="q"]', 'linsen'); await page.waitForTimeout(300);
     if (!(await page.locator('#dlist .card').count())) errors.push(`${name}: Suche ohne Treffer`);
-    await page.fill('[data-i="q"]', ''); await click('[data-a="cat"][data-id="Indisch"]'); await page.selectOption('[data-i="sort"]', 'zeit');
+    await page.fill('[data-i="q"]', ''); await page.waitForTimeout(300); await click('[data-a="cat"][data-id="Indisch"]'); await page.selectOption('[data-i="sort"]', 'zeit');
     const tags = await page.locator('#dlist .card .tag:not(.offer):not(.plan)').allTextContents();
     if (!tags.length || tags.some(t => t !== 'Indisch')) errors.push(`${name}: Kategorie-Filter (${tags.slice(0, 3)})`);
 

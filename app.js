@@ -674,6 +674,7 @@ document.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - touchX; touchX = null;
   if (Math.abs(dx) > 60) { A.cstep({ d: dx < 0 ? 1 : -1 }); render(); }
 }, { passive: true });
+let debT; const debounce = fn => { clearTimeout(debT); debT = setTimeout(fn, 150); };
 document.addEventListener('input', e => {
   const k = e.target.dataset.i;
   if (k === 'budget') {
@@ -681,9 +682,10 @@ document.addEventListener('input', e => {
     document.getElementById('budgetval').textContent = eur(p.budget, 0);
     document.getElementById('perserv').textContent = eur(p.budget / (7 * ((+p.meals.lunch) + (+p.meals.dinner)) * P.servings(p)));
   }
-  if (k === 'q') { ui.q = e.target.value; ui.limit = 40; document.getElementById('dlist').innerHTML = discoverList(); }
+  // Suchen: erst nach kurzer Tipp-Pause neu rechnen (Wochenpreise je Treffer sind auf schwachen Handys teuer)
+  if (k === 'q') { ui.q = e.target.value; ui.limit = 40; debounce(() => { const el = document.getElementById('dlist'); if (el) el.innerHTML = discoverList(); }); }
   if (k === 'sort') { ui.sort = e.target.value; ui.limit = 40; document.getElementById('dlist').innerHTML = discoverList(); }
-  if (k === 'sq') { ui.sheet.q = e.target.value; ui.sheet.all = false; document.getElementById('altlist').innerHTML = altList(); }
+  if (k === 'sq') { ui.sheet.q = e.target.value; ui.sheet.all = false; debounce(() => { const el = document.getElementById('altlist'); if (el && ui.sheet) el.innerHTML = altList(); }); }
 });
 document.addEventListener('change', async e => {
   if (e.target.id !== 'importfile' || !e.target.files[0]) return;

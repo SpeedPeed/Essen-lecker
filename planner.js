@@ -37,10 +37,17 @@
   }
 
   // Echte Packung (prices.json von heisse-preise.io) oder Schätzung über den Preisfaktor des Markts.
-  let PRICES = null;
-  const setPrices = j => { PRICES = j; };
+  let PRICES = null, PACKS = new Map();
+  const setPrices = j => { PRICES = j; PACKS = new Map(); };
   const realStore = p => PRICES && PRICES.stores[p.store];
+  // Packung je Markt & Zutat ändert sich nur mit neuen Preisen – merken (wird zehntausendfach abgefragt).
   function packOf(id, p) {
+    const k = p.store + '|' + id;
+    let v = PACKS.get(k);
+    if (!v) PACKS.set(k, v = packOfRaw(id, p));
+    return v;
+  }
+  function packOfRaw(id, p) {
     const ing = D.INGREDIENTS[id], real = realStore(p) && realStore(p).items[id];
     if (!real) return { packQty: ing.packQty, price: ing.price * store(p).priceFactor, pack: ing.pack, product: null };
     const metric = ing.unit === 'g' || ing.unit === 'ml';
@@ -59,12 +66,14 @@
   const offers = p => Object.entries((realStore(p) || { items: {} }).items).filter(([, x]) => x.was).map(([id, x]) => ({ id, ...x, ing: D.INGREDIENTS[id] }));
 
   // Whole-Pack Costing: Wochenmenge je Zutat → ganze Packungen. Basisvorrat wird nicht gerechnet.
+  const INDEX = new WeakMap(); // Rezeptliste → Map id → Rezept (im Tausch-Sheet hunderte Aufrufe mit derselben Liste)
+  const byIdOf = recipes => { let m = INDEX.get(recipes); if (!m) INDEX.set(recipes, m = new Map(recipes.map(r => [r.id, r]))); return m; };
   function weekCost(rids, recipes, p) {
-    const sv = servings(p), need = {}, n = {};
+    const sv = servings(p), need = {}, n = {}, idx = byIdOf(recipes);
     for (const rid of rids) if (rid) n[rid] = (n[rid] || 0) + 1;
-    for (const r of recipes) { // ein Durchlauf statt find() je Slot – wird im Tausch-Sheet hunderte Male aufgerufen
-      if (!n[r.id]) continue;
-      for (const [id, amt] of Object.entries(r.ing)) need[id] = (need[id] || 0) + amt * sv * n[r.id];
+    for (const rid in n) {
+      const r = idx.get(rid);
+      if (r) for (const id in r.ing) need[id] = (need[id] || 0) + r.ing[id] * sv * n[rid];
     }
     let total = 0;
     const items = Object.entries(need).map(([id, qty]) => {
