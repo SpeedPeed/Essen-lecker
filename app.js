@@ -94,7 +94,7 @@ function kitchenSVG(p) {
 
 const STEPS = [
   { t: 'Wo kaufst du ein?', s: 'Preise und Gang-Reihenfolge passen sich deinem Markt an.', ok: p => p.store,
-    b: p => `<div class="grid">${D.STORES.map(s => `<button class="opt" ${sel(p.store === s.id)} data-a="store" data-id="${s.id}">
+    b: p => `${ui.editing ? '' : `<div class="welcome card sand"><b>Willkommen bei Piatto 👋</b><ul><li>Plant 7 Tage Essen passend zu deinem Budget</li><li>Rechnet mit echten Supermarktpreisen und ganzen Packungen</li><li>Einkaufsliste sortiert nach den Gängen deines Markts</li></ul><span class="muted">In einer Minute eingerichtet · kein Konto · alles bleibt auf deinem Gerät</span></div>`}<div class="grid">${D.STORES.map(s => `<button class="opt" ${sel(p.store === s.id)} data-a="store" data-id="${s.id}">
       ${badge(s)}${s.sub ? `<small>${s.sub}</small>` : ''}<small>${s.profile}</small>${P.realStore({ store: s.id }) ? `<small>✓ ${P.realStore({ store: s.id }).offersOnly ? 'echte Aktionen' : 'echte Preise & Aktionen'}</small>` : ''}</button>`).join('')}</div>` },
   { t: 'Für wen kochst du?', s: 'Portionen werden automatisch skaliert.', ok: () => true,
     b: p => `${tableSVG(p)}<div class="card"><div class="row between"><b>Erwachsene</b><div class="stepper">
@@ -102,13 +102,14 @@ const STEPS = [
       <div class="toggle"><b>Kinder</b>${sw('kids', p.kids.on, 'aria-label="Kinder"')}</div>
       ${p.kids.on ? `<div class="row between" style="margin-bottom:12px"><span>Anzahl</span><div class="stepper">
         <button data-a="kidcount" data-d="-1" aria-label="weniger">−</button><b>${p.kids.count}</b><button data-a="kidcount" data-d="1" aria-label="mehr">+</button></div></div>
-        <div class="seg">${['1-3', '4-10', '11-17'].map(a => `<button ${sel(p.kids.age === a)} data-a="kidage" data-id="${a}">${a} J.</button>`).join('')}</div>` : ''}</div>` },
+        <div class="seg">${['1-3', '4-10', '11-17'].map(a => `<button ${sel(p.kids.age === a)} data-a="kidage" data-id="${a}">${a} J.</button>`).join('')}</div>
+        <p class="muted" style="margin:10px 0 0">Kinder essen weniger: ${p.kids.age === '1-3' ? 'ca. ⅓' : p.kids.age === '4-10' ? 'ca. ½' : 'ca. ⅘'} Portion pro Kind → gekocht wird für ${fmtServ(P.servings(p))} Portion${P.servings(p) === 1 ? '' : 'en'}.</p>` : ''}</div>` },
   { t: 'Welche Mahlzeiten?', s: 'Wir planen 7 Tage.', ok: p => p.meals.lunch || p.meals.dinner,
     b: p => `<div class="card"><div class="toggle"><div><b>Mittagessen</b><div class="muted">Auch als Reste vom Vorabend möglich</div></div>${sw('meal', p.meals.lunch, 'data-id="lunch" aria-label="Mittagessen"')}</div>
       <div class="toggle"><div><b>Abendessen</b><div class="muted">Die Hauptmahlzeit</div></div>${sw('meal', p.meals.dinner, 'data-id="dinner" aria-label="Abendessen"')}</div></div>
       ${p.meals.lunch && p.meals.dinner ? `<div class="card sand"><div class="toggle"><div><b>🥡 Mittag = Reste vom Vorabend</b><div class="muted">Abends doppelt kochen, mittags aufwärmen – spart Zeit und meist ein Drittel der Kosten.</div></div>${sw('leftlunch', p.leftoverLunch, 'aria-label="Mittag aus Resten vom Vorabend"')}</div></div>` : ''}` },
   { t: 'Wie hoch ist dein Wochenbudget?', s: 'Wir rechnen mit ganzen Supermarkt-Packungen.', ok: () => true,
-    b: p => `<div class="card"><div class="big-amount" id="budgetval">${eur(p.budget, 0)}</div><div class="muted" style="text-align:center;margin-bottom:16px">pro Woche · ca. <span id="perserv">${eur(p.budget / (7 * ((+p.meals.lunch) + (+p.meals.dinner)) * P.servings(p)))}</span> pro Portion</div>
+    b: p => `<div class="card"><div class="row" style="justify-content:center;flex-wrap:nowrap"><button class="btn small ghost" data-a="budgetd" data-d="-5" aria-label="5 Euro weniger">−5 €</button><div class="big-amount" id="budgetval">${eur(p.budget, 0)}</div><button class="btn small ghost" data-a="budgetd" data-d="5" aria-label="5 Euro mehr">+5 €</button></div><div class="muted" style="text-align:center;margin-bottom:16px">pro Woche · ca. <span id="perserv">${eur(p.budget / (7 * ((+p.meals.lunch) + (+p.meals.dinner)) * P.servings(p)))}</span> pro Portion</div>
       <input type="range" min="20" max="${budgetMax(p)}" step="1" value="${p.budget}" data-i="budget" aria-label="Wochenbudget">
       <div class="row between muted"><span>20 €</span><span>${budgetMax(p)} €</span></div></div>` },
   { t: 'Worauf hast du Appetit?', s: 'Wähle bis zu 3.', ok: () => true,
@@ -165,12 +166,12 @@ function vPlan() {
       <div class="grow"><b>${itemCount()} Artikel nach Gang</b><div class="muted">${shortNote(st)}</div></div>
       <button class="btn small" data-a="go" data-id="list">Liste öffnen</button></div>
     <div class="card row">${ring(c.total, p.budget)}<div class="grow">
-      <div class="muted">${meals} Mahlzeiten · ${fmtServ(P.servings(p))} Portionen</div>
+      <div class="muted">${meals} Mahlzeit${meals === 1 ? '' : 'en'} · ${portions(P.servings(p))}${p.kids.on ? ' (Kinder anteilig)' : ''}</div>
       <h2 class="${left < 0 ? 'over' : 'price'}" style="margin:4px 0">${left < 0 ? `${eur(-left, left > -1 ? 2 : 0)} über Budget` : `${eur(left, 0)} übrig`}</h2>
       <div class="muted">Budget ${eur(p.budget, 0)} / Woche</div>
       ${rs.length ? `<div class="muted">Ø ${avg(0)} kcal · ${avg(1)} g Eiweiß pro Portion</div>` : ''}
       ${saved ? `<div class="offer-text">🏷 Aktionen sparen dir ${eur(saved)}</div>` : ''}
-      ${left < 0 ? `<button class="btn small" style="margin-top:8px" data-a="rebalance">Automatisch ausgleichen</button>` : ''}</div></div></div>
+      ${left < 0 ? `<div class="row" style="margin-top:8px"><button class="btn small" data-a="rebalance">Automatisch ausgleichen</button><button class="btn small ghost" data-a="raisebudget" data-id="${Math.ceil(c.total / 5) * 5}">Budget auf ${eur(Math.ceil(c.total / 5) * 5, 0)}</button></div>` : ''}</div></div></div>
     ${vOffers()}
     ${poolHint()}
     ${S.plan.length && all.filter(d => d >= today).length <= 2 ? `<div class="card sand row"><span class="grow"><b>${all.some(d => d >= today) ? `Nur noch ${all.filter(d => d >= today).length === 1 ? 'heute' : 'heute und morgen'} geplant.` : 'Diese Woche ist vorbei.'}</b><br><span class="muted">Ab heute 7 Tage neu planen – heutige Gerichte bleiben.</span></span><button class="btn small" data-a="newweek">Neue Woche</button></div>` : ''}
@@ -193,18 +194,20 @@ const offerTag = r => P.hasDeal(r, S.profile) ? `<span class="tag offer" title="
 function vOffers() {
   const p = S.profile, st = P.store(p), list = P.offers(p), rs = recipes().filter(r => P.eligible(r, p)), planned = S.plan.map(s => s.rid);
   if (!P.realStore(p)) return '';
-  if (!list.length) return `<p class="muted" style="margin:4px">Gerade keine ${st.name}-Aktionen auf Zutaten deiner Rezepte.</p>`;
+  if (!list.some(o => rs.some(r => r.ing[o.id]))) return `<p class="muted" style="margin:4px">Gerade keine ${st.name}-Aktionen auf Zutaten deiner Rezepte.</p>`;
   return `<div class="row between" style="margin:16px 4px 6px"><h3 style="margin:0">Angebote diese Woche</h3><span class="muted">${st.name}</span></div>
-    <div class="offers">${list.sort((a, b) => b.was / b.price - a.was / a.price).map(o => {
+    <div class="offers">${list.filter(o => rs.some(r => r.ing[o.id])).sort((a, b) => b.was / b.price - a.was / a.price).map(o => {
       const uses = rs.filter(r => r.ing[o.id]), inPlan = uses.filter(r => planned.includes(r.id));
       return `<button class="card offer-card" data-a="offer" data-id="${o.id}"><span class="tag offer">−${Math.round((1 - o.price / o.was) * 100)} %</span>
         <b>${esc(o.ing.name)}</b><div class="muted">${esc(o.name)}</div>
         <div><b class="price">${eur(o.price)}</b> <s class="muted">${eur(o.was)}</s></div>
         ${o.offer ? `<div class="muted" style="font-size:0.75rem">${esc(offerWhen(o.offer))}</div>` : ''}
-        <div class="muted" style="font-size:0.75rem">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : uses.length ? `${uses.length} Rezept${uses.length > 1 ? 'e' : ''} passen` : 'in keinem Rezept'}</div></button>`;
+        <div class="muted" style="font-size:0.75rem">${inPlan.length ? `✓ im Plan: ${esc(inPlan[0].title)}` : `${uses.length} Rezept${uses.length > 1 ? 'e passen' : ' passt'}`}</div></button>`;
     }).join('')}</div>`;
 }
 const fmtServ = n => (Math.round(n * 10) / 10).toLocaleString('de-AT');
+const portions = n => `${fmtServ(n)} Portion${n === 1 ? '' : 'en'}`;
+const eurS = n => eur(n, n < 10 ? 2 : 0); // kleine Beträge nicht auf „€ 0“ runden
 const MEAL = { lunch: 'Mittag', dinner: 'Abend' };
 
 // Reste: Abendessen vom Vortag, sofern das Rezept sich zum Aufwärmen eignet.
@@ -229,7 +232,7 @@ function slotCard(s, i) {
   const feeds = s.meal === 'dinner' && S.plan.some(o => o.leftover && o.rid === s.rid && prevDinner(o) === r); // morgen Mittag Reste davon
   return `<div class="card day${s.date === P.isoDay() ? ' today' : ''}"><button class="open" data-a="recipe" data-id="${r.id}"${feeds ? ' data-x="2"' : ''}>${photo(r)}<div class="grow">
     <div class="tags"><span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${s.leftover ? '🥡 Reste vom Vorabend' : esc(r.cat)}</span>${s.leftover ? '' : offerTag(r)}${allergyTag(r)}${s.pinned ? '<span class="tag pin" title="Fixiert – bleibt beim Neuplanen">📌</span>' : ''}</div><h3>${esc(r.title)}</h3>
-    <div class="meta">${s.leftover ? '<span>Am Vorabend doppelte Menge kochen</span>' : `<span>⏱ ${fmtTime(r.time)}</span>`}<span>👥 ${fmtServ(P.servings(S.profile) * (feeds ? 2 : 1))}${feeds ? ' · 🥡 doppelt kochen' : ''}</span>${s.leftover ? '' : `<span class="price">${eur(P.shareCost(r, S.profile) * (feeds ? 2 : 1), 0)}</span>`}</div></div></button>
+    <div class="meta">${s.leftover ? '<span>Am Vorabend doppelte Menge kochen</span>' : `<span>⏱ ${fmtTime(r.time)}</span>`}<span>👥 ${fmtServ(P.servings(S.profile) * (feeds ? 2 : 1))}${feeds ? ' · 🥡 doppelt kochen' : ''}</span>${s.leftover ? '' : `<span class="price">${eurS(P.shareCost(r, S.profile) * (feeds ? 2 : 1))}</span>`}</div></div></button>
     <button class="swap" data-a="swap" data-i="${i}" aria-label="${esc(r.title)} tauschen">⇄</button></div>`;
 }
 const fmtTime = m => m >= 60 ? `${Math.floor(m / 60)} Std.${m % 60 ? ' ' + m % 60 + ' Min.' : ''}` : `${m} Min.`;
@@ -238,8 +241,11 @@ const matches = P.matches;
 // Tausch-Kandidaten: erst filtern (Suche), dann den Wochenpreis rechnen – das ist der teure Teil.
 function altList() {
   const i = ui.sheet.i, slot = S.plan[i], p = S.profile, rids = S.plan.map(s => s.rid), all = recipes(), q = (ui.sheet.q || '').trim().toLowerCase(), cur = cost().total;
-  const alts = all.filter(r => r.id !== slot.rid && (q ? matches(r, q) : P.eligible(r, p))).map(r => ({ r, t: P.weekCost(rids.map((x, j) => j === i ? r.id : x), all, p).total }))
-    .sort((a, b) => rids.includes(a.r.id) - rids.includes(b.r.id) || a.t - b.t);
+  // Reihenfolge: passt zum Profil und zu den Vorlieben, dann Preis; schon geplante Gerichte ans Ende
+  const pp = PP(), alts = all.filter(r => r.id !== slot.rid && (q ? matches(r, q) : P.eligible(r, p))).map(r => {
+    const t = P.weekCost(rids.map((x, j) => j === i ? r.id : x), all, p).total;
+    return { r, t, k: (P.eligible(r, p) ? 0 : 100) + (rids.includes(r.id) ? 50 : 0) - P.prefScore(r, pp) + Math.max(0, t - cur) * 0.8 };
+  }).sort((a, b) => a.k - b.k || a.t - b.t);
   const shown = ui.sheet.all ? alts : alts.slice(0, 40);
   if (!alts.length) return '<p class="muted">Kein Gericht gefunden.</p>';
   return shown.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
@@ -264,12 +270,12 @@ function vSwapSheet() {
   const i = ui.sheet.i, slot = S.plan[i], p = S.profile, rids = S.plan.map(s => s.rid), cur = cost().total;
   return `<div class="sheet-bg" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="Gericht tauschen" data-stop>
     <div class="row between"><h2>Tauschen oder aussetzen</h2><button class="back" data-a="closesheet" aria-label="Schließen">✕</button></div>
-    <p class="muted">${dayLabel(slot.date)} · sortiert nach Wochenpreis. Aktuell ${eur(cur)}.</p>
+    <p class="muted">${dayLabel(slot.date)} · Woche aktuell ${eur(cur)}. Vorschläge nach Vorlieben und Preis.</p>
     ${slot.pinned ? `<div class="card sand row" style="padding:12px"><span class="grow">📌 Fixiert – bleibt beim Neuplanen und Ausgleichen.</span><button class="btn small ghost" data-a="unpin">Lösen</button></div>` : ''}
     <div class="card sand" style="padding:12px"><b>Diesen ${slot.meal === 'lunch' ? 'Mittag' : 'Abend'} aussetzen</b>
       <input id="selfnote" placeholder="Was kochst du? (optional, z. B. Omas Gulasch)" maxlength="60" value="${esc(slot.skip === 'self' ? slot.note || '' : '')}" style="margin:8px 0">
-      <div class="row"><button class="btn small grow" data-a="skip" data-id="self">🧑‍🍳 Ich koche selbst</button><button class="btn small ghost grow" data-a="skip" data-id="free">🛋️ Frei / Reste</button></div>
-      ${slot.rid ? `<div class="muted" style="margin-top:6px;font-size:0.8125rem">Spart ${eur(cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''}</div>
+      <div class="row"><button class="btn small ghost grow" data-a="skip" data-id="self">🧑‍🍳 Ich koche selbst</button><button class="btn small ghost grow" data-a="skip" data-id="free">🛋️ Frei / Reste</button></div>
+      ${(() => { const sv = slot.rid ? cur - P.weekCost(rids.map((x, j) => j === i ? null : x), recipes(), p).total : 0; return sv >= 0.01 ? `<div class="muted" style="margin-top:6px;font-size:0.8125rem">Spart ${eur(sv)} – Zutaten fallen aus der Einkaufsliste.</div>` : ''; })()}</div>
     ${(() => { const pd = prevDinner(slot); return pd && !(slot.leftover && slot.rid === pd.id) ? `<button class="alt" data-a="leftover">${photo(pd)}<div class="grow"><b>🥡 Reste vom Vorabend</b><div class="meta"><span>${esc(pd.title)} – am Abend davor doppelt kochen</span><span class="price">${eur(P.weekCost(rids.map((x, j) => j === i ? pd.id : x), recipes(), p).total - cur)} Woche</span></div></div></button>` : ''; })()}
     <h3 style="margin-top:16px">Anderes Gericht</h3>
     <input type="search" placeholder="Gericht oder Zutat suchen …" value="${esc(ui.sheet.q || '')}" data-i="sq" aria-label="Gericht suchen" style="margin-bottom:10px">
@@ -316,7 +322,7 @@ function vRecipe() {
   return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="${ui.back}" aria-label="Zurück">←</button>
     <button class="back" data-a="fav" data-id="${r.id}" aria-label="Favorit" aria-pressed="${fav}">${fav ? '♥' : '♡'}</button></div>
     ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span>${offerTag(r)}<h1 style="margin-top:8px">${esc(r.title)}</h1>
-    <div class="meta" style="font-size:0.875rem;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p) * sv / P.servings(p))}</span><span>${r.m[0]} kcal / Portion</span></div>
+    <div class="meta" style="font-size:0.875rem;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${portions(sv)}</span><span class="price">${eur(P.shareCost(r, p) * sv / P.servings(p))}</span><span>${r.m[0]} kcal / Portion</span></div>
     ${p.blocked.includes(r.id) ? `<div class="card sand">🚫 Du hast dieses Gericht ausgeschlossen – es wird nicht mehr vorgeschlagen.</div>` : P.eligible(r, p) ? '' : `<div class="card sand over">Passt nicht zu deinem Profil (Ernährung, Allergie, Abneigung oder Küchengerät).</div>`}
     ${allergenLine(r)}
     <div class="card"><h2 class="h3">Pro Portion</h2>${donut(r.m)}</div>
@@ -356,12 +362,13 @@ function listGroups() {
 }
 const itemLine = i => i.pantry ? `${i.ing.name} (Vorrat prüfen)` : `${i.ing.name} – ${i.packs}× ${i.pack}${i.product ? ` (${i.product})` : ''}${i.saved ? ` – AKTION${i.offer ? ' ' + offerWhen(i.offer) : ''}` : ''}`;
 const fmtDate = iso => new Date(iso + 'T12:00').toLocaleDateString('de-AT');
+const stale = rs => rs && (Date.now() - new Date(rs.asOf + 'T12:00')) / 864e5 > 21; // Regalpreise älter als 3 Wochen
 const shortNote = st => { const rs = P.realStore({ store: st.id }), n = P.offers({ store: st.id }).length;
-  return [rs && !rs.offersOnly ? `Echte Preise vom ${fmtDate(rs.asOf).replace(/\d{4}$/, '')}` : 'Preise geschätzt', n ? `${n} Aktionen` : ''].filter(Boolean).join(' · '); };
+  return [rs && !rs.offersOnly ? `${stale(rs) ? 'Preise vom' : 'Echte Preise vom'} ${fmtDate(rs.asOf).replace(/\d{4}$/, '')}${stale(rs) ? ' (evtl. veraltet)' : ''}` : 'Preise geschätzt', n ? `${n} Aktionen` : ''].filter(Boolean).join(' · '); };
 const priceNote = st => {
   const rs = P.realStore({ store: st.id }), n = P.offers({ store: st.id }).length, akt = n ? ` · ${n} Aktionen` : '';
   if (!rs) return `Geschätzte Preise auf ${st.name}-Niveau`;
-  return rs.offersOnly ? `Geschätzte Preise${akt}` : `Echte ${st.name}-Preise · Stand ${fmtDate(rs.asOf)}${akt}`;
+  return rs.offersOnly ? `Geschätzte Preise${akt}` : `${stale(rs) ? `${st.name}-Preise vom ${fmtDate(rs.asOf)}, evtl. veraltet` : `Echte ${st.name}-Preise · Stand ${fmtDate(rs.asOf)}`}${akt}`;
 };
 // Aktions-Zeitraum, Händlerformat (z. B. INTERSPAR) und Kundenkarten-Hinweis
 const offerWhen = o => {
@@ -375,20 +382,20 @@ function usedFor() {
   return id => { const t = [...(m[id] || [])]; return t.length ? `für ${esc(t.slice(0, 2).join(', '))}${t.length > 2 ? ` +${t.length - 2}` : ''}` : ''; };
 }
 function vList() {
-  const st = P.store(S.profile), groups = listGroups(), all = [...groups.flatMap(g => g.items.map(i => i.id)), ...S.extras.map(e => 'x:' + e)], forOf = usedFor();
+  const st = P.store(S.profile), groups = listGroups(), all = [...groups.flatMap(g => g.items.filter(i => !i.pantry).map(i => i.id)), ...S.extras.map(e => 'x:' + e)], forOf = usedFor(); // Zähler wie im Plan: ohne Vorrat
   const done = all.filter(id => S.checked[id]).length;
   for (const g of groups) g.items.sort((a, b) => !!S.checked[a.id] - !!S.checked[b.id]); // Erledigtes wandert ans Ende der Gruppe
   const row = (id, name, sub) => `<button class="item" role="checkbox" aria-checked="${!!S.checked[id]}" data-a="check" data-id="${esc(id)}"><span class="box">${S.checked[id] ? '✓' : ''}</span><span class="grow"><span class="name">${esc(name)}</span>${sub ? `<div class="muted">${sub}</div>` : ''}</span></button>`;
   return `<div class="row between" style="margin-bottom:12px"><button class="back" data-a="go" data-id="plan" aria-label="Zurück">←</button>${badge(st)}</div>
     <h1>Einkaufsliste</h1><div class="row between muted"><span>${done}/${all.length} erledigt</span><span>${eur(cost().total)}</span></div>
     <div class="progress" style="margin:8px 0 16px"><i style="width:${all.length ? done / all.length * 100 : 0}%;background:var(--sage)"></i></div>
-    <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Liste kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button></div>
+    <div class="row"><button class="btn small ghost grow" data-a="copy">📋 Kopieren</button><button class="btn small ghost grow" data-a="share">↗ Teilen</button><button class="btn small ghost grow" data-a="print">🖨 Drucken</button></div>
     <button class="btn small bring" data-a="bringlist">In Bring! übernehmen</button>
     ${groups.map(g => `<div class="aisle-title">${g.title}</div>${g.items.map(i => row(i.id, i.pantry ? i.ing.name : `${i.ing.name}`, i.pantry ? forOf(i.id) : `${i.packs}× ${esc(i.pack)} · ${eur(i.cost)}${i.saved ? ` · <span class="offer-text">🏷 Aktion statt ${eur(i.cost + i.saved)}${i.offer ? ` (${esc(offerWhen(i.offer))})` : ''}</span>` : ''}${i.product ? `<br>${esc(i.product)}` : ' · geschätzt'}${forOf(i.id) ? `<br><span class="for">${forOf(i.id)}</span>` : ''}`)).join('')}`).join('')}
     <div class="aisle-title">Eigene Einkäufe</div>
     ${S.extras.map((e, n) => `<div class="row">${row('x:' + e, e)}<button class="back" data-a="rmextra" data-i="${n}" aria-label="${esc(e)} entfernen">✕</button></div>`).join('')}
-    <form class="row" data-f="extra" style="margin-top:12px"><input name="x" placeholder="z. B. Kaffee, Klopapier" aria-label="Artikel" maxlength="80"><button class="btn small">+ Hinzufügen</button></form>
-    <p class="muted" style="margin-top:16px">${priceNote(st)}, jeweils ganze Packungen. Echte Preise via heisse-preise.io, ohne Gewähr – Aktionen und Filialpreise können abweichen. Einwegpfand (Getränke) ist nicht enthalten. „In Bring! übernehmen“ übergibt die offenen Artikel über httpbin.org an Bring!.</p>
+    <form class="row noprint" data-f="extra" style="margin-top:12px"><input name="x" placeholder="z. B. Kaffee, Klopapier" aria-label="Artikel" maxlength="80"><button class="btn small">+ Hinzufügen</button></form>
+    <p class="muted noprint" style="margin-top:16px">${priceNote(st)}, jeweils ganze Packungen. Echte Preise via heisse-preise.io, ohne Gewähr – Aktionen und Filialpreise können abweichen. Einwegpfand (Getränke) ist nicht enthalten. „In Bring! übernehmen“ übergibt die offenen Artikel über httpbin.org an Bring!.</p>
     ${done ? `<button class="btn ghost" data-a="uncheck" style="margin-top:8px">Häkchen zurücksetzen</button>` : ''}`;
 }
 // Bring! liest nur serverseitiges schema.org-Rezept-Markup (kein JS). Die Seite wird daher als Base64 in einer
@@ -575,6 +582,8 @@ const A = {
   kidage: d => { ui.draft.kids.age = d.id; },
   meal: d => { ui.draft.meals[d.id] = !ui.draft.meals[d.id]; },
   leftlunch: () => { ui.draft.leftoverLunch = !ui.draft.leftoverLunch; },
+  budgetd: d => { const p = ui.draft; p.budget = Math.max(20, Math.min(budgetMax(p), Math.round((p.budget + +d.d) / 5) * 5)); },
+  raisebudget: d => { keepUndo(); S.profile.budget = +d.id; save(); toast(`Budget auf ${eur(+d.id, 0)} gesetzt`, 'undo', 'Rückgängig'); },
   style: d => { const before = ui.draft.styles.length; ui.draft.styles = toggleIn(ui.draft.styles, d.id, 3); if (before === 3 && ui.draft.styles.length === 3) toast('Maximal 3 auswählen'); },
   diet: d => { ui.draft.diet = d.id; },
   dislike: d => { ui.draft.dislikes = toggleIn(ui.draft.dislikes, d.id); },

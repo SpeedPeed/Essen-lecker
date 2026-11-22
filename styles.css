@@ -190,6 +190,11 @@ a { color: inherit; }
   .day.today { box-shadow: none; }
   .photo { width: 56px; height: 56px; }
   .item .box { border-color: #000; }
+  .for, .bring { display: none !important; }
+  #app[data-view="list"] { columns: 2; column-gap: 24px; font-size: 0.85rem; }
+  #app[data-view="list"] h1, #app[data-view="list"] h1 + .row { column-span: all; }
+  .aisle-title { break-after: avoid; }
+  .item { break-inside: avoid; padding: 4px 0; }
 }
 .tag.warn { background: var(--danger); color: #fff; }
 .allergens { font-size: .875rem; margin: -4px 0 12px; }
@@ -212,3 +217,5 @@ h1, h2, h3, .item .name, .alt b { overflow-wrap: anywhere; }
 .day .grow { min-width: 0; }
 @media (max-width: 340px) { .day .photo { width: 56px; height: 56px; font-size: 1.75rem; } .day { gap: 8px; } }
 @media (max-width: 250px) { .day .photo { display: none; } }
+.welcome { margin-bottom: 16px; }
+.welcome ul { margin: 8px 0; padding-left: 20px; line-height: 1.5; }
