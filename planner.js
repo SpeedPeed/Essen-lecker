@@ -112,12 +112,16 @@
     const ings = new Map(recipes.map(r => [r.id, Object.entries(r.ing).filter(([id]) => D.INGREDIENTS[id] && !pantry(id)).map(([id, a]) => [id, a * sv, pack(id)])]));
     // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
     const maxUses = Math.ceil(base.length / pool.length);
+    // Reste: Mittag = Abendessen vom Vortag (doppelt gekocht), wenn das Profil es will und das Rezept sich eignet.
+    const lo = !!(p.leftoverLunch && p.meals.lunch && p.meals.dinner);
+    const dayBefore = iso => { const d = new Date(iso + 'T12:00'); d.setDate(d.getDate() - 1); return isoDay(d); };
+    const nextLunchFree = (plan, slot) => { const d = new Date(slot.date + 'T12:00'); d.setDate(d.getDate() + 1); const n = plan.find(o => o.meal === 'lunch' && o.date === isoDay(d)); return !!n && !n.locked; };
     let best = null;
     const tried = [];
     // Passt nach 60 Läufen nichts ins Budget, folgen bis zu 60 sparsamere Läufe (hohes Kostengewicht).
     for (let iter = 0; iter < 60 || (iter < 120 && !best.fits); iter++) {
       const costW = iter < 60 ? 0.5 + (iter / 60) * 4 : 6 + (iter - 60) / 6;
-      const plan = base.map(s => ({ ...s, rid: s.locked ? s.rid : null }));
+      const plan = base.map(s => ({ ...s, rid: s.locked ? s.rid : null, leftover: s.locked ? s.leftover : undefined }));
       const need = {}, uses = {}, cats = {};
       let sweets = 0;
       const add = r => {
@@ -131,6 +135,12 @@
       let off = 0;
       for (const slot of plan) {
         if (slot.locked) continue;
+        if (lo && slot.meal === 'lunch') {
+          const pd = plan.find(o => o.meal === 'dinner' && o.date === dayBefore(slot.date) && o.rid), r = pd && byId.get(pd.rid);
+          if (r && r.leftovers) { slot.rid = r.id; slot.leftover = true; for (const [id, q] of ings.get(r.id)) need[id] = (need[id] || 0) + q; continue; }
+        }
+        // Abendessen, das morgen Mittag als Reste dient: doppelte Menge, dafür entfällt ein eigenes Mittagsgericht – bevorzugen.
+        const twice = lo && slot.meal === 'dinner' && nextLunchFree(plan, slot);
         let pick = null, pickScore = -Infinity;
         const cands = order.length <= WIN || iter >= 60 ? order : order.slice(off, off + WIN).concat(order.slice(0, Math.max(0, off + WIN - order.length)));
         off = (off + WIN) % order.length;
@@ -142,6 +152,7 @@
           // Grenzkosten über ganze Packungen + Synergie mit bereits geöffneten Packungen
           let marginal = 0, synergy = 0;
           let sameDay = 0;
+          const f = twice && r.leftovers ? 2 : 1;
           for (const [id, q, k] of ings.get(r.id)) {
             if (today.has(id)) sameDay++;
             const have = need[id] || 0, open = Math.ceil(have / k.packQty - 1e-9);
@@ -151,14 +162,14 @@
           const sc = score.get(r.id) + synergy * 1.5 - marginal * costW - u * 10 - sameDay * 6
             - (plan.some(o => o.date === slot.date && o.rid === r.id) ? 50 : 0)
             - (r.sweet && sweets >= 1 ? 30 : 0) - (cats[r.cat] || 0) * 1.5 // Abwechslung: max. 1 Süßspeise, Kategorien mischen
-            + (slot.meal === 'lunch' && r.leftovers ? 1 : 0) + rand() * 2;
+            + (slot.meal === 'lunch' && r.leftovers ? 1 : 0) + (f === 2 ? 6 : 0) + rand() * 2;
           if (sc > pickScore) { pickScore = sc; pick = r; }
         }
         if (!pick) pick = pool[Math.floor(rand() * pool.length)];
         slot.rid = pick.id; add(pick);
       }
-      const rids = plan.map(s => s.rid).filter(Boolean);
-      const cost = weekCost(rids, recipes, p).total;
+      const rids = plan.filter(s => s.rid && !s.leftover).map(s => s.rid); // Reste-Mittage zählen nicht als Wiederholung
+      const cost = weekCost(plan.map(s => s.rid).filter(Boolean), recipes, p).total;
       const pref = rids.reduce((s, id) => s + (score.get(id) ?? prefScore(byId.get(id), p)), 0)
         - (rids.length - new Set(rids).size) * 3 - Math.max(0, sweets - 1) * 10;
       const fits = cost <= p.budget;
@@ -186,7 +197,7 @@
         const used = new Set(plan.map(s => s.rid));
         let fit = null, cut = null;
         plan.forEach((s, i) => {
-          if (s.locked || !s.rid || !ings.has(s.rid)) return;
+          if (s.locked || !s.rid || !ings.has(s.rid) || s.leftover || plan.some(o => o.leftover && o.rid === s.rid)) return;
           for (const r of pool) {
             if (used.has(r.id)) continue;
             const ids = new Set([...ings.get(s.rid), ...ings.get(r.id)].map(x => x[0]));
@@ -232,6 +243,28 @@
     return generate(p, recipes, null, locked);
   }
 
-  const API = { isoDay, planWeek, offers, offersIn, offerSaving, hasDeal, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  // Suche: Umlaute egal (knoedel = Knödel), bundesdeutsche Begriffe finden die österreichischen Namen der Rezepte.
+  const fold = x => x.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const SYN = [['kartoffeln', 'erdaepfel'], ['kartoffel', 'erdaepfel'], ['tomaten', 'paradeis'], ['tomate', 'paradeis'], ['hackfleisch', 'faschiert'], ['hack', 'faschiert'], ['sahne', 'obers'],
+    ['quark', 'topfen'], ['blumenkohl', 'karfiol'], ['aubergine', 'melanzani'], ['pilz', 'schwammerl'], ['champignon', 'schwammerl'],
+    ['haehnchen', 'hendl'], ['huehnchen', 'hendl'], ['frikadelle', 'laibchen'], ['bulette', 'laibchen'], ['pfannkuchen', 'palatschinken'],
+    ['eierkuchen', 'palatschinken'], ['broetchen', 'semmel'], ['rote bete', 'rote rueben'], ['moehre', 'karotte'], ['paniermehl', 'broesel'],
+    ['meerrettich', 'kren'], ['kloesse', 'knoedel'], ['kloss', 'knoedel'], ['aprikose', 'marille'], ['pflaume', 'zwetschk'],
+    ['feldsalat', 'vogerlsalat'], ['kopfsalat', 'haeuptelsalat'], ['weisskohl', 'kraut'], ['rotkohl', 'rotkraut'], ['porree', 'lauch'],
+    ['gruene bohnen', 'fisolen'], ['puderzucker', 'staubzucker'], ['huhn', 'hendl'], ['hendl', 'huhn']];
+  const hay = new WeakMap();
+  function matches(r, q) {
+    q = fold(q || '').trim();
+    if (!q) return true;
+    let h = hay.get(r);
+    if (!h) hay.set(r, h = fold(r.title + ' ' + r.cat + ' ' + Object.keys(r.ing).map(i => (D.INGREDIENTS[i] || { name: i }).name).join(' ')));
+    const words = SYN.reduce((t, [a, b]) => t.includes(a) && a.includes(' ') ? t.replace(a, b.replace(' ', '_')) : t, q).split(/\s+/).map(w => w.replace('_', ' '));
+    return words.every(w => {
+      const alts = [w, ...SYN.filter(([a]) => w.includes(a)).map(([a, b]) => w.replace(a, b))];
+      return alts.some(x => h.includes(x) || (x.length > 4 && h.includes(x.replace(/(en|n|e|s)$/, ''))));
+    });
+  }
+
+  const API = { isoDay, matches, planWeek, offers, offersIn, offerSaving, hasDeal, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);

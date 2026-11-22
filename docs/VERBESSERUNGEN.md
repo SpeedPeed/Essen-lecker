@@ -34,3 +34,12 @@ Leitlinien: kein Framework, kein Build, alles lokal; jede Logikänderung mit Tes
 | 19 | Liste | Vorratsartikel („Vorrat prüfen“) als eigener Abschnitt am Ende | Stören beim Einkauf zwischen den echten Artikeln | ✅ umgesetzt |
 | 20 | PWA | PNG-Icons (180/192/512) für Installation auf iOS/Android | iOS ignoriert SVG als Home-Icon | ✅ umgesetzt |
 | 21 | A11y | Automatische Prüfung mit axe-core über alle Ansichten, Funde beheben | Kontraste, Namen, Rollen systematisch prüfen | ✅ umgesetzt: 0 Verstöße hell & dunkel (vorher 7 Regeln: Kontrast Markenlogos/Bring!/Grautext, Formular-Labels, Überschriften-Hierarchie, Fortschrittsbalken, Kochmodus-Scrollbereich); axe läuft jetzt im e2e-Test und in der CI mit |
+
+## Runde 4
+
+| # | Block | Verbesserung | Warum | Status |
+|---|---|---|---|---|
+| 22 | Finden | Suche versteht Umlaute und bundesdeutsche Begriffe (Kartoffel → Erdäpfel, Tomate → Paradeiser, Hackfleisch → Faschiertes, knoedel → Knödel), mehrere Wörter = alle müssen passen | Wer „Kartoffel“ tippt, fand kein Erdäpfelgulasch | ✅ umgesetzt |
+| 23 | Planer | Option „Mittag = Reste vom Vorabend“: Abendessen doppelt, Mittag aufwärmen; Plan bevorzugt dafür aufwärmbare Gerichte | Weniger kochen, im Test Ø 44 € statt 62 € pro Woche | ✅ umgesetzt |
+| 24 | Onboarding | „Rest überspringen – Plan jetzt erstellen“ ab Schritt 5 | 9 Schritte bis zum ersten Plan | ✅ umgesetzt |
+| 25 | Plan | Wochenplan teilen (Text) und Druckansicht für Plan und Einkaufsliste | Familie informieren, Liste am Kühlschrank | ✅ umgesetzt |

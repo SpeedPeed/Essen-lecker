@@ -172,3 +172,15 @@ a { color: inherit; }
 }
 .btn.small.wide { display: block; width: 100%; }
 .opt .badge { display: inline-block; margin-bottom: 6px; }
+.footer-cta .skipob { margin: 0 auto 8px; background: var(--bg); }
+
+/* Drucken: Plan bzw. Einkaufsliste ohne Bedienelemente */
+@media print {
+  body, #app { background: #fff; color: #000; }
+  #app { max-width: none; padding: 0; }
+  .tabs, .footer-cta, .swap, .btn, .back, .offers, #toast, .noprint, .sheet-bg, .progress { display: none !important; }
+  .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+  .day.today { box-shadow: none; }
+  .photo { width: 56px; height: 56px; }
+  .item .box { border-color: #000; }
+}

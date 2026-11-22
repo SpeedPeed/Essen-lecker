@@ -181,3 +181,30 @@ assert.ok(favHits > plainHits * 1.4, `Favoriten nicht bevorzugt (${favHits} vs. 
 for (let k = 1; k <= 4; k++) assert.ok(!P.generate({ ...fp, blocked: ['lasagne', 'bolognese'] }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).some(s => ['lasagne', 'bolognese'].includes(s.rid)));
 assert.ok(!P.eligible(D.RECIPES.find(r => r.id === 'lasagne'), { ...fp, blocked: ['lasagne'] }));
 console.log(`ok Favoriten (${favHits} statt ${plainHits} Treffer) & ausgeschlossen`);
+
+// Suche: Umlaute, bundesdeutsche Begriffe, mehrere Wörter
+const hit = (q, id) => P.matches(rec(id), q);
+assert.ok(hit('kartoffelgulasch', 'erdaepfelgulasch') && hit('knoedel', 'semmelknoedel') && hit('Hackfleisch', 'laibchen'));
+assert.ok(hit('tomatensauce', 'gefuelltepaprika') && hit('quark pfannkuchen', 'palatschinken') && hit('pilze', 'semmelknoedel'));
+assert.ok(!hit('fisch', 'erdaepfelgulasch') && !hit('topfen speck', 'semmelknoedel') && hit('', 'lasagne'));
+console.log('ok Suche (Umlaute & Synonyme)');
+
+// Reste: Mittag = Abendessen vom Vortag (doppelt gekocht), nur bei Rezepten, die sich aufwärmen lassen
+const lp = { ...base, meals: { lunch: true, dinner: true }, budget: 70, leftoverLunch: true };
+let leftovers = 0, costLo = 0, costNo = 0;
+for (let k = 1; k <= 4; k++) {
+  const w = P.generate(lp, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k));
+  w.forEach((s, i) => {
+    if (!s.leftover) return;
+    leftovers++;
+    const prev = w.find(o => o.meal === 'dinner' && o.date === P.isoDay(new Date(new Date(s.date + 'T12:00').getTime() - 864e5)));
+    assert.ok(prev && prev.rid === s.rid && rec(s.rid).leftovers && s.meal === 'lunch', 'Reste-Mittag ohne passendes Vorabend-Gericht: ' + i);
+  });
+  assert.ok(!w[0].leftover, 'erster Mittag hat keinen Vorabend');
+  const own = w.filter(s => !s.leftover).map(s => s.rid);
+  assert.strictEqual(new Set(own).size, own.length, 'keine Doppelten außer Resten');
+  costLo += P.weekCost(w.map(s => s.rid), D.RECIPES, lp).total;
+  costNo += P.weekCost(P.generate({ ...lp, leftoverLunch: false }, D.RECIPES, new Date('2026-11-23T12:00'), null, seeded(k)).map(s => s.rid), D.RECIPES, lp).total;
+}
+assert.ok(leftovers >= 4 * 4, 'zu wenige Reste-Mittage: ' + leftovers);
+console.log(`ok Reste-Mittage (${leftovers} in 4 Wochen, Ø ${(costLo / 4).toFixed(2)} € statt ${(costNo / 4).toFixed(2)} €)`);
