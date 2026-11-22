@@ -221,3 +221,13 @@ fr[4] = { ...fr[4], rid: 'lasagne', pinned: true }; // Freitag
 const fr2 = P.planWeek({ ...base, skipDays: [5] }, D.RECIPES, fr, new Date('2026-11-23T12:00'));
 assert.deepStrictEqual([fr2[4].rid, fr2[4].skip], [null, 'self']);
 console.log('ok Reste-Paar & Kochpause vor Fixiertem');
+
+// Gründe, warum ein Gericht nicht passt; „Neu planen“ bringt andere Gerichte als die bisherige Woche
+const glutenProfile = { ...base, diet: 'vegan', allergies: ['gluten'], allergyMode: 'strict' };
+assert.deepStrictEqual(P.whyNot(rec('lasagne'), glutenProfile).slice(0, 2), ['nicht vegan', 'enthält Weizen/Gluten']);
+assert.deepStrictEqual(P.whyNot(rec('lasagne'), base), []);
+const w1 = P.planWeek({ ...base, budget: 60 }, D.RECIPES, [], new Date('2026-11-23T12:00'));
+let same = 0;
+for (let k = 0; k < 4; k++) same += P.planWeek({ ...base, budget: 60 }, D.RECIPES, w1, new Date('2026-11-23T12:00')).filter(s => w1.some(o => o.rid === s.rid)).length;
+assert.ok(same / 4 <= 1.5, 'Neu planen wiederholt zu viele Gerichte: Ø ' + same / 4);
+console.log(`ok Gründe & Abwechslung beim Neuplanen (Ø ${same / 4} von 7 gleich)`);

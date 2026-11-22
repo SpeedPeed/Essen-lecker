@@ -191,3 +191,5 @@ a { color: inherit; }
   .photo { width: 56px; height: 56px; }
   .item .box { border-color: #000; }
 }
+.tag.warn { background: var(--danger); color: #fff; }
+.allergens { font-size: .875rem; margin: -4px 0 12px; }

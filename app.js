@@ -6,7 +6,7 @@ const eur = (n, d = 2) => n.toLocaleString('de-AT', { style: 'currency', currenc
 
 const DEFAULT_PROFILE = {
   store: null, adults: 2, kids: { on: false, count: 1, age: '4-10' }, meals: { lunch: false, dinner: true },
-  budget: 50, styles: [], diet: 'none', dislikes: [], allergies: [], allergyMode: 'soft',
+  budget: 50, styles: [], diet: 'none', dislikes: [], allergies: [], allergyMode: 'strict', // Gesundheit: streng ist der sichere Standard
   equipment: ['kochfeld', 'ofen'], fridge: true, freezer: true, blocked: [], leftoverLunch: false,
 };
 let S;
@@ -38,7 +38,7 @@ function normalize(x) {
   profile.kids.count = Math.round(num(profile.kids.count, 1, 6, 1)); if (!['1-3', '4-10', '11-17'].includes(profile.kids.age)) profile.kids.age = '4-10';
   profile.kids.on = !!profile.kids.on; profile.meals = { lunch: !!profile.meals.lunch, dinner: !!profile.meals.dinner };
   profile.skipDays = arr(p.skipDays).filter(n => Number.isInteger(n) && n >= 0 && n <= 6);
-  if (!['soft', 'strict'].includes(profile.allergyMode)) profile.allergyMode = 'soft';
+  if (!['soft', 'strict'].includes(profile.allergyMode)) profile.allergyMode = 'strict';
   if (!D.DIETS.some(([id]) => id === profile.diet)) profile.diet = 'none';
   return { ...x, profile, onboarded: !!x.onboarded, checked: obj(x.checked) ? x.checked : {}, extras: strs(x.extras).map(e => e.slice(0, 80)),
     favs: strs(x.favs), custom: arr(x.custom).map(cleanRecipe).filter(Boolean),
@@ -228,7 +228,7 @@ function slotCard(s, i) {
   s = { ...s, leftover: s.leftover && prevDinner(s)?.id === s.rid }; // Vorabend getauscht → wieder normales Gericht
   const feeds = s.meal === 'dinner' && S.plan.some(o => o.leftover && o.rid === s.rid && prevDinner(o) === r); // morgen Mittag Reste davon
   return `<div class="card day${s.date === P.isoDay() ? ' today' : ''}"><button class="open" data-a="recipe" data-id="${r.id}"${feeds ? ' data-x="2"' : ''}>${photo(r)}<div class="grow">
-    <div class="tags"><span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${s.leftover ? '🥡 Reste vom Vorabend' : esc(r.cat)}</span>${s.leftover ? '' : offerTag(r)}${s.pinned ? '<span class="tag pin" title="Fixiert – bleibt beim Neuplanen">📌</span>' : ''}</div><h3>${esc(r.title)}</h3>
+    <div class="tags"><span class="tag">${both ? MEAL[s.meal] + ' · ' : ''}${s.leftover ? '🥡 Reste vom Vorabend' : esc(r.cat)}</span>${s.leftover ? '' : offerTag(r)}${allergyTag(r)}${s.pinned ? '<span class="tag pin" title="Fixiert – bleibt beim Neuplanen">📌</span>' : ''}</div><h3>${esc(r.title)}</h3>
     <div class="meta">${s.leftover ? '<span>Am Vorabend doppelte Menge kochen</span>' : `<span>⏱ ${fmtTime(r.time)}</span>`}<span>👥 ${fmtServ(P.servings(S.profile) * (feeds ? 2 : 1))}${feeds ? ' · 🥡 doppelt kochen' : ''}</span>${s.leftover ? '' : `<span class="price">${eur(P.shareCost(r, S.profile) * (feeds ? 2 : 1), 0)}</span>`}</div></div></button>
     <button class="swap" data-a="swap" data-i="${i}" aria-label="${esc(r.title)} tauschen">⇄</button></div>`;
 }
@@ -244,7 +244,7 @@ function altList() {
   if (!alts.length) return '<p class="muted">Kein Gericht gefunden.</p>';
   return shown.map(({ r, t }) => { const d = t - cur, over = t > p.budget;
     return `<button class="alt" data-a="pick" data-id="${r.id}">${photo(r)}<div class="grow"><b>${esc(r.title)}</b> ${offerTag(r)}
-      <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}${rids.includes(r.id) ? '<span>· schon in dieser Woche</span>' : ''}${P.eligible(r, p) ? '' : '<span class="over">passt nicht zum Profil</span>'}</div></div></button>`; }).join('')
+      <div class="meta"><span>⏱ ${fmtTime(r.time)}</span><span class="${over ? 'over' : 'price'}">${d > 0.005 ? '+' : ''}${eur(d)} Woche</span>${over ? '<span class="over">über Budget</span>' : ''}${rids.includes(r.id) ? '<span>· schon in dieser Woche</span>' : ''}${P.eligible(r, p) ? '' : `<span class="over">⚠ ${esc(P.whyNot(r, p).join(', '))}</span>`}</div></div></button>`; }).join('')
     + (shown.length < alts.length ? `<button class="btn ghost" data-a="sheetall">Alle ${alts.length} Gerichte anzeigen</button>` : '');
 }
 // „Einplanen“ aus dem Rezept: Tag & Mahlzeit wählen (nur heute und später).
@@ -293,6 +293,15 @@ function donut(m) {
     <div class="grow">${parts.map(([, col, l, g]) => `<div class="row" style="margin:6px 0"><i style="width:10px;height:10px;border-radius:3px;background:${col}"></i><span class="grow">${l}</span><b>${g} g</b></div>`).join('')}</div></div>`;
 }
 const recipeServ = () => ui.sv ?? P.servings(S.profile);
+// Allergene laut Zutaten (ohne Gewähr: Fertigprodukte wie Brühe oder Currypaste können mehr enthalten)
+function allergenLine(r) {
+  const f = P.flagsOf(r), mine = S.profile.allergies, all = D.ALLERGENS.filter(([id]) => f.has(id));
+  if (!all.length) return '';
+  return `<p class="allergens">Enthält: ${all.map(([id, l]) => mine.includes(id) ? `<b class="over">⚠ ${esc(l)}</b>` : esc(l)).join(', ')}<span class="muted"> · laut Zutaten, Etiketten prüfen</span></p>`;
+}
+const allergyTag = r => { const a = P.allergensIn(r, S.profile); return a.length ? `<span class="tag warn">⚠ ${esc(a.map(id => D.ALLERGENS.find(x => x[0] === id)[1]).join(', '))}</span>` : ''; };
+// Unpassendes Gericht bewusst einplanen? (z. B. Allergie) – nur mit Rückfrage
+const confirmFit = r => { const w = P.whyNot(r, S.profile); return !w.length || confirm(`${r.title}: ${w.join(', ')}. Trotzdem einplanen?`); };
 // Zutatenzeilen; Vorrat (Salz, Öl, Gewürze …) getrennt, weil er nicht eingekauft werden muss.
 function ingRows(r, sv) {
   const row = ([id, a]) => { const g = D.INGREDIENTS[id], pan = g.flags.includes('pantry');
@@ -309,6 +318,7 @@ function vRecipe() {
     ${photo(r, 'hero')}${credit(r.id)}<span class="tag">${esc(r.cat)}</span>${offerTag(r)}<h1 style="margin-top:8px">${esc(r.title)}</h1>
     <div class="meta" style="font-size:14px;margin-bottom:16px"><span>⏱ ${fmtTime(r.time)}</span><span>👥 ${fmtServ(sv)} Portionen</span><span class="price">${eur(P.shareCost(r, p) * sv / P.servings(p))}</span><span>${r.m[0]} kcal / Portion</span></div>
     ${p.blocked.includes(r.id) ? `<div class="card sand">🚫 Du hast dieses Gericht ausgeschlossen – es wird nicht mehr vorgeschlagen.</div>` : P.eligible(r, p) ? '' : `<div class="card sand over">Passt nicht zu deinem Profil (Ernährung, Allergie, Abneigung oder Küchengerät).</div>`}
+    ${allergenLine(r)}
     <div class="card"><h2 class="h3">Pro Portion</h2>${donut(r.m)}</div>
     <div class="card"><div class="row between" style="margin-bottom:4px"><h2 class="h3" style="margin:0">Zutaten</h2><div class="stepper small">
       <button data-a="serv" data-d="-1" aria-label="Weniger Portionen" ${sv <= 1 ? 'disabled' : ''}>−</button><b aria-live="polite">${fmtServ(sv)}</b><button data-a="serv" data-d="1" aria-label="Mehr Portionen">+</button></div></div>
@@ -526,8 +536,8 @@ function toast(msg, action, label) {
 
 // Für die Planung zählen auch Favoriten (öfter) – sie liegen außerhalb des Profils.
 const PP = () => ({ ...S.profile, favs: S.favs });
-function regenerate() { S.plan = P.planWeek(PP(), recipes(), S.plan); save(); }
-const keepUndo = () => { ui.undo = { plan: structuredClone(S.plan), checked: { ...S.checked }, favs: [...S.favs] }; };
+function regenerate() { S.plan = P.planWeek(PP(), recipes(), S.plan); S.planVersion = 2; save(); }
+const keepUndo = () => { ui.undo = { plan: structuredClone(S.plan), checked: { ...S.checked }, favs: [...S.favs], profile: structuredClone(S.profile) }; };
 // Selbst gewähltes Gericht: fixieren (bleibt beim Neuplanen), bei Budgetüberschreitung Ausgleich anbieten.
 function setSlot(i, rid, msg) {
   S.plan[i] = { date: S.plan[i].date, meal: S.plan[i].meal, rid, pinned: true }; ui.sheet = null; save();
@@ -578,10 +588,19 @@ const A = {
     const p = ui.draft;
     if (ui.step === 1 || ui.step === 2) p.budget = Math.min(budgetMax(p), p.budget);
     if (ui.editing) {
-      const onlyStore = ui.step === 0;
-      S.profile = p; ui.editing = false; ui.view = 'profile';
-      if (onlyStore) { save(); toast(`Preise & Gänge für ${P.store(p).name} neu berechnet`); }
-      else { regenerate(); toast('Profil gespeichert – Plan neu erstellt'); }
+      const st = ui.step, mealsChanged = st === 2 && (p.meals.lunch !== S.profile.meals.lunch || p.meals.dinner !== S.profile.meals.dinner || p.leftoverLunch !== S.profile.leftoverLunch);
+      keepUndo(); S.profile = p; ui.editing = false; ui.view = 'profile';
+      let msg;
+      if (st === 4 || mealsChanged) { regenerate(); msg = 'Plan mit neuen Vorlieben erstellt'; }
+      else {
+        // Markt, Haushalt, Budget: Gerichte bleiben; Ernährung, Abneigung, Allergie, Küche: nur unpassende ersetzen
+        const bad = S.plan.filter(s => s.rid && R(s.rid) && !P.eligible(R(s.rid), p)).length;
+        if (bad) { S.plan = P.generate(PP(), recipes(), null, S.plan.map(s => s.rid && R(s.rid) && !P.eligible(R(s.rid), p) ? { date: s.date, meal: s.meal, rid: null } : { ...s, locked: true })); S.planVersion = 2; }
+        const over = cost().total > p.budget;
+        if (over) S.plan = P.rebalance(S.plan, -1, PP(), recipes());
+        msg = bad ? `${bad} unpassende${bad > 1 ? '' : 's'} Gericht${bad > 1 ? 'e' : ''} ersetzt` : over ? 'Plan ans Budget angepasst' : st === 0 ? `Preise & Gänge für ${P.store(p).name} neu berechnet` : 'Gespeichert – dein Plan bleibt';
+      }
+      save(); toast(msg, 'undo', 'Rückgängig');
       return;
     }
     if (ui.step === 2) p.budget = Math.max(20, Math.min(budgetMax(p), Math.round(P.servings(p) * 7 * (+p.meals.lunch + +p.meals.dinner) * 2.5 / 5) * 5));
@@ -599,7 +618,7 @@ const A = {
   },
   go: d => { ui.view = d.id; ui.sheet = null; ui.form = null; },
   regen: () => { keepUndo(); regenerate(); const n = S.plan.filter(s => s.pinned).length; toast(`Neuer Wochenplan${n ? ` · ${n} fixierte${n > 1 ? '' : 's'} behalten` : ''}`, 'undo', 'Rückgängig'); },
-  undo: () => { if (!ui.undo) return; ({ plan: S.plan, checked: S.checked, favs: S.favs } = ui.undo); ui.undo = null; save(); document.getElementById('toast').classList.remove('show'); toast('Rückgängig gemacht'); },
+  undo: () => { if (!ui.undo) return; ({ plan: S.plan, checked: S.checked, favs: S.favs, profile: S.profile } = ui.undo); ui.undo = null; save(); document.getElementById('toast').classList.remove('show'); toast('Rückgängig gemacht'); },
   newweek: () => {
     // Heutige Gerichte bleiben (sind meist schon eingekauft), ab morgen wird neu geplant; neue Woche = neue Liste.
     const today = P.isoDay(); keepUndo();
@@ -632,8 +651,8 @@ const A = {
     ui.sheet = null; save();
     toast(`Mittag = Reste: am Vorabend ${pd.title} doppelt kochen`);
   },
-  pick: d => setSlot(ui.sheet.i, d.id, 'Getauscht'),
-  planat: d => { const r = R(ui.sheet.plan); setSlot(+d.i, r.id, `${r.title} eingeplant`); },
+  pick: d => { if (!confirmFit(R(d.id))) return false; setSlot(ui.sheet.i, d.id, 'Getauscht'); },
+  planat: d => { const r = R(ui.sheet.plan); if (!confirmFit(r)) return false; setSlot(+d.i, r.id, `${r.title} eingeplant`); },
   planrecipe: () => { ui.sheet = { plan: ui.recipe }; },
   unpin: () => { delete S.plan[ui.sheet.i].pinned; save(); toast('Fixierung gelöst'); },
   togglepast: () => { ui.showPast = !ui.showPast; },
@@ -646,13 +665,13 @@ const A = {
   cooking: () => { ui.cookIng = !ui.cookIng; },
   fav: d => { S.favs = toggleIn(S.favs, d.id); save(); if (S.favs.includes(d.id)) toast('♥ Favorit – kommt im Plan öfter dran'); },
   block: d => {
+    keepUndo(); // vor dem Ändern sichern
     const p = S.profile, r = R(d.id); p.blocked = toggleIn(p.blocked, d.id);
     if (!p.blocked.includes(d.id)) { save(); toast(`${r.title} wird wieder vorgeschlagen`); return; }
-    keepUndo();
     if (S.plan.some(s => s.rid === d.id)) S.plan = P.generate(PP(), recipes(), null, S.plan.map(s => s.rid === d.id ? { date: s.date, meal: s.meal, rid: null } : { ...s, locked: true }));
     S.favs = S.favs.filter(x => x !== d.id); save(); toast(`${r.title} wird nicht mehr vorgeschlagen`, 'undoblock', 'Rückgängig'); ui.lastBlock = d.id;
   },
-  undoblock: () => { S.profile.blocked = S.profile.blocked.filter(x => x !== ui.lastBlock); A.undo(); },
+  undoblock: () => A.undo(),
   cook: () => { ui.view = 'cook'; ui.cookStep = 0; lockScreen(); },
   exitcook: () => { ui.view = 'recipe'; wake?.release?.(); wake = null; },
   cstep: d => { ui.cookStep = Math.max(0, Math.min(R(ui.recipe).steps.length - 1, ui.cookStep + +d.d)); },

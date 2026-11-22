@@ -28,6 +28,18 @@
     return r.needs.every(n => p.equipment.includes(n));
   }
 
+  // Warum passt ein Gericht nicht? (für Hinweise in der Oberfläche)
+  function whyNot(r, p) {
+    const f = flagsOf(r), out = [], name = (list, id) => (D[list].find(x => x[0] === id) || [id, id])[1];
+    if ((p.blocked || []).includes(r.id)) out.push('ausgeschlossen');
+    if (!dietOk(f, p.diet)) out.push('nicht ' + name('DIETS', p.diet).toLowerCase());
+    for (const a of p.allergies) if (f.has(a)) out.push('enthält ' + name('ALLERGENS', a));
+    for (const d of p.dislikes) if (f.has(d)) out.push(name('DISLIKES', d));
+    for (const n of r.needs) if (!p.equipment.includes(n)) out.push('braucht ' + name('EQUIPMENT', n));
+    return out;
+  }
+  const allergensIn = (r, p) => p.allergies.filter(a => flagsOf(r).has(a));
+
   function prefScore(r, p) {
     const f = flagsOf(r);
     let s = r.tags.filter(t => p.styles.includes(t)).length * 2 + ((p.favs || []).includes(r.id) ? 2 : 0); // Favoriten öfter
@@ -116,7 +128,8 @@
     const byId = new Map(recipes.map(r => [r.id, r])), sv = servings(p), pk = {};
     const pack = id => pk[id] || (pk[id] = packOf(id, p));
     const pantry = id => D.INGREDIENTS[id].flags.includes('pantry'), fridge = p.fridge !== false;
-    const score = new Map(pool.map(r => [r.id, prefScore(r, p)]));
+    const avoid = new Set(p.avoid || []); // zuletzt geplante Gerichte – beim Neuplanen lieber andere
+    const score = new Map(pool.map(r => [r.id, prefScore(r, p) - (avoid.has(r.id) ? 4 : 0)]));
     // Einmal vorberechnen: Packung + Wochenmenge je bezahlter Zutat (die innere Schleife läuft Zehntausende Male).
     const ings = new Map(recipes.map(r => [r.id, Object.entries(r.ing).filter(([id]) => D.INGREDIENTS[id] && !pantry(id)).map(([id, a]) => [id, a * sv, pack(id)])]));
     // Jedes Rezept max. 1× pro Woche – mehr nur, wenn die Filter zu wenige Rezepte übrig lassen.
@@ -250,7 +263,7 @@
       if (d && !d.locked) Object.assign(d, { rid: s.rid, locked: true });
       else if (!d || d.rid !== s.rid) delete s.leftover; // Vorabend ausgesetzt/anders fixiert → normales Gericht
     }
-    return generate(p, recipes, null, base);
+    return generate({ ...p, avoid: old.filter(s => s.rid && !s.pinned).map(s => s.rid) }, recipes, null, base);
   }
 
   // Auto-Rebalancing: getauschtes/freies Slot fixieren, Rest neu optimieren. Fixierte Gerichte, Reste-Slots und das
@@ -283,6 +296,6 @@
     });
   }
 
-  const API = { isoDay, matches, planWeek, offers, offersIn, offerSaving, hasDeal, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
+  const API = { isoDay, matches, whyNot, allergensIn, planWeek, offers, offersIn, offerSaving, hasDeal, setPrices, realStore, packOf, servings, store, eligible, weekCost, shareCost, generate, rebalance, prefScore, flagsOf };
   if (typeof module !== 'undefined') module.exports = API; else root.PIATTO = API;
 })(this);
