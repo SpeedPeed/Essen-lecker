@@ -1,9 +1,9 @@
 {
  "source": "heisse-preise.io + marktguru.at",
- "fetched": "2026-11-22",
+ "fetched": "2026-11-23",
  "stores": {
   "billa": {
-   "asOf": "2026-11-22",
+   "asOf": "2026-11-23",
    "items": {
     "erdaepfel": {
      "name": "Wunderlinge Erdäpfel",
@@ -1373,7 +1373,7 @@
    }
   },
   "lidl": {
-   "asOf": "2026-11-22",
+   "asOf": "2026-11-23",
    "offersOnly": true,
    "items": {
     "champignons": {
@@ -1454,17 +1454,30 @@
       "note": "Mager oder 20 % Fett 250 g"
      }
     },
-    "schinken": {
-     "name": "Wiesentaler Wiener Beinschinken",
-     "price": 1.79,
-     "qty": 175,
-     "was": 2.29,
+    "thunfisch": {
+     "name": "Nixe Thunfischfilets",
+     "price": 1.26,
+     "qty": 185,
+     "was": 1.69,
      "offer": {
       "adv": "Lidl",
-      "from": "2026-11-25",
-      "to": "2026-11-28",
+      "from": "2026-11-29",
+      "to": "2026-12-02",
       "loyalty": false,
-      "note": "175 g"
+      "note": "in Sonnenblumenöl 185 g oder Thunfisch natur 195 g"
+     }
+    },
+    "schinken": {
+     "name": "Dulano Delikatess Kochhinterschinken",
+     "price": 2.49,
+     "qty": 250,
+     "was": 2.95,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-29",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "je 250 g"
      }
     },
     "weisskraut": {
@@ -1518,11 +1531,37 @@
       "loyalty": true,
       "note": "HINWEIS: MIT LIDL PLUS APP Klasse I per Stk."
      }
+    },
+    "parmesan": {
+     "name": "Milbona Grana Padano",
+     "price": 3.29,
+     "qty": 200,
+     "was": 4.43,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-29",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "gerieben, je 200 g"
+     }
+    },
+    "pommes": {
+     "name": "Harvest Basket Wellenschnitt Pommes XXL",
+     "price": 3.29,
+     "qty": 2492,
+     "was": 5.52,
+     "offer": {
+      "adv": "Lidl",
+      "from": "2026-11-29",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "2,5 kg"
+     }
     }
    }
   },
   "penny": {
-   "asOf": "2026-11-22",
+   "asOf": "2026-11-23",
    "offersOnly": true,
    "items": {
     "walnuesse": {
@@ -1628,11 +1667,89 @@
       "loyalty": false,
       "note": "Gewichtsklasse L 10 Stk."
      }
+    },
+    "lachs": {
+     "name": "Berida Lachsfilets",
+     "price": 5.99,
+     "qty": 375,
+     "was": 9.99,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "375 g"
+     }
+    },
+    "rosinen": {
+     "name": "Puda Sultaninen",
+     "price": 1.25,
+     "qty": 250,
+     "was": 1.37,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "250 g"
+     }
+    },
+    "sauerrahm": {
+     "name": "Schärdinger Sauerrahm",
+     "price": 0.79,
+     "qty": 250,
+     "was": 0.91,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "250 g"
+     }
+    },
+    "putenbrust": {
+     "name": "Delikatessa Putenschnitzel",
+     "price": 5.99,
+     "qty": 550,
+     "was": 6.94,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "550 g"
+     }
+    },
+    "rindsgulasch": {
+     "name": "Rindsgulaschfleisch",
+     "price": 11.99,
+     "qty": 1000,
+     "was": 13.78,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "im Ganzen ca. 1 kg"
+     }
+    },
+    "weisskraut": {
+     "name": "Ich bin Österreich Weisskraut",
+     "price": 0.99,
+     "qty": 1000,
+     "was": 1.19,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-29",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "od. Rotkraut Kl. I, pro kg"
+     }
     }
    }
   },
   "hofer": {
-   "asOf": "2026-11-22",
+   "asOf": "2026-11-23",
    "offersOnly": true,
    "items": {
     "paradeiser": {
@@ -1646,19 +1763,6 @@
       "to": "2026-11-26",
       "loyalty": false,
       "note": "Klasse I 500 g"
-     }
-    },
-    "leberkaese": {
-     "name": "Sonnhof Leberkäse Gebacken",
-     "price": 2.49,
-     "qty": 400,
-     "was": 3.29,
-     "offer": {
-      "adv": "HOFER",
-      "from": "2026-11-19",
-      "to": "2026-11-26",
-      "loyalty": false,
-      "note": "verschiedene Sorten 400 g"
      }
     }
    }
