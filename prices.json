@@ -1,9 +1,9 @@
 {
  "source": "heisse-preise.io + marktguru.at",
- "fetched": "2026-11-23",
+ "fetched": "2026-11-24",
  "stores": {
   "billa": {
-   "asOf": "2026-11-23",
+   "asOf": "2026-11-24",
    "items": {
     "erdaepfel": {
      "name": "Wunderlinge Erdäpfel",
@@ -26,9 +26,10 @@
     },
     "paradeiser": {
      "name": "Clever Tomaten",
-     "price": 2.69,
+     "price": 2.49,
      "qty": 1000,
-     "date": "2026-11-03"
+     "date": "2026-11-24",
+     "was": 2.69
     },
     "karfiol": {
      "name": "Karfiol",
@@ -668,6 +669,19 @@
       "to": "2026-11-25",
       "loyalty": false,
       "note": "unbehandelt Kl. I, 4 Stück Tasse"
+     }
+    },
+    "fruehlingszwiebel": {
+     "name": "Jungzwiebel",
+     "price": 0.69,
+     "qty": 1,
+     "was": 0.92,
+     "offer": {
+      "adv": "BILLA",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
+      "loyalty": false,
+      "note": "per Bund"
      }
     }
    }
@@ -1373,7 +1387,7 @@
    }
   },
   "lidl": {
-   "asOf": "2026-11-23",
+   "asOf": "2026-11-24",
    "offersOnly": true,
    "items": {
     "champignons": {
@@ -1561,7 +1575,7 @@
    }
   },
   "penny": {
-   "asOf": "2026-11-23",
+   "asOf": "2026-11-24",
    "offersOnly": true,
    "items": {
     "walnuesse": {
@@ -1749,7 +1763,7 @@
    }
   },
   "hofer": {
-   "asOf": "2026-11-23",
+   "asOf": "2026-11-24",
    "offersOnly": true,
    "items": {
     "paradeiser": {
@@ -1763,6 +1777,71 @@
       "to": "2026-11-26",
       "loyalty": false,
       "note": "Klasse I 500 g"
+     }
+    },
+    "aepfel": {
+     "name": "Äpfel",
+     "price": 0.99,
+     "qty": 1000,
+     "was": 2.18,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-29",
+      "to": "2026-12-03",
+      "loyalty": false,
+      "note": "In Der Tasse Aus Österreich Klasse I per kg"
+     }
+    },
+    "lachs": {
+     "name": "Golden Seafood Lachsfilet",
+     "price": 3.99,
+     "qty": 300,
+     "was": 4.59,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-29",
+      "to": "2026-12-03",
+      "loyalty": false,
+      "note": "300 g"
+     }
+    },
+    "zwiebel": {
+     "name": "Zwiebeln",
+     "price": 1.18,
+     "qty": 1000,
+     "was": 1.69,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-29",
+      "to": "2026-12-03",
+      "loyalty": false,
+      "note": "aus Österreich gelb/rot Klasse I 2 kg/1 kg"
+     }
+    },
+    "sauerkraut": {
+     "name": "King's Crown Delikatesssauerkraut",
+     "price": 0.44,
+     "qty": 500,
+     "was": 0.89,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-26",
+      "to": "2026-11-28",
+      "loyalty": false,
+      "note": "500 g"
+     }
+    },
+    "huhn": {
+     "name": "XXL Hendlbrustfilet",
+     "price": 7.49,
+     "qty": 1000,
+     "was": 10.98,
+     "offer": {
+      "adv": "HOFER",
+      "from": "2026-11-26",
+      "to": "2026-11-28",
+      "loyalty": false,
+      "note": "natur per kg"
      }
     }
    }
