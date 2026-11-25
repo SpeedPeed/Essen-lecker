@@ -1,9 +1,9 @@
 {
  "source": "heisse-preise.io + marktguru.at",
- "fetched": "2026-11-24",
+ "fetched": "2026-11-25",
  "stores": {
   "billa": {
-   "asOf": "2026-11-24",
+   "asOf": "2026-11-25",
    "items": {
     "erdaepfel": {
      "name": "Wunderlinge Erdäpfel",
@@ -1387,7 +1387,7 @@
    }
   },
   "lidl": {
-   "asOf": "2026-11-24",
+   "asOf": "2026-11-25",
    "offersOnly": true,
    "items": {
     "champignons": {
@@ -1575,7 +1575,7 @@
    }
   },
   "penny": {
-   "asOf": "2026-11-24",
+   "asOf": "2026-11-25",
    "offersOnly": true,
    "items": {
     "walnuesse": {
@@ -1763,7 +1763,7 @@
    }
   },
   "hofer": {
-   "asOf": "2026-11-24",
+   "asOf": "2026-11-25",
    "offersOnly": true,
    "items": {
     "paradeiser": {
