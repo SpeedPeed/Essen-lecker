@@ -1,9 +1,9 @@
 {
  "source": "heisse-preise.io + marktguru.at",
- "fetched": "2026-11-25",
+ "fetched": "2026-11-26",
  "stores": {
   "billa": {
-   "asOf": "2026-11-25",
+   "asOf": "2026-11-26",
    "items": {
     "erdaepfel": {
      "name": "Wunderlinge Erdäpfel",
@@ -18,11 +18,10 @@
      "date": "2026-09-15"
     },
     "karotten": {
-     "name": "Clever Karotten",
-     "price": 0.99,
-     "qty": 1000,
-     "date": "2026-11-21",
-     "was": 1.49
+     "name": "Wunderlinge Karotten",
+     "price": 2.49,
+     "qty": 2000,
+     "date": "2026-10-22"
     },
     "paradeiser": {
      "name": "Clever Tomaten",
@@ -33,10 +32,9 @@
     },
     "karfiol": {
      "name": "Karfiol",
-     "price": 1.79,
+     "price": 2.29,
      "qty": 1,
-     "date": "2026-11-19",
-     "was": 2.29
+     "date": "2026-11-26"
     },
     "brokkoli": {
      "name": "BILLA Brokkoli",
@@ -45,24 +43,16 @@
      "date": "2026-09-24"
     },
     "weisskraut": {
-     "name": "Da komm' ich her Weißkraut",
-     "price": 0.79,
+     "name": "Da komm ich her! Weißkraut",
+     "price": 0.99,
      "qty": 1000,
-     "was": 0.99,
-     "offer": {
-      "adv": "BILLA",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "Kl. I, per Kilo"
-     }
+     "date": "2026-11-10"
     },
     "salat": {
      "name": "Häuptelsalat",
-     "price": 0.99,
+     "price": 1.29,
      "qty": 1,
-     "date": "2026-11-19",
-     "was": 1.39
+     "date": "2026-11-26"
     },
     "champignons": {
      "name": "Clever Champignons",
@@ -155,10 +145,10 @@
      "was": 2.56,
      "offer": {
       "adv": "BILLA PLUS",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
+      "from": "2026-11-25",
+      "to": "2026-12-02",
       "loyalty": false,
-      "note": "österreichische 250 g"
+      "note": "Österreichische 250 g. Warengruppenrabatt zusätzlich gültig."
      }
     },
     "eier": {
@@ -187,10 +177,9 @@
     },
     "faschiertes": {
      "name": "Clever Faschiertes gemischt",
-     "price": 3.99,
+     "price": 4.99,
      "qty": 500,
-     "date": "2026-11-19",
-     "was": 4.99
+     "date": "2026-11-26"
     },
     "rindsgulasch": {
      "name": "Clever Rindsgulasch",
@@ -206,15 +195,17 @@
     },
     "penne": {
      "name": "Barilla Penne Rigate",
-     "price": 1.89,
+     "price": 1.13,
      "qty": 500,
-     "date": "2026-09-10"
+     "date": "2026-11-26",
+     "was": 1.89
     },
     "spaghetti": {
-     "name": "BILLA Spaghetti Bronze",
-     "price": 1.23,
+     "name": "Barilla Spaghetti N.5",
+     "price": 1.13,
      "qty": 500,
-     "date": "2026-09-24"
+     "date": "2026-11-26",
+     "was": 1.89
     },
     "fleckerl": {
      "name": "Recheis Goldmarke Fleckerl",
@@ -403,17 +394,10 @@
      "date": "2026-11-22"
     },
     "lachs": {
-     "name": "Clever Lachsfilet",
-     "price": 4.99,
-     "qty": 300,
-     "was": 6.59,
-     "offer": {
-      "adv": "BILLA",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "300 g Packung"
-     }
+     "name": "Clever Wildlachsfilet ohne Haut",
+     "price": 4.49,
+     "qty": 250,
+     "date": "2026-11-22"
     },
     "garnelen": {
      "name": "Clever Riesengarnelen geschält",
@@ -494,17 +478,10 @@
      "date": "2025-05-22"
     },
     "hafermilch": {
-     "name": "Joya Pur Haferdrink",
-     "price": 1.99,
+     "name": "Joya Frischer Hafer Drink",
+     "price": 2.49,
      "qty": 1000,
-     "was": 2.99,
-     "offer": {
-      "adv": "BILLA",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "div. Sorten 1 Liter"
-     }
+     "date": "2026-02-01"
     },
     "pizzateig": {
      "name": "BILLA Pizzateig XXL",
@@ -657,19 +634,6 @@
      "price": 2.37,
      "qty": 1000,
      "date": "2026-11-22"
-    },
-    "limette": {
-     "name": "SanLucar Limetten",
-     "price": 1.49,
-     "qty": 4,
-     "was": 1.77,
-     "offer": {
-      "adv": "BILLA PLUS",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "unbehandelt Kl. I, 4 Stück Tasse"
-     }
     },
     "fruehlingszwiebel": {
      "name": "Jungzwiebel",
@@ -1387,87 +1351,9 @@
    }
   },
   "lidl": {
-   "asOf": "2026-11-25",
+   "asOf": "2026-11-26",
    "offersOnly": true,
    "items": {
-    "champignons": {
-     "name": "Champignons",
-     "price": 1.39,
-     "qty": 500,
-     "was": 1.99,
-     "offer": {
-      "adv": "Lidl",
-      "from": "2026-11-22",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "braun  Klasse I  Je 500 g"
-     }
-    },
-    "brokkoli": {
-     "name": "Broccoli",
-     "price": 1.29,
-     "qty": 500,
-     "was": 1.89,
-     "offer": {
-      "adv": "Lidl",
-      "from": "2026-11-22",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "Klasse I  Je 500 g"
-     }
-    },
-    "bananen": {
-     "name": "Bananen",
-     "price": 1.11,
-     "qty": 1000,
-     "was": 1.69,
-     "offer": {
-      "adv": "Lidl",
-      "from": "2026-11-22",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "HINWEIS: MIT LIDL PLUS APP 0.99 € je kg"
-     }
-    },
-    "roteRueben": {
-     "name": "Chef Select Rote Rüben",
-     "price": 1,
-     "qty": 500,
-     "was": 1.49,
-     "offer": {
-      "adv": "Lidl",
-      "from": "2026-11-22",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "gekocht je 500 g"
-     }
-    },
-    "blaetterteig": {
-     "name": "Chef Select Blätterteig",
-     "price": 0.79,
-     "qty": 275,
-     "was": 0.99,
-     "offer": {
-      "adv": "Lidl",
-      "from": "2026-11-22",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "275 g"
-     }
-    },
-    "topfen": {
-     "name": "Alpengut Speisetopfen",
-     "price": 0.79,
-     "qty": 250,
-     "was": 0.99,
-     "offer": {
-      "adv": "Lidl",
-      "from": "2026-11-22",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "Mager oder 20 % Fett 250 g"
-     }
-    },
     "thunfisch": {
      "name": "Nixe Thunfischfilets",
      "price": 1.26,
@@ -1575,113 +1461,9 @@
    }
   },
   "penny": {
-   "asOf": "2026-11-25",
+   "asOf": "2026-11-26",
    "offersOnly": true,
    "items": {
-    "walnuesse": {
-     "name": "Puda Walnusskerne",
-     "price": 2.39,
-     "qty": 200,
-     "was": 2.99,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "200 g"
-     }
-    },
-    "milch": {
-     "name": "Schärdinger Formil H-Vollmilch",
-     "price": 0.89,
-     "qty": 1000,
-     "was": 1.61,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "3,5 % Fett, 1 l"
-     }
-    },
-    "schinken": {
-     "name": "Ich bin Österreich Beinschinken",
-     "price": 1.99,
-     "qty": 175,
-     "was": 2.14,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "HINWEIS: MIT PENNY GUTSCHEIN 1.79 € Farmer- od. Barbecueschinken 175 g"
-     }
-    },
-    "schlagobers": {
-     "name": "Schärdinger Schlagobers",
-     "price": 1.09,
-     "qty": 250,
-     "was": 1.19,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "länger frisch 250 ml"
-     }
-    },
-    "erdaepfel": {
-     "name": "Wunderlinge Erdäpfel",
-     "price": 2.07,
-     "qty": 2494,
-     "was": 2.86,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "Kl. II,  2,5 kg"
-     }
-    },
-    "aepfel": {
-     "name": "Wunderlinge Äpfel",
-     "price": 2.19,
-     "qty": 2009,
-     "was": 2.66,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "Kl. II,   2 kg"
-     }
-    },
-    "butter": {
-     "name": "Heidi Butter",
-     "price": 1.19,
-     "qty": 250,
-     "was": 1.59,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "250 g"
-     }
-    },
-    "eier": {
-     "name": "Ich bin Österreich Eier",
-     "price": 1.99,
-     "qty": 10,
-     "was": 2.66,
-     "offer": {
-      "adv": "PENNY",
-      "from": "2026-11-18",
-      "to": "2026-11-25",
-      "loyalty": false,
-      "note": "Gewichtsklasse L 10 Stk."
-     }
-    },
     "lachs": {
      "name": "Berida Lachsfilets",
      "price": 5.99,
@@ -1747,6 +1529,19 @@
       "note": "im Ganzen ca. 1 kg"
      }
     },
+    "butter": {
+     "name": "Schärdinger Sommerbutter",
+     "price": 1.55,
+     "qty": 250,
+     "was": 2.66,
+     "offer": {
+      "adv": "PENNY",
+      "from": "2026-11-26",
+      "to": "2026-11-28",
+      "loyalty": false,
+      "note": "250 g"
+     }
+    },
     "weisskraut": {
      "name": "Ich bin Österreich Weisskraut",
      "price": 0.99,
@@ -1763,7 +1558,7 @@
    }
   },
   "hofer": {
-   "asOf": "2026-11-25",
+   "asOf": "2026-11-26",
    "offersOnly": true,
    "items": {
     "paradeiser": {
