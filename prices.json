@@ -1,9 +1,9 @@
 {
  "source": "heisse-preise.io + marktguru.at",
- "fetched": "2026-11-26",
+ "fetched": "2026-11-27",
  "stores": {
   "billa": {
-   "asOf": "2026-11-26",
+   "asOf": "2026-11-27",
    "items": {
     "erdaepfel": {
      "name": "Wunderlinge Erdäpfel",
@@ -1351,7 +1351,7 @@
    }
   },
   "lidl": {
-   "asOf": "2026-11-26",
+   "asOf": "2026-11-27",
    "offersOnly": true,
    "items": {
     "thunfisch": {
@@ -1461,7 +1461,7 @@
    }
   },
   "penny": {
-   "asOf": "2026-11-26",
+   "asOf": "2026-11-27",
    "offersOnly": true,
    "items": {
     "lachs": {
@@ -1558,22 +1558,9 @@
    }
   },
   "hofer": {
-   "asOf": "2026-11-26",
+   "asOf": "2026-11-27",
    "offersOnly": true,
    "items": {
-    "paradeiser": {
-     "name": "Pflaumentomaten",
-     "price": 1.29,
-     "qty": 500,
-     "was": 1.99,
-     "offer": {
-      "adv": "HOFER",
-      "from": "2026-11-22",
-      "to": "2026-11-26",
-      "loyalty": false,
-      "note": "Klasse I 500 g"
-     }
-    },
     "aepfel": {
      "name": "Äpfel",
      "price": 0.99,
